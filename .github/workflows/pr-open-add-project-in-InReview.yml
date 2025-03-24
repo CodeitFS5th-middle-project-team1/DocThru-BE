@@ -1,0 +1,45 @@
+name: Add PR to GitHub Project "In Review"
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  add-to-project-in-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add PR to Project in "In Review"
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          ORGANIZATION: CodeitFS5th-middle-project-team1
+          PROJECT_NUMBER: 1
+          STATUS_FIELD_NAME: Status
+          TARGET_STATUS: In Review
+        run: |
+          # PR URL 가져오기 (이 방식이 가장 안정적)
+          pr_url="${{ github.event.pull_request.html_url }}"
+          echo "pr_url: $pr_url"
+
+          # 프로젝트 ID 가져오기
+          project_id=$(gh project view "$PROJECT_NUMBER" --owner "$ORGANIZATION" --format json | jq -r '.id')
+          echo "project_id: $project_id"
+
+          # 프로젝트에 PR 추가하고 item ID 얻기 (PR URL 사용)
+          item_id=$(gh project item-add "$PROJECT_NUMBER" --owner "$ORGANIZATION" --url "$pr_url" --format json | jq -r '.id')
+          echo "item_id: $item_id"
+
+          # 필드 ID 및 옵션 ID 얻기
+          field_data=$(gh project field-list "$PROJECT_NUMBER" --owner "$ORGANIZATION" --format json)
+
+          echo "field_data: $field_data"
+          
+          field_id=$(echo "$field_data" | jq -r ".fields[] | select(.name==\"$STATUS_FIELD_NAME\") | .id")
+
+          echo "field_id: $field_id"
+          
+          option_id=$(echo "$field_data" | jq -r ".fields[] | select(.name==\"$STATUS_FIELD_NAME\") | .options[] | select(.name==\"$TARGET_STATUS\") | .id")
+
+          echo "option_id: $option_id"
+
+          # 상태 필드를 "In Review"로 설정
+          gh project item-edit --project-id "$project_id" --id "$item_id" --field-id "$field_id" --single-select-option-id "$option_id"
