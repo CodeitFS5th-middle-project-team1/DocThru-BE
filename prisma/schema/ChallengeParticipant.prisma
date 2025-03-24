@@ -1,0 +1,5 @@
+model ChallengeParticipant {
+  id String @id @default(uuid())
+  challengeId String
+  userId String
+}

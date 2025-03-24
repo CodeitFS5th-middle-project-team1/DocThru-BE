@@ -1,0 +1,30 @@
+model User {
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  nickname           String
+  password           String
+  profileImg         String?
+  role               UserRole  @default(USER)
+  rank               UserRank  @default(NORMAL)
+  participationCount Int       @default(0)
+  recommendedCount   Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+}
+
+enum UserRole {
+  //권한
+  ADMIN
+  //관리자
+  USER
+  //일반 유저
+}
+
+enum UserRank {
+  //등급
+  NORMAL
+  //일반 
+  EXPERT
+  //전문가
+}

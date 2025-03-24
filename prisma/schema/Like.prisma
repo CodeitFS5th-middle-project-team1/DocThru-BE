@@ -1,0 +1,5 @@
+model Like {
+  id String @id @default(uuid())
+  translationId String
+  userId String
+}

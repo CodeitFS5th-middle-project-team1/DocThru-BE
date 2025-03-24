@@ -1,0 +1,11 @@
+model Comment {
+  id             String    @id @default(uuid())
+  translationId  String
+  userId         String
+  userNickname   String
+  userProfileImg String?
+  content        String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+}
