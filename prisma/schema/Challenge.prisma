@@ -1,20 +1,20 @@
 model Challenge {
-  id          String    @id @default(uuid())
-  field FieldType
-  userId String
-  title String
-  originURL String
-  documentType DocumentType
-  deadline DateTime
-  maxParticipants Int
+  id                  String       @id @default(uuid())
+  field               FieldType
+  userId              String
+  title               String
+  originURL           String
+  documentType        DocumentType
+  deadline            DateTime
+  maxParticipants     Int
   currentParticipants Int
-  description String
-  deletedAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  content String
-  deletedReason String?
-  rejectedReason String?
+  description         String
+  deletedAt           DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  content             String
+  deletedReason       String?
+  rejectedReason      String?
 }
 
 enum FieldType {

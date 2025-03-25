@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import router from './domains/routes';
-import { setupSwagger } from './swagger';
+import { setupSwagger } from './swagger.ts';
 
 dotenv.config();
 

@@ -1,5 +1,5 @@
 model Like {
-  id String @id @default(uuid())
+  id            String @id @default(uuid())
   translationId String
-  userId String
+  userId        String
 }
