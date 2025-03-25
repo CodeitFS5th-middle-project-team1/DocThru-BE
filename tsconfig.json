@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-  
     "target": "ES6",
     "module": "NodeNext",
     "strict": true,
@@ -16,8 +15,8 @@
     "skipLibCheck": true,
     "typeRoots": ["./types", "./node_modules/@types"]
   },
-  "include": ["src"], // 현재 폴더 전체를 포함
-  "exclude": ["node_modules", "dist", "prisma"],
+  "include": ["src", "prisma"], // 현재 폴더 전체를 포함
+  "exclude": ["node_modules", "dist"],
   "ts-node": {
     "experimentalSpecifierResolution": "node",
     "experimentalResolver": true,
