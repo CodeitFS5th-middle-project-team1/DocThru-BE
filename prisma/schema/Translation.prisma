@@ -1,0 +1,11 @@
+model Translation {
+  id          String    @id @default(uuid())
+  challengeId String
+  userId      String
+  likeCount   Int
+  title       String
+  content     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
