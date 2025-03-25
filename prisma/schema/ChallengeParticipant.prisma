@@ -1,5 +1,5 @@
 model ChallengeParticipant {
-  id String @id @default(uuid())
+  id          String @id @default(uuid())
   challengeId String
-  userId String
+  userId      String
 }
