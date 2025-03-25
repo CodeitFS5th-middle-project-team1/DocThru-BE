@@ -10,6 +10,14 @@ import { seedFeedbacks } from './seeds/feedback.seed';
 const prisma = new PrismaClient();
 
 async function main() {
+  await prisma.like.deleteMany({});
+  await prisma.feedback.deleteMany({});
+  await prisma.translation.deleteMany({});
+  await prisma.draftTranslation.deleteMany({});
+  await prisma.challengeParticipant.deleteMany({});
+  await prisma.challenge.deleteMany({});
+  await prisma.user.deleteMany({});
+
   await seedUsers(prisma);
   await seedChallenges(prisma);
   await seedChallengeParticipants(prisma);
