@@ -1,7 +1,7 @@
-import { Router } from "express";
+import { Router } from 'express';
 
 const router = Router();
 
-router.post("/") // 알림 생성
+router.post('/'); // 알림 생성
 
 export default router;
