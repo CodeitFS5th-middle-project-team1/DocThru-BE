@@ -6,7 +6,7 @@
   "scripts": {
     "type": "module",
     "build": "tsc",
-    "dev": "nodemon --exec ts-node --transpile-only ./src/app.ts",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "start": "node dist/src/index.js",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:generate": "npx prisma generate",
