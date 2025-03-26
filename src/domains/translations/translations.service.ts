@@ -1,17 +1,5 @@
 import prisma from '../../prismaClient';
 
-// export const getAllTranslations = async () => {
-//   console.log('🔥 getAllTranslations called');
-
-//   return await prisma.translation.findMany({
-//     where: {
-//       deletedAt: null,
-//     },
-//     orderBy: {
-//       likeCount: 'desc',
-//     },
-//   });
-// };
 const getTranslations = async (
   challengeId: string,
   page: number = 1,

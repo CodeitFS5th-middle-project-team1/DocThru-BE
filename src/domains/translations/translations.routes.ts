@@ -4,7 +4,6 @@ import LikeRouter from '../likes/likes.routes';
 import TranslationsController from './translations.controller';
 const router = Router({ mergeParams: true });
 
-// router.get('/', (req, res) => res.send({ message: 'routing' }));
 router.get('/', TranslationsController.getTranslations); // 작업물 목록
 router.post('/'); // 작업물 생성
 router.patch('/:translationId'); // 작업물 수정
