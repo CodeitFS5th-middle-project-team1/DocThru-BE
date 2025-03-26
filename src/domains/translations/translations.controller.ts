@@ -48,6 +48,11 @@ const router = Router();
  *         description: 페이지 번호 (기본값 1)
  *         schema:
  *           type: integer
+ *     description: >
+ *       특정 챌린지에 제출된 번역 작업물 목록을 조회합니다.
+ *       작업물 목록 조회는 기획상 "챌린지 상세 페이지" 내에 "참여 현황" 영역에서 보여지며,
+ *       기본 추천수(likeCount) 순으로 정렬되어 조회됩니다.
+ *       또한 페이지네이션이 적용되며, `totalCount`(전체 작업물 개수)을 통해 페이지네이션 구현에 활용할 수 있습니다.
  *     responses:
  *       200:
  *         description: 번역 목록 응답
@@ -75,9 +80,9 @@ const getTranslations: Controller = async (req, res, next) => {
     const { challengeId } = req.params;
     const page = parseInt(req.query.page as string) || 1;
 
-    // if (!challengeId) {
-    //   return next({ statusCode: 400 });
-    // }
+    if (!challengeId) {
+      return next({ statusCode: 400 });
+    }
 
     const challenge = await prisma.challenge.findUnique({
       where: { id: challengeId },
