@@ -5,6 +5,7 @@ import router from './domains/routes';
 import { setupSwagger } from './swagger.ts';
 import errorHandler from './middleware/errorHandler.ts';
 
+
 dotenv.config();
 
 const app = express();
