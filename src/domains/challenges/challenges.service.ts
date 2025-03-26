@@ -5,8 +5,11 @@ const getChallenges = async (
   documentType: DocumentType | undefined,
   fields: FieldType | FieldType[],
   approvalStatus: ApprovalStatus,
-  keyword: string | undefined
+  keyword: string | undefined,
+  page: number,
+  limit: number
 ) => {
+  const skip = (page - 1) * limit;
   const fieldCondition =
     Array.isArray(fields) && fields.length > 0
       ? { in: fields as FieldType[] }
@@ -25,6 +28,8 @@ const getChallenges = async (
         ],
       }),
     },
+    skip,
+    take: limit,
   });
 
   return challenges;

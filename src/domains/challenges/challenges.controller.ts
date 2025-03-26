@@ -5,7 +5,7 @@ import { Controller } from '../../types/express';
 
 const getChallenges: Controller = async (req, res, next) => {
   try {
-    const { documentType, fields, approvalStatus, keyword } = req.query;
+    const { documentType, fields, approvalStatus, keyword, page= "1", limit= "10" } = req.query;
     // 쿼리 구조분해 된 것들 각각 검증 필요
     if (
       documentType &&
@@ -36,15 +36,22 @@ const getChallenges: Controller = async (req, res, next) => {
       }
     }
 
-    if (typeof keyword !== 'string') {
+
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    if (isNaN(pageNumber) || isNaN(limitNumber)){
       next({ statusCode: 400 });
       return;
     }
+
     const result = await ChallengesService.getChallenges(
       documentType as DocumentType,
       fields as FieldType | FieldType[],
       approvalStatus as ApprovalStatus,
-      keyword as string
+      keyword as string,
+      pageNumber,
+      limitNumber,
     );
     res.status(200).send(result);
   } catch (err) {
