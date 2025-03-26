@@ -4,13 +4,13 @@ import { seedAllChallenges } from './seeds/challenge.seed';
 import { seedChallengeParticipants } from './seeds/participant.seed';
 import { seedDraftTranslations } from './seeds/draftTranslation.seed';
 import { seedTranslations } from './seeds/translation.seed';
-//import { seedLikes } from './seeds/like.seed';
+import { seedLikes } from './seeds/like.seed';
 import { seedFeedbacks } from './seeds/feedback.seed';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  //await prisma.like.deleteMany({});
+  await prisma.like.deleteMany({});
   await prisma.feedback.deleteMany({});
   await prisma.translation.deleteMany({});
   await prisma.draftTranslation.deleteMany({});
@@ -24,7 +24,7 @@ async function main() {
   await seedDraftTranslations(prisma);
   await seedTranslations(prisma);
   await seedFeedbacks(prisma);
-  //await seedLikes(prisma); //
+  await seedLikes(prisma);
 }
 
 main()
