@@ -11,7 +11,7 @@ const options: swaggerJSDoc.Options = {
       description: 'Express + TypeScript + Prisma API 문서',
     },
   },
-  apis: ["./src/domains/*/*.ts"], // API 경로
+  apis: ['./src/domains/*/*.ts'], // API 경로
 };
 
 const swaggerSpec = swaggerJSDoc(options);
