@@ -1,7 +1,8 @@
-import { PrismaClient, DocumentType, FieldType } from '@prisma/client';
 import { subDays, addDays } from 'date-fns';
 
-export const seedChallenges = async (prisma: PrismaClient) => {
+import { PrismaClient, DocumentType, FieldType } from '@prisma/client';
+
+export const seedAllChallenges = async (prisma: PrismaClient) => {
   await prisma.challenge.createMany({
     data: [
       {
@@ -12,13 +13,13 @@ export const seedChallenges = async (prisma: PrismaClient) => {
         originURL:
           'https://nextjs.org/docs/app/building-your-application/routing',
         documentType: DocumentType.Blog,
-        deadline: addDays(new Date(), 10),
+        deadline: new Date('2025-04-05'),
         maxParticipants: 5,
         currentParticipants: 1,
         description: 'Next.js 14의 App Router 공식 문서를 함께 번역해요!',
         content:
           '번역 규칙: 공식 용어는 유지, 예제 코드는 그대로, 번역은 자연스럽게.',
-        createdAt: subDays(new Date(), 2),
+        createdAt: new Date('2025-03-24'),
         updatedAt: new Date(),
       },
       {
@@ -28,12 +29,12 @@ export const seedChallenges = async (prisma: PrismaClient) => {
         title: 'OpenAI API 가이드 한글화',
         originURL: 'https://platform.openai.com/docs/guides/gpt',
         documentType: DocumentType.OFFICIAL,
-        deadline: addDays(new Date(), 7),
+        deadline: new Date('2025-04-02'),
         maxParticipants: 3,
         currentParticipants: 2,
         description: 'OpenAI GPT 가이드를 한국어로 번역하는 챌린지입니다.',
         content: '용어집에 따라 정리하고, 예시는 생략하지 말아주세요.',
-        createdAt: subDays(new Date(), 5),
+        createdAt: new Date('2025-03-21'),
         updatedAt: new Date(),
       },
       {
@@ -43,13 +44,13 @@ export const seedChallenges = async (prisma: PrismaClient) => {
         title: '개발자 이력서 작성 공식 가이드 번역',
         originURL: 'https://developers.google.com/tech-resume',
         documentType: DocumentType.OFFICIAL,
-        deadline: addDays(new Date(), 14),
+        deadline: new Date('2025-04-09'),
         maxParticipants: 4,
         currentParticipants: 0,
         description: '구글 공식 개발자 이력서 가이드를 함께 번역해요.',
         content:
           '내용의 맥락을 유지하고, 문법/형식은 자유롭게 조정해도 좋아요.',
-        createdAt: subDays(new Date(), 1),
+        createdAt: new Date('2025-03-25'),
         updatedAt: new Date(),
       },
       {
@@ -60,14 +61,14 @@ export const seedChallenges = async (prisma: PrismaClient) => {
         originURL:
           'https://blog.bitsrc.io/understanding-the-event-loop-cf1c807dcd89',
         documentType: DocumentType.Blog,
-        deadline: addDays(new Date(), 5),
+        deadline: new Date('2025-03-31'),
         maxParticipants: 4,
         currentParticipants: 2,
         description:
           '비동기 처리와 Event Loop 개념을 이해하기 위한 블로그 번역 챌린지입니다.',
         content:
           '실제 예시 코드 위주로 번역하고, 설명은 최대한 자연스럽게 풀어주세요.',
-        createdAt: subDays(new Date(), 3),
+        createdAt: new Date('2025-03-23'),
         updatedAt: new Date(),
       },
       {
@@ -77,13 +78,13 @@ export const seedChallenges = async (prisma: PrismaClient) => {
         title: '웹 접근성 (a11y) 공식 가이드 번역',
         originURL: 'https://www.w3.org/WAI/fundamentals/accessibility-intro/',
         documentType: DocumentType.OFFICIAL,
-        deadline: addDays(new Date(), 12),
+        deadline: new Date('2025-04-07'),
         maxParticipants: 6,
         currentParticipants: 4,
         description:
           'W3C에서 제공하는 웹 접근성 기본 가이드를 함께 번역하는 챌린지입니다.',
         content: '용어집을 참고하며 일관성 있게 번역해주세요.',
-        createdAt: subDays(new Date(), 4),
+        createdAt: new Date('2025-03-22'),
         updatedAt: new Date(),
       },
       {
@@ -93,18 +94,254 @@ export const seedChallenges = async (prisma: PrismaClient) => {
         title: 'RESTful API 디자인 원칙 번역 챌린지',
         originURL: 'https://restfulapi.net/rest-architectural-constraints/',
         documentType: DocumentType.Blog,
-        deadline: addDays(new Date(), 9),
+        deadline: new Date('2025-04-04'),
         maxParticipants: 3,
         currentParticipants: 1,
         description:
           'REST API 디자인에 대한 아티클을 번역하고 개념을 정리하는 챌린지입니다.',
         content:
           '중요 개념은 부연 설명을 추가하고, 예시는 가능한 한 직역으로 처리해주세요.',
-        createdAt: subDays(new Date(), 2),
+        createdAt: new Date('2025-03-24'),
+        updatedAt: new Date(),
+      },
+      {
+        id: '35911430-a9ae-437f-8c11-c7b156f9960d',
+        field: FieldType.WEB,
+        userId: 'user-14',
+        title: 'CSS-in-JS 트렌드 분석 블로그 번역',
+        originURL: 'https://example.com/docs/more-0',
+        documentType: DocumentType.OFFICIAL,
+        deadline: new Date('2025-04-05'),
+        maxParticipants: 3,
+        currentParticipants: 3,
+        description:
+          'CSS-in-JS 트렌드 분석 블로그 번역에 대한 협업 번역 챌린지입니다.',
+        content:
+          'CSS-in-JS 트렌드 분석 블로그 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-20'),
+        updatedAt: new Date(),
+      },
+      {
+        id: '685e2553-7a7d-4c91-9d8f-ae1929de4b09',
+        field: FieldType.WEB,
+        userId: 'user-13',
+        title: '웹 성능 최적화 체크리스트 문서 번역',
+        originURL: 'https://example.com/docs/more-1',
+        documentType: DocumentType.OFFICIAL,
+        deadline: new Date('2025-04-05'),
+        maxParticipants: 4,
+        currentParticipants: 0,
+        description:
+          '웹 성능 최적화 체크리스트 문서 번역에 대한 협업 번역 챌린지입니다.',
+        content:
+          '웹 성능 최적화 체크리스트 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-23'),
+        updatedAt: new Date(),
+      },
+      {
+        id: '223b2a33-21d1-4f81-aa07-8b7b0beb7401',
+        field: FieldType.NEXTJS,
+        userId: 'user-11',
+        title: '테크니컬 라이팅 가이드 번역',
+        originURL: 'https://example.com/docs/more-2',
+        documentType: DocumentType.Blog,
+        deadline: new Date('2025-04-03'),
+        maxParticipants: 4,
+        currentParticipants: 3,
+        description:
+          '테크니컬 라이팅 가이드 번역에 대한 협업 번역 챌린지입니다.',
+        content:
+          '테크니컬 라이팅 가이드 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-24'),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'b5eabf6c-f26e-4eb3-8327-3fe63a609693',
+        field: FieldType.MODERNJS,
+        userId: 'user-12',
+        title: 'Node.js 스트림 공식 문서 번역',
+        originURL: 'https://example.com/docs/more-3',
+        documentType: DocumentType.Blog,
+        deadline: new Date('2025-04-01'),
+        maxParticipants: 5,
+        currentParticipants: 1,
+        description:
+          'Node.js 스트림 공식 문서 번역에 대한 협업 번역 챌린지입니다.',
+        content:
+          'Node.js 스트림 공식 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-22'),
+        updatedAt: new Date(),
+      },
+      {
+        id: '5e2bffcc-41f0-4b3a-810e-1c3d4f2fa531',
+        field: FieldType.NEXTJS,
+        userId: 'user-7',
+        title: 'React Native 환경설정 가이드 번역',
+        originURL: 'https://example.com/docs/more-4',
+        documentType: DocumentType.OFFICIAL,
+        deadline: new Date('2025-04-07'),
+        maxParticipants: 4,
+        currentParticipants: 2,
+        description:
+          'React Native 환경설정 가이드 번역에 대한 협업 번역 챌린지입니다.',
+        content:
+          'React Native 환경설정 가이드 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-22'),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'b58a2e95-47fa-4d26-bb11-c8a1e3c2281b',
+        field: FieldType.API,
+        userId: 'user-15',
+        title: 'Git 내부 동작 원리 설명 문서 번역',
+        originURL: 'https://example.com/docs/more-5',
+        documentType: DocumentType.Blog,
+        deadline: new Date('2025-04-08'),
+        maxParticipants: 5,
+        currentParticipants: 3,
+        description:
+          'Git 내부 동작 원리 설명 문서 번역에 대한 협업 번역 챌린지입니다.',
+        content:
+          'Git 내부 동작 원리 설명 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-20'),
+        updatedAt: new Date(),
+      },
+      {
+        id: '23a46c25-d7fa-4a06-bf8c-e39626d9e902',
+        field: FieldType.WEB,
+        userId: 'user-9',
+        title: '프로그레시브 웹앱(PWA) 가이드 번역',
+        originURL: 'https://example.com/docs/more-6',
+        documentType: DocumentType.OFFICIAL,
+        deadline: new Date('2025-04-10'),
+        maxParticipants: 4,
+        currentParticipants: 1,
+        description:
+          '프로그레시브 웹앱(PWA) 가이드 번역에 대한 협업 번역 챌린지입니다.',
+        content:
+          '프로그레시브 웹앱(PWA) 가이드 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-25'),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'd4d51aaf-cbb1-47ae-b59f-6ee379d116e6',
+        field: FieldType.MODERNJS,
+        userId: 'user-10',
+        title: 'Webpack 번들링 최적화 문서 번역',
+        originURL: 'https://example.com/docs/more-7',
+        documentType: DocumentType.Blog,
+        deadline: new Date('2025-04-04'),
+        maxParticipants: 6,
+        currentParticipants: 4,
+        description:
+          'Webpack 번들링 최적화 문서 번역에 대한 협업 번역 챌린지입니다.',
+        content:
+          'Webpack 번들링 최적화 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-20'),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'b11f1c72-7756-433b-8f53-93cfd174159d',
+        field: FieldType.CAREER,
+        userId: 'user-14',
+        title: '기술 면접 질문 모음집 번역 챌린지',
+        originURL: 'https://example.com/docs/more-8',
+        documentType: DocumentType.OFFICIAL,
+        deadline: new Date('2025-04-12'),
+        maxParticipants: 4,
+        currentParticipants: 0,
+        description:
+          '기술 면접 질문 모음집 번역 챌린지에 대한 협업 번역입니다.',
+        content:
+          '기술 면접 질문 모음집 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-21'),
+        updatedAt: new Date(),
+      },
+      {
+        id: '6c6f305f-7a5f-4b3d-aeb3-2a1453c0a632',
+        field: FieldType.WEB,
+        userId: 'user-12',
+        title: '마이크로 프론트엔드 문서 번역',
+        originURL: 'https://example.com/docs/more-9',
+        documentType: DocumentType.Blog,
+        deadline: new Date('2025-04-06'),
+        maxParticipants: 3,
+        currentParticipants: 2,
+        description:
+          '마이크로 프론트엔드 문서 번역에 대한 협업 번역 챌린지입니다.',
+        content:
+          '마이크로 프론트엔드 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-24'),
+        updatedAt: new Date(),
+      },
+      {
+        id: '8e7c8e3d-1824-4b25-a9a1-2752b054469b',
+        field: FieldType.API,
+        userId: 'user-8',
+        title: 'AI 모델 학습 최적화 가이드 번역',
+        originURL: 'https://example.com/docs/more-10',
+        documentType: DocumentType.OFFICIAL,
+        deadline: new Date('2025-04-07'),
+        maxParticipants: 5,
+        currentParticipants: 2,
+        description:
+          'AI 모델 학습 최적화 가이드 번역에 대한 협업 번역 챌린지입니다.',
+        content:
+          'AI 모델 학습 최적화 가이드 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-23'),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'fb6df634-8d21-4f49-b634-e89dc07a3d3c',
+        field: FieldType.MODERNJS,
+        userId: 'user-7',
+        title: 'ESLint 설정 문서 번역 챌린지',
+        originURL: 'https://example.com/docs/more-11',
+        documentType: DocumentType.Blog,
+        deadline: new Date('2025-04-09'),
+        maxParticipants: 4,
+        currentParticipants: 3,
+        description: 'ESLint 설정 문서 번역 챌린지에 대한 협업입니다.',
+        content:
+          'ESLint 설정 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-22'),
+        updatedAt: new Date(),
+      },
+      {
+        id: '0896ee06-e338-41e4-b006-d7c3fe726bf0',
+        field: FieldType.CAREER,
+        userId: 'user-13',
+        title: '포트폴리오 작성 팁 문서 번역',
+        originURL: 'https://example.com/docs/more-12',
+        documentType: DocumentType.Blog,
+        deadline: new Date('2025-04-10'),
+        maxParticipants: 6,
+        currentParticipants: 1,
+        description:
+          '포트폴리오 작성 팁 문서 번역에 대한 협업 번역 챌린지입니다.',
+        content:
+          '포트폴리오 작성 팁 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-25'),
+        updatedAt: new Date(),
+      },
+      {
+        id: '7a28dc90-3db5-4bb3-8c3b-f2c3f3eb8a11',
+        field: FieldType.WEB,
+        userId: 'user-10',
+        title: '웹 보안 가이드 문서 번역',
+        originURL: 'https://example.com/docs/more-13',
+        documentType: DocumentType.OFFICIAL,
+        deadline: new Date('2025-04-06'),
+        maxParticipants: 5,
+        currentParticipants: 0,
+        description: '웹 보안 가이드 문서 번역에 대한 협업 번역 챌린지입니다.',
+        content:
+          '웹 보안 가이드 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+        createdAt: new Date('2025-03-23'),
         updatedAt: new Date(),
       },
     ],
   });
 
-  console.log('✅ Challenges seeded');
+  console.log('✅ 챌린지 시드 삽입 완료');
 };
