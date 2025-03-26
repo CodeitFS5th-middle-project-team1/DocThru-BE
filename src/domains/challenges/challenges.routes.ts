@@ -6,7 +6,7 @@ const router = Router();
 
 /**
  * @swagger
- * /challenges:
+ * /api/challenges:
  *   get:
  *     summary: 챌린지 목록 조회
  *     description: 챌린지 목록을 조회합니다.
