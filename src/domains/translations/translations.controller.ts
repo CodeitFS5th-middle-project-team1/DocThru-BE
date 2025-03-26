@@ -23,11 +23,11 @@ const router = Router();
 
 const getTranslations: Controller = async (req, res, next) => {
   try {
-    console.log('🔥 req.params:', req.params);
     const { challengeId } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
 
     if (!challengeId) {
-      return next({ statusCode: 400, message: 'challengeId가 필요합니다.' });
+      return next({ statusCode: 400 });
     }
 
     const challenge = await prisma.challenge.findUnique({
@@ -38,11 +38,13 @@ const getTranslations: Controller = async (req, res, next) => {
       return next({ statusCode: 404 });
     }
 
-    const translations = await TranslationsService.getTranslations(challengeId);
+    const { translations, totalCount } =
+      await TranslationsService.getTranslations(challengeId, page);
 
     res.status(200).json({
       success: true,
       data: translations,
+      totalCount, // ✅ 전체 개수 -> 프론트 페이지네이션에 사용
     });
   } catch (err) {
     next(err);

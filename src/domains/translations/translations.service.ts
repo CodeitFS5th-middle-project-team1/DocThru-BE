@@ -12,19 +12,34 @@ import prisma from '../../prismaClient';
 //     },
 //   });
 // };
-const getTranslations = async (challengeId: string) => {
-  return await prisma.translation.findMany({
-    where: {
-      challengeId,
-      deletedAt: null,
-    },
-    orderBy: {
-      likeCount: 'desc',
-    },
-  });
+const getTranslations = async (
+  challengeId: string,
+  page: number = 1,
+  pageSize: number = 5
+) => {
+  const [translations, totalCount] = await Promise.all([
+    prisma.translation.findMany({
+      where: {
+        challengeId,
+        deletedAt: null,
+      },
+      orderBy: {
+        likeCount: 'desc',
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.translation.count({
+      where: {
+        challengeId,
+        deletedAt: null,
+      },
+    }),
+  ]);
+
+  return { translations, totalCount };
 };
 
-// ✅ 객체로 묶어서 export
 const TranslationsService = {
   getTranslations,
 };
