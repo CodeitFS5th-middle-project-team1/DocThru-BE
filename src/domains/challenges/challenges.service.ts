@@ -1,0 +1,37 @@
+import { ApprovalStatus, DocumentType, FieldType } from '@prisma/client';
+import prisma from '../../prismaClient';
+
+const getChallenges = async (
+  documentType: DocumentType | undefined,
+  fields: FieldType | FieldType[],
+  approvalStatus: ApprovalStatus,
+  keyword: string | undefined
+) => {
+  const fieldCondition =
+    Array.isArray(fields) && fields.length > 0
+      ? { in: fields as FieldType[] }
+      : fields
+      ? { equals: fields as FieldType }
+      : undefined;
+  const challenges = await prisma.challenge.findMany({
+    where: {
+      documentType: documentType || undefined,
+      field: fieldCondition || undefined,
+      approvalStatus,
+      ...(keyword && {
+        OR: [
+          { title: { contains: keyword, mode: 'insensitive' } },
+          { description: { contains: keyword, mode: 'insensitive' } },
+        ],
+      }),
+    },
+  });
+
+  return challenges;
+};
+
+const ChallengesService = {
+  getChallenges,
+};
+
+export default ChallengesService;
