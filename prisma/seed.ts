@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { seedUsers } from './seeds/user.seed';
-import { seedChallenges } from './seeds/challenge.seed';
+import { seedAllChallenges } from './seeds/challenge.seed';
 import { seedChallengeParticipants } from './seeds/participant.seed';
 import { seedDraftTranslations } from './seeds/draftTranslation.seed';
 import { seedTranslations } from './seeds/translation.seed';
@@ -19,12 +19,17 @@ async function main() {
   await prisma.user.deleteMany({});
 
   await seedUsers(prisma);
-  await seedChallenges(prisma);
+  await seedAllChallenges(prisma);
   await seedChallengeParticipants(prisma);
   await seedDraftTranslations(prisma);
-  await seedTranslations(prisma);
+
+  // Translation과 Like를 하나의 트랜잭션으로 처리
+  await prisma.$transaction(async (tx) => {
+    await seedTranslations(tx);
+    await seedLikes(tx);
+  });
+
   await seedFeedbacks(prisma);
-  await seedLikes(prisma); //
 }
 
 main()

@@ -9,14 +9,15 @@ import UserRouter from './users/users.routes';
 
 const router = Router();
 
-
-router.get('/', (req, res)=> {res.send({message: "hi"})})
+router.get('/', (req, res) => {
+  res.send({ message: 'hi' });
+});
 router.use('/auth', AuthRouter);
 router.use('/challenges', ChallengeRouter);
 router.use('/feedbacks', FeedbackRouter);
 router.use('/notification', NotificationRouter);
 router.use('/likes', LikeRouter);
-router.use('/translations', TranslationRouter);
+//router.use('/translations', TranslationRouter);
 router.use('/users', UserRouter);
 
 export default router;

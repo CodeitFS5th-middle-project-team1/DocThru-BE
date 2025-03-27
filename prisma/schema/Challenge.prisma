@@ -1,28 +1,29 @@
 model Challenge {
-  id                  String       @id @default(uuid())
+  id                  String         @id @default(uuid())
   field               FieldType
-  userId              String
+  userId              String // User 모델과의 연결을 위한 외래 키
   title               String
-  originURL           String
+  originURL           String //원본 URL
   documentType        DocumentType
-  deadline            DateTime
-  maxParticipants     Int
-  currentParticipants Int
-  description         String
+  deadline            DateTime // 마감 일자
+  maxParticipants     Int // 최대 참가자 수
+  currentParticipants Int // 현재 참가자 수
+  description         String // 챌린지 설명
+  content             String // 챌린지 내용
   deletedAt           DateTime?
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
-  content             String
-  deletedReason       String?
-  rejectedReason      String?
-  approvalStatus      ApprovalStatus @default(PENDING)//관리자 승인 상태
-}
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  deletedReason       String? // 삭제 이유 
+  rejectedReason      String? // 거절 이유 
+  approvalStatus      ApprovalStatus @default(PENDING)// 관리자 승인 상태 
 
+  // Relations
+  user                  User                   @relation(fields: [userId], references: [id])
+  challengeParticipants ChallengeParticipant[] // 챌린지 참가자
+  draftTranslations     DraftTranslation[] // 작업물 임시저장
+  translations          Translation[] // 작업물
 
-enum ApprovalStatus {
-  PENDING
-  APPROVED
-  REJECTED
+  @@map("challenges")
 }
 
 enum FieldType {
@@ -34,6 +35,12 @@ enum FieldType {
 }
 
 enum DocumentType {
-  Blog
+  BLOG
   OFFICIAL
+}
+
+enum ApprovalStatus {
+  PENDING // 승인 대기중
+  APPROVED // 승인됨
+  REJECTED // 거절됨
 }

@@ -2,4 +2,10 @@ model ChallengeParticipant {
   id          String @id @default(uuid())
   challengeId String
   userId      String
+
+  // Relations
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("challenge_participants")
 }
