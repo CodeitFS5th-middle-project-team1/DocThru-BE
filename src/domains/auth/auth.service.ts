@@ -36,9 +36,30 @@ const checkEmail = async (email: string) => {
   return user;
 };
 
+const checkPassword = async (
+  userInputPassword: string,
+  hashedPassword: string
+) => {
+  const isCorrect = await bcrpyt.compare(userInputPassword, hashedPassword);
+  return isCorrect;
+};
+
+const saveRefreshToken = async (email: string, refreshToken: string) => {
+  await prisma.user.update({
+    where: {
+      email,
+    },
+    data: {
+      refreshToken,
+    },
+  });
+};
+
 const AuthService = {
   createUser,
   checkEmail,
+  checkPassword,
+  saveRefreshToken,
 };
 
 export default AuthService;
