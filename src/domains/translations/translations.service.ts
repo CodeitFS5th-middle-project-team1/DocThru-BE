@@ -3,17 +3,11 @@ import {
   TranslationListResponse,
   CreateTranslationRequest,
   CreateTranslationResponse,
+  UpdateTranslationRequest,
+  UpdateTranslationResponse,
 } from './translations.types';
+import { NotFoundError } from '../../utils/checkUserPermission';
 
-class NotFoundError extends Error {
-  statusCode: number;
-
-  constructor(message: string) {
-    super(message);
-    this.name = 'NotFoundError';
-    this.statusCode = 404;
-  }
-}
 // 챌린지 존재 여부 확인 유틸리티 함수
 const checkChallengeExists = async (challengeId: string) => {
   const challenge = await prisma.challenge.findUnique({
@@ -22,7 +16,7 @@ const checkChallengeExists = async (challengeId: string) => {
   });
 
   if (!challenge) {
-    throw new NotFoundError(`ChallengeId ${challengeId} not found`);
+    throw new NotFoundError(`챌린지 ID ${challengeId}를 찾을 수 없습니다.`);
   }
 
   return challenge;
@@ -122,9 +116,94 @@ const createTranslation = async (
   };
 };
 
+const updateTranslation = async (
+  translationId: string,
+  userId: string,
+  challengeId: string,
+  data: UpdateTranslationRequest
+): Promise<UpdateTranslationResponse> => {
+  // 수정할 데이터가 없는 경우 검증
+  if (!data.title && !data.content) {
+    throw new Error('No data provided for update');
+  }
+
+  // 우선 챌린지 존재 여부 확인
+  await checkChallengeExists(challengeId);
+
+  // 사용자 정보 조회 (역할 확인을 위해)
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      role: true, // 관리자 여부 확인
+    },
+  });
+
+  if (!user) {
+    throw new NotFoundError(`User with ID ${userId} not found`);
+  }
+
+  const isAdmin = user.role === 'ADMIN';
+
+  //번역물 존재 여부 확인
+  const existingTranslation = await prisma.translation.findUnique({
+    where: { id: translationId },
+    select: {
+      id: true,
+      userId: true,
+      challengeId: true,
+      deletedAt: true,
+    },
+  });
+
+  if (!existingTranslation) {
+    throw new NotFoundError(
+      `번역물을 찾을 수 없습니다. 번역물 ID: ${translationId}`
+    );
+  }
+
+  //  삭제된 번역물인지 확인
+  if (existingTranslation.deletedAt) {
+    throw new NotFoundError(`삭제된 번역물입니다. 번역물 ID: ${translationId}`);
+  }
+
+  // 번역물이 요청된 챌린지에 속하는지 확인
+  if (existingTranslation.challengeId !== challengeId) {
+    throw new Error(
+      `챌린지 ID ${challengeId}와 번역물 ID ${translationId}가 일치하지 않습니다.`
+    );
+  }
+
+  //  소유권 검증 - 본인의 번역물이거나 관리자인 경우에만 수정 가능
+  if (existingTranslation.userId !== userId && !isAdmin) {
+    throw new Error('권한 없음');
+  }
+
+  //  번역물 업데이트
+  const updatedTranslation = await prisma.translation.update({
+    where: { id: translationId },
+    data: {
+      ...(data.title && { title: data.title }),
+      ...(data.content && { content: data.content }),
+    },
+  });
+
+  return {
+    id: updatedTranslation.id,
+    title: updatedTranslation.title,
+    content: updatedTranslation.content,
+    userId: updatedTranslation.userId,
+    challengeId: updatedTranslation.challengeId,
+    likeCount: updatedTranslation.likeCount,
+    //createdAt: updatedTranslation.createdAt,
+    updatedAt: updatedTranslation.updatedAt,
+  };
+};
+
 const TranslationsService = {
   getTranslations,
   createTranslation,
+  updateTranslation,
 };
 
 export default TranslationsService;

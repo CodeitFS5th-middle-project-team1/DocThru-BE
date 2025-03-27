@@ -32,3 +32,19 @@ export interface CreateTranslationResponse {
   createdAt: Date;
   //  updatedAt?: Date;
 }
+
+export interface UpdateTranslationRequest {
+  title?: string;
+  content?: string;
+}
+
+export interface UpdateTranslationResponse {
+  id: string;
+  title: string;
+  content: string;
+  userId: string;
+  challengeId: string;
+  likeCount: number;
+  //createdAt: Date;
+  updatedAt: Date;
+}
