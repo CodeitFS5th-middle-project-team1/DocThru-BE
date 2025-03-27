@@ -15,7 +15,7 @@ model Challenge {
   updatedAt           DateTime       @updatedAt
   deletedReason       String? // 삭제 이유 
   rejectedReason      String? // 거절 이유 
-  approvalStatus      ApprovalStatus // 관리자 승인 상태
+  approvalStatus      ApprovalStatus @default(PENDING)// 관리자 승인 상태 
 
   // Relations
   user                  User                   @relation(fields: [userId], references: [id])
