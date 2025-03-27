@@ -11,6 +11,15 @@ const getTranslations = async ({
   page,
   limit,
 }: GetTranslationsParams) => {
+  // 챌린지 존재 여부 확인
+  const challengeExists = await prisma.challenge.findUnique({
+    where: { id: challengeId },
+    select: { id: true },
+  });
+
+  if (!challengeExists) {
+    throw new Error('Challenge not found');
+  }
   const [translations, totalCount] = await Promise.all([
     prisma.translation.findMany({
       where: {
