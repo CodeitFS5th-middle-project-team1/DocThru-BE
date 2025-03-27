@@ -1,10 +1,16 @@
 import prisma from '../../prismaClient';
 
-const getTranslations = async (
-  challengeId: string,
-  page: number = 1,
-  pageSize: number = 5
-) => {
+interface GetTranslationsParams {
+  challengeId: string;
+  page: number;
+  limit: number;
+}
+
+const getTranslations = async ({
+  challengeId,
+  page,
+  limit,
+}: GetTranslationsParams) => {
   const [translations, totalCount] = await Promise.all([
     prisma.translation.findMany({
       where: {
@@ -14,8 +20,8 @@ const getTranslations = async (
       orderBy: {
         likeCount: 'desc',
       },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
+      skip: (page - 1) * limit,
+      take: limit,
     }),
     prisma.translation.count({
       where: {
