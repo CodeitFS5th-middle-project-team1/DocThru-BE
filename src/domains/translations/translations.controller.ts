@@ -1,95 +1,10 @@
-import { Router } from 'express';
-import TranslationsService from './translations.service';
-import { Controller } from '../../types/express';
-import prisma from '../../prismaClient';
-const router = Router();
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Translation:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *         challengeId:
- *           type: string
- *         userId:
- *           type: string
- *         title:
- *           type: string
- *         content:
- *           type: string
- *         likeCount:
- *           type: integer
- *         createdAt:
- *           type: string
- *           format: date-time
- */
-
-/**
- * @swagger
- * /api/challenges/{challengeId}/translations:
- *   get:
- *     summary: 특정 챌린지의 번역 목록 조회
- *     tags:
- *       - Translations
- *     parameters:
- *       - in: path
- *         name: challengeId
- *         required: true
- *         description: 챌린지 ID
- *         schema:
- *           type: string
- *       - in: query
- *         name: page
- *         required: false
- *         description: 페이지 번호 (기본값 1)
- *         schema:
- *           type: integer
- *     description: >
- *       특정 챌린지에 제출된 번역 작업물 목록을 조회합니다.
- *       작업물 목록 조회는 기획상 "챌린지 상세 페이지" 내에 "참여 현황" 영역에서 보여지며,
- *       기본 추천수(likeCount) 순으로 정렬되어 조회됩니다.
- *       또한 페이지네이션이 적용되며, `totalCount`(전체 작업물 개수)을 통해 페이지네이션 구현에 활용할 수 있습니다.
- *     responses:
- *       200:
- *         description: 번역 목록 응답
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Translation'
- *                 totalCount:
- *                   type: integer
- *       400:
- *         description: 잘못된 요청
- *       404:
- *         description: 챌린지를 찾을 수 없음
- */
-
 const getTranslations: Controller = async (req, res, next) => {
   try {
     const { challengeId } = req.params;
     const page = parseInt(req.query.page as string) || 1;
 
     if (!challengeId) {
-      return next({ statusCode: 400 });
-    }
-
-    const challenge = await prisma.challenge.findUnique({
-      where: { id: challengeId },
-    });
-
-    if (!challenge) {
-      return next({ statusCode: 404 });
+      return next({ statusCode: 400, message: 'Challenge ID is required' });
     }
 
     const { translations, totalCount } =
@@ -98,7 +13,7 @@ const getTranslations: Controller = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: translations,
-      totalCount, // ✅ 전체 개수 -> 프론트 페이지네이션에 사용
+      totalCount,
     });
   } catch (err) {
     next(err);

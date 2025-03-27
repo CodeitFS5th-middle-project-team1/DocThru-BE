@@ -1,6 +1,9 @@
-import { subDays, addDays } from 'date-fns';
-
-import { PrismaClient, DocumentType, FieldType } from '@prisma/client';
+import {
+  PrismaClient,
+  DocumentType,
+  FieldType,
+  ApprovalStatus,
+} from '@prisma/client';
 
 export const seedAllChallenges = async (prisma: PrismaClient) => {
   await prisma.challenge.createMany({
@@ -12,7 +15,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
         title: 'Next.js 14 App Router 문서 번역',
         originURL:
           'https://nextjs.org/docs/app/building-your-application/routing',
-        documentType: DocumentType.Blog,
+        documentType: DocumentType.BLOG,
         deadline: new Date('2025-04-05'),
         maxParticipants: 5,
         currentParticipants: 1,
@@ -21,6 +24,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           '번역 규칙: 공식 용어는 유지, 예제 코드는 그대로, 번역은 자연스럽게.',
         createdAt: new Date('2025-03-24'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.APPROVED,
       },
       {
         id: 'b2e23eaa-1bc2-4b19-a9d2-bbbb22222222',
@@ -36,6 +40,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
         content: '용어집에 따라 정리하고, 예시는 생략하지 말아주세요.',
         createdAt: new Date('2025-03-21'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.APPROVED,
       },
       {
         id: 'c3e23eaa-1bc2-4b19-a9d2-cccc33333333',
@@ -52,6 +57,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           '내용의 맥락을 유지하고, 문법/형식은 자유롭게 조정해도 좋아요.',
         createdAt: new Date('2025-03-25'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.REJECTED,
       },
       {
         id: 'd4e23eaa-1bc2-4b19-a9d2-dddd44444444',
@@ -60,7 +66,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
         title: 'JavaScript Event Loop 완전 정복 블로그 번역',
         originURL:
           'https://blog.bitsrc.io/understanding-the-event-loop-cf1c807dcd89',
-        documentType: DocumentType.Blog,
+        documentType: DocumentType.BLOG,
         deadline: new Date('2025-03-31'),
         maxParticipants: 4,
         currentParticipants: 2,
@@ -70,6 +76,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           '실제 예시 코드 위주로 번역하고, 설명은 최대한 자연스럽게 풀어주세요.',
         createdAt: new Date('2025-03-23'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.PENDING,
       },
       {
         id: 'e5e23eaa-1bc2-4b19-a9d2-eeee55555555',
@@ -86,14 +93,16 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
         content: '용어집을 참고하며 일관성 있게 번역해주세요.',
         createdAt: new Date('2025-03-22'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.APPROVED,
       },
+      // 계속해서 추가할 챌린지 데이터
       {
         id: 'f6e23eaa-1bc2-4b19-a9d2-ffff66666666',
         field: FieldType.API,
         userId: 'user-6',
         title: 'RESTful API 디자인 원칙 번역 챌린지',
         originURL: 'https://restfulapi.net/rest-architectural-constraints/',
-        documentType: DocumentType.Blog,
+        documentType: DocumentType.OFFICIAL,
         deadline: new Date('2025-04-04'),
         maxParticipants: 3,
         currentParticipants: 1,
@@ -103,6 +112,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           '중요 개념은 부연 설명을 추가하고, 예시는 가능한 한 직역으로 처리해주세요.',
         createdAt: new Date('2025-03-24'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.APPROVED,
       },
       {
         id: '35911430-a9ae-437f-8c11-c7b156f9960d',
@@ -120,6 +130,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           'CSS-in-JS 트렌드 분석 블로그 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
         createdAt: new Date('2025-03-20'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.APPROVED,
       },
       {
         id: '685e2553-7a7d-4c91-9d8f-ae1929de4b09',
@@ -137,6 +148,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           '웹 성능 최적화 체크리스트 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
         createdAt: new Date('2025-03-23'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.PENDING,
       },
       {
         id: '223b2a33-21d1-4f81-aa07-8b7b0beb7401',
@@ -144,7 +156,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
         userId: 'user-11',
         title: '테크니컬 라이팅 가이드 번역',
         originURL: 'https://example.com/docs/more-2',
-        documentType: DocumentType.Blog,
+        documentType: DocumentType.OFFICIAL,
         deadline: new Date('2025-04-03'),
         maxParticipants: 4,
         currentParticipants: 3,
@@ -154,6 +166,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           '테크니컬 라이팅 가이드 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
         createdAt: new Date('2025-03-24'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.REJECTED,
       },
       {
         id: 'b5eabf6c-f26e-4eb3-8327-3fe63a609693',
@@ -161,7 +174,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
         userId: 'user-12',
         title: 'Node.js 스트림 공식 문서 번역',
         originURL: 'https://example.com/docs/more-3',
-        documentType: DocumentType.Blog,
+        documentType: DocumentType.BLOG,
         deadline: new Date('2025-04-01'),
         maxParticipants: 5,
         currentParticipants: 1,
@@ -171,6 +184,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           'Node.js 스트림 공식 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
         createdAt: new Date('2025-03-22'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.APPROVED,
       },
       {
         id: '5e2bffcc-41f0-4b3a-810e-1c3d4f2fa531',
@@ -188,6 +202,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           'React Native 환경설정 가이드 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
         createdAt: new Date('2025-03-22'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.APPROVED,
       },
       {
         id: 'b58a2e95-47fa-4d26-bb11-c8a1e3c2281b',
@@ -195,7 +210,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
         userId: 'user-15',
         title: 'Git 내부 동작 원리 설명 문서 번역',
         originURL: 'https://example.com/docs/more-5',
-        documentType: DocumentType.Blog,
+        documentType: DocumentType.BLOG,
         deadline: new Date('2025-04-08'),
         maxParticipants: 5,
         currentParticipants: 3,
@@ -205,6 +220,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           'Git 내부 동작 원리 설명 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
         createdAt: new Date('2025-03-20'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.PENDING,
       },
       {
         id: '23a46c25-d7fa-4a06-bf8c-e39626d9e902',
@@ -219,9 +235,10 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
         description:
           '프로그레시브 웹앱(PWA) 가이드 번역에 대한 협업 번역 챌린지입니다.',
         content:
-          '프로그레시브 웹앱(PWA) 가이드 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
+          '프로그레시브 웹앱(PWA) 가이드 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
         createdAt: new Date('2025-03-25'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.REJECTED,
       },
       {
         id: 'd4d51aaf-cbb1-47ae-b59f-6ee379d116e6',
@@ -229,7 +246,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
         userId: 'user-10',
         title: 'Webpack 번들링 최적화 문서 번역',
         originURL: 'https://example.com/docs/more-7',
-        documentType: DocumentType.Blog,
+        documentType: DocumentType.BLOG,
         deadline: new Date('2025-04-04'),
         maxParticipants: 6,
         currentParticipants: 4,
@@ -239,6 +256,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           'Webpack 번들링 최적화 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
         createdAt: new Date('2025-03-20'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.APPROVED,
       },
       {
         id: 'b11f1c72-7756-433b-8f53-93cfd174159d',
@@ -256,6 +274,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           '기술 면접 질문 모음집 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
         createdAt: new Date('2025-03-21'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.PENDING,
       },
       {
         id: '6c6f305f-7a5f-4b3d-aeb3-2a1453c0a632',
@@ -263,7 +282,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
         userId: 'user-12',
         title: '마이크로 프론트엔드 문서 번역',
         originURL: 'https://example.com/docs/more-9',
-        documentType: DocumentType.Blog,
+        documentType: DocumentType.BLOG,
         deadline: new Date('2025-04-06'),
         maxParticipants: 3,
         currentParticipants: 2,
@@ -273,6 +292,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           '마이크로 프론트엔드 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
         createdAt: new Date('2025-03-24'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.APPROVED,
       },
       {
         id: '8e7c8e3d-1824-4b25-a9a1-2752b054469b',
@@ -290,6 +310,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           'AI 모델 학습 최적화 가이드 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
         createdAt: new Date('2025-03-23'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.APPROVED,
       },
       {
         id: 'fb6df634-8d21-4f49-b634-e89dc07a3d3c',
@@ -297,7 +318,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
         userId: 'user-7',
         title: 'ESLint 설정 문서 번역 챌린지',
         originURL: 'https://example.com/docs/more-11',
-        documentType: DocumentType.Blog,
+        documentType: DocumentType.BLOG,
         deadline: new Date('2025-04-09'),
         maxParticipants: 4,
         currentParticipants: 3,
@@ -306,6 +327,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           'ESLint 설정 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
         createdAt: new Date('2025-03-22'),
         updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.REJECTED,
       },
       {
         id: '0896ee06-e338-41e4-b006-d7c3fe726bf0',
@@ -313,7 +335,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
         userId: 'user-13',
         title: '포트폴리오 작성 팁 문서 번역',
         originURL: 'https://example.com/docs/more-12',
-        documentType: DocumentType.Blog,
+        documentType: DocumentType.BLOG,
         deadline: new Date('2025-04-10'),
         maxParticipants: 6,
         currentParticipants: 1,
@@ -323,22 +345,7 @@ export const seedAllChallenges = async (prisma: PrismaClient) => {
           '포트폴리오 작성 팁 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
         createdAt: new Date('2025-03-25'),
         updatedAt: new Date(),
-      },
-      {
-        id: '7a28dc90-3db5-4bb3-8c3b-f2c3f3eb8a11',
-        field: FieldType.WEB,
-        userId: 'user-10',
-        title: '웹 보안 가이드 문서 번역',
-        originURL: 'https://example.com/docs/more-13',
-        documentType: DocumentType.OFFICIAL,
-        deadline: new Date('2025-04-06'),
-        maxParticipants: 5,
-        currentParticipants: 0,
-        description: '웹 보안 가이드 문서 번역에 대한 협업 번역 챌린지입니다.',
-        content:
-          '웹 보안 가이드 문서 번역 내용을 자연스럽게 번역하고 예시도 충실히 반영해주세요.',
-        createdAt: new Date('2025-03-23'),
-        updatedAt: new Date(),
+        approvalStatus: ApprovalStatus.PENDING,
       },
     ],
   });

@@ -1,5 +1,9 @@
 model Like {
-  id            String @id @default(uuid())
+  id            String      @id @default(uuid())
   translationId String
+  translation   Translation @relation(fields: [translationId], references: [id], onDelete: Cascade)
   userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("likes")
 }

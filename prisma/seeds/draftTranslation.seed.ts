@@ -3,9 +3,13 @@ import { subDays } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 
 export const seedDraftTranslations = async (prisma: PrismaClient) => {
-  const challenges = await prisma.challenge.findMany();
+  // APPROVED 상태인 챌린지만 조회
+  const challenges = await prisma.challenge.findMany({
+    where: {
+      approvalStatus: 'APPROVED',
+    },
+  });
   const users = await prisma.user.findMany();
-
   const drafts = [
     {
       title: 'Next.js 라우팅 초안',
@@ -99,7 +103,7 @@ export const seedDraftTranslations = async (prisma: PrismaClient) => {
     },
   ];
 
-  const draftData = drafts.map((draft, index) => {
+  const draftData = drafts.map((draft) => {
     const challenge = challenges[Math.floor(Math.random() * challenges.length)];
     const user = users[Math.floor(Math.random() * users.length)];
 

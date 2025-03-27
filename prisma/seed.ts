@@ -22,9 +22,14 @@ async function main() {
   await seedAllChallenges(prisma);
   await seedChallengeParticipants(prisma);
   await seedDraftTranslations(prisma);
-  await seedTranslations(prisma);
+
+  // Translation과 Like를 하나의 트랜잭션으로 처리
+  await prisma.$transaction(async (tx) => {
+    await seedTranslations(tx);
+    await seedLikes(tx);
+  });
+
   await seedFeedbacks(prisma);
-  await seedLikes(prisma);
 }
 
 main()

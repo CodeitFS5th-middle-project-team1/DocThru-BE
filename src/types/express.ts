@@ -1,4 +1,3 @@
-// types/express.ts
 import { Request, Response, NextFunction } from 'express';
 
 export type Controller = (

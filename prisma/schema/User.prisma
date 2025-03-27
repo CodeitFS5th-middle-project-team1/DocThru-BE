@@ -11,20 +11,24 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   deletedAt          DateTime?
+
+  // Relations
+  challengeParticipants ChallengeParticipant[]
+  draftTranslations     DraftTranslation[]
+  translations          Translation[]
+  likes                 Like[]
+  feedbacks             Feedback[]
+  challenges            Challenge[]
+
+  @@map("users")
 }
 
 enum UserRole {
-  //권한
   ADMIN
-  //관리자
   USER
-  //일반 유저
 }
 
 enum UserRank {
-  //등급
-  NORMAL
-  //일반 
-  EXPERT
-  //전문가
+  NORMAL // 일반
+  EXPERT // 전문가
 }
