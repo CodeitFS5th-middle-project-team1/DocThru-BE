@@ -2,10 +2,18 @@ import ChallengesService from './challenges.service';
 import { isValidEnumValue } from '../../utils/isValidEnumValue';
 import { ApprovalStatus, DocumentType, FieldType } from '@prisma/client';
 import { Controller } from '../../types/express';
+import { GetChallengesParams } from '../../types/challenges';
 
 const getChallenges: Controller = async (req, res, next) => {
   try {
-    const { documentType, fields, approvalStatus, keyword, page= "1", limit= "10" } = req.query;
+    const {
+      documentType,
+      fields,
+      approvalStatus,
+      keyword,
+      page = '1',
+      limit = '10',
+    } = req.query;
     // 쿼리 구조분해 된 것들 각각 검증 필요
     if (
       documentType &&
@@ -36,23 +44,22 @@ const getChallenges: Controller = async (req, res, next) => {
       }
     }
 
-
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
 
-    if (isNaN(pageNumber) || isNaN(limitNumber)){
+    if (isNaN(pageNumber) || isNaN(limitNumber)) {
       next({ statusCode: 400 });
       return;
     }
 
-    const result = await ChallengesService.getChallenges(
-      documentType as DocumentType,
-      fields as FieldType | FieldType[],
-      approvalStatus as ApprovalStatus,
-      keyword as string,
-      pageNumber,
-      limitNumber,
-    );
+    const result = await ChallengesService.getChallenges({
+      documentType: documentType as DocumentType,
+      fields: fields as FieldType | FieldType[],
+      approvalStatus: approvalStatus as ApprovalStatus,
+      keyword: keyword as string,
+      page: pageNumber,
+      limit: limitNumber,
+    });
     res.status(200).send(result);
   } catch (err) {
     next(err);

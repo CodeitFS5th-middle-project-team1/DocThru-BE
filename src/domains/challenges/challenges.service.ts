@@ -1,15 +1,15 @@
-import { ApprovalStatus, DocumentType, FieldType } from '@prisma/client';
+import { FieldType } from '@prisma/client';
 import prisma from '../../prismaClient';
+import { GetChallengesParams } from '../../types/challenges';
 
-const getChallenges = async (
-  documentType: DocumentType | undefined,
-  fields: FieldType | FieldType[],
-  approvalStatus: ApprovalStatus,
-  keyword: string | undefined,
-  page: number,
-  limit: number
-) => {
-
+const getChallenges = async ({
+  documentType,
+  fields,
+  approvalStatus,
+  keyword,
+  page,
+  limit,
+}: GetChallengesParams) => {
   const skip = (page - 1) * limit;
   const fieldCondition =
     Array.isArray(fields) && fields.length > 0
@@ -18,8 +18,6 @@ const getChallenges = async (
       ? { equals: fields as FieldType }
       : undefined;
 
-  
-  
   const [challenges, totalCount] = await Promise.all([
     prisma.challenge.findMany({
       where: {
@@ -48,11 +46,10 @@ const getChallenges = async (
           ],
         }),
       },
-    })
-  ])
-  
+    }),
+  ]);
 
-  return {challenges, totalCount};
+  return { challenges, totalCount };
 };
 
 const ChallengesService = {
