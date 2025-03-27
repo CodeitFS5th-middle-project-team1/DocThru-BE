@@ -1,5 +1,6 @@
 import { Controller } from '../../types/express';
 import TranslationsService from './translations.service';
+import { TranslationListResponse } from './translations.types';
 
 /**
  * @swagger
@@ -87,7 +88,7 @@ const getTranslations: Controller = async (req, res, next) => {
       return next({ statusCode: 400, message: 'Challenge ID is required' });
     }
 
-    const { translations, totalCount } =
+    const { translations, totalCount }: TranslationListResponse =
       await TranslationsService.getTranslations({
         challengeId,
         page,

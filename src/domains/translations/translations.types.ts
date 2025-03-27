@@ -1,0 +1,16 @@
+export interface TranslationResponse {
+  id: string;
+  title: string;
+  content: string;
+  userId: string;
+  challengeId: string;
+  likeCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+
+export interface TranslationListResponse {
+  totalCount: number;
+  translations: TranslationResponse[];
+}
