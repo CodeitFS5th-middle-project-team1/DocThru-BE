@@ -13,4 +13,5 @@ router.patch('/:challengeId/approve'); //챌린지 승인
 router.patch('/:challengeId/reject'); //챌린지 거절
 router.use('/:challengeId/translations', TranslationRouter);
 router.use('/:challengeId/participants', ParticipationRouter);
+console.log
 export default router;

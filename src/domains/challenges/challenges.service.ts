@@ -8,7 +8,6 @@ const getChallenge = async (id : string) => {
       id,
     }
   })
-
   return { challenge };
 }
 
