@@ -2,6 +2,8 @@ import { NextFunction, Request, Response, Router } from 'express';
 import authController from './auth.controller';
 import { ZodSchema } from 'zod';
 import {
+  LoginBodySchema,
+  SignUpBodySchema,
   testBodySchema,
   testParamsSchema,
   testQueriesSchema,
@@ -10,8 +12,18 @@ import { validateRequestData } from '../../middleware/validateRequestData';
 
 const router = Router();
 
-router.post('/signup', authController.signup); //회원가입
-router.post('/login', authController.login); //로그인
+router.post(
+  '/signup',
+  validateRequestData({ body: SignUpBodySchema }),
+  authController.signup
+); // 회원가입
+
+router.post(
+  '/login',
+  validateRequestData({ body: LoginBodySchema }),
+  authController.login
+); // 로그인
+
 router.post('/logout'); //로그아웃
 
 // TODO: 테스트 용 api, 삭제 예정

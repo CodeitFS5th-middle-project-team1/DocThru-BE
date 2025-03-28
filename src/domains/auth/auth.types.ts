@@ -26,3 +26,20 @@ export const SignUpBodySchema = z.object({
   nickName: z.string(),
   password: z.string().min(8, { message: '비밀번호는 8자리 이상' }),
 });
+
+export type SignUpBodyDTO = z.infer<typeof SignUpBodySchema>;
+
+// export interface SighUpResponseDTO {
+//     user: {
+//         email: string,
+//         nickName: string
+//     }
+// }
+
+// 로그인 API
+export const LoginBodySchema = z.object({
+  email: z.string().email({ message: '이메일 형식을 지켜주세요.' }),
+  password: z.string().min(8, { message: '비밀번호는 8자리 이상' }),
+});
+
+export type LoginBodyDTO = z.infer<typeof LoginBodySchema>;

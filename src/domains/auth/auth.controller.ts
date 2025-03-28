@@ -1,13 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import AuthService from './auth.service';
 import jwtUtils from '../../utils/jwt';
+import { LoginBodyDTO, SignUpBodyDTO } from './auth.types';
 
 /**
  * @swagger
  * /api/auth/signup:
  *   post:
  *     summary: 회원가입
- *     description: email, nickname, password를 입력받아 회원가입을 수행합니다.
+ *     description: email, nickName, password를 입력받아 회원가입을 수행합니다.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -60,18 +61,7 @@ import jwtUtils from '../../utils/jwt';
  *                   example: 이미 존재하고 있는 email 입니다.
  */
 const signup = async (req: Request, res: Response, next: NextFunction) => {
-  const { email, nickName, password } = req.body;
-
-  console.log(email, nickName, password);
-
-  // 유효성 검사
-  if (!email || !nickName || !password) {
-    next({
-      statusCode: 400,
-      message: 'email, nickname, password가 모두 있어야 햡니다.',
-    });
-    return;
-  }
+  const { email, nickName, password }: SignUpBodyDTO = req.body;
 
   try {
     const existedUser = await AuthService.checkEmail(email);
@@ -165,12 +155,7 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
  *                   example: 비밀번호가 일치하지 않습니다.
  */
 const login = async (req: Request, res: Response, next: NextFunction) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    next({ statusCode: 400, message: 'email, password가 모두 있어야 합니다.' });
-    return;
-  }
+  const { email, password }: LoginBodyDTO = req.body;
 
   const existedUser = await AuthService.checkEmail(email);
 
