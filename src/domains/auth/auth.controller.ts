@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import AuthService from './auth.service';
 import jwtUtils from '../../utils/jwt';
-import { tr } from 'date-fns/locale';
 
 /**
  * @swagger
