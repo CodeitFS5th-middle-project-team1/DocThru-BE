@@ -1,8 +1,9 @@
 import ChallengesService from './challenges.service';
 import { isValidEnumValue } from '../../utils/isValidEnumValue';
 import { ApprovalStatus, DocumentType, FieldType } from '@prisma/client';
-import { Controller } from '../../types/express';
+import { GetController } from '../../types/express';
 import { isValidUUID } from '../../utils/isUUID';
+import { GetChallengeListQuery, GetChallengeListResponse, GetChallengeParam, GetChallengeResponse } from './challenges.type';
 
 /**
  * @swagger
@@ -112,7 +113,7 @@ import { isValidUUID } from '../../utils/isUUID';
  *       500:
  *         description: 서버 오류
  */
-const getChallenge: Controller = async (req, res, next) => {
+const getChallenge: GetController<GetChallengeParam, never, GetChallengeResponse> = async (req, res, next) => {
   try {
     const id = req.params.challengeId;
     if (!isValidUUID(id)) {
@@ -285,7 +286,7 @@ const getChallenge: Controller = async (req, res, next) => {
  *         description: 서버 오류
  */
 
-const getChallenges: Controller = async (req, res, next) => {
+const getChallengeList: GetController<never,GetChallengeListQuery,GetChallengeListResponse> = async (req, res, next) => {
   try {
     const {
       documentType,
@@ -333,13 +334,13 @@ const getChallenges: Controller = async (req, res, next) => {
       return;
     }
 
-    const result = await ChallengesService.getChallenges({
-      documentType: documentType as DocumentType,
-      fields: fields as FieldType | FieldType[],
-      approvalStatus: approvalStatus as ApprovalStatus,
-      keyword: keyword as string,
-      page: pageNumber,
-      limit: limitNumber,
+    const result = await ChallengesService.getChallengeList({
+      documentType,
+      fields,
+      approvalStatus,
+      keyword,
+      page,
+      limit,
     });
     res.status(200).send(result);
   } catch (err) {
@@ -347,9 +348,14 @@ const getChallenges: Controller = async (req, res, next) => {
   }
 };
 
+// const postChallenge: Controller = async (req, res, next) => {
+  
+// };
+
 const ChallengesController = {
-  getChallenges,
+  getChallengeList,
   getChallenge,
+  // postChallenge,
 };
 
 export default ChallengesController;
