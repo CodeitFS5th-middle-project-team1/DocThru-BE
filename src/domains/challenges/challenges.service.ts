@@ -2,6 +2,15 @@ import { FieldType } from '@prisma/client';
 import prisma from '../../prismaClient';
 import { GetChallengesParams } from '../../types/challenges';
 
+const getChallenge = async (id : string) => {
+  const challenge = await prisma.challenge.findUnique({
+    where: {
+      id,
+    }
+  })
+  return { challenge };
+}
+
 const getChallenges = async ({
   documentType,
   fields,
@@ -54,6 +63,7 @@ const getChallenges = async ({
 
 const ChallengesService = {
   getChallenges,
+  getChallenge,
 };
 
 export default ChallengesService;
