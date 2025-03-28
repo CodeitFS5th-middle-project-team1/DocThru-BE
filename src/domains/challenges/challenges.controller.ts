@@ -1,9 +1,9 @@
 import ChallengesService from './challenges.service';
 import { isValidEnumValue } from '../../utils/isValidEnumValue';
 import { ApprovalStatus, DocumentType, FieldType } from '@prisma/client';
-import { Controller } from '../../types/express';
+import { GetController } from '../../types/express';
 import { isValidUUID } from '../../utils/isUUID';
-import { GetChallengeParam, GetChallengeResponse } from './challenges.type';
+import { GetChallengeListQuery, GetChallengeListResponse, GetChallengeParam, GetChallengeResponse } from './challenges.type';
 
 /**
  * @swagger
@@ -113,7 +113,7 @@ import { GetChallengeParam, GetChallengeResponse } from './challenges.type';
  *       500:
  *         description: 서버 오류
  */
-const getChallenge: Controller<GetChallengeParam, never, never, GetChallengeResponse> = async (req, res, next) => {
+const getChallenge: GetController<GetChallengeParam, never, GetChallengeResponse> = async (req, res, next) => {
   try {
     const id = req.params.challengeId;
     if (!isValidUUID(id)) {
@@ -286,74 +286,74 @@ const getChallenge: Controller<GetChallengeParam, never, never, GetChallengeResp
  *         description: 서버 오류
  */
 
-// const getChallenges: Controller = async (req, res, next) => {
-//   try {
-//     const {
-//       documentType,
-//       fields,
-//       approvalStatus,
-//       keyword,
-//       page = '1',
-//       limit = '10',
-//     } = req.query;
-//     // 쿼리 구조분해 된 것들 각각 검증 필요
-//     if (
-//       documentType &&
-//       !isValidEnumValue(DocumentType, documentType.toString())
-//     ) {
-//       next({ statusCode: 400 });
-//       return;
-//     }
+const getChallengeList: GetController<never,GetChallengeListQuery,GetChallengeListResponse> = async (req, res, next) => {
+  try {
+    const {
+      documentType,
+      fields,
+      approvalStatus,
+      keyword,
+      page = '1',
+      limit = '10',
+    } = req.query;
+    // 쿼리 구조분해 된 것들 각각 검증 필요
+    if (
+      documentType &&
+      !isValidEnumValue(DocumentType, documentType.toString())
+    ) {
+      next({ statusCode: 400 });
+      return;
+    }
 
-//     if (
-//       approvalStatus &&
-//       !isValidEnumValue(ApprovalStatus, approvalStatus.toString())
-//     ) {
-//       next({ statusCode: 400 });
-//       return;
-//     }
+    if (
+      approvalStatus &&
+      !isValidEnumValue(ApprovalStatus, approvalStatus.toString())
+    ) {
+      next({ statusCode: 400 });
+      return;
+    }
 
-//     // fields 검증 (배열 형식이나 단일 값 검증)
-//     if (fields && !Array.isArray(fields)) {
-//       if (!isValidEnumValue(FieldType, fields.toString())) {
-//         return next({ statusCode: 400 });
-//       }
-//     } else if (Array.isArray(fields)) {
-//       for (const field of fields) {
-//         if (!isValidEnumValue(FieldType, field.toString())) {
-//           return next({ statusCode: 400 });
-//         }
-//       }
-//     }
+    // fields 검증 (배열 형식이나 단일 값 검증)
+    if (fields && !Array.isArray(fields)) {
+      if (!isValidEnumValue(FieldType, fields.toString())) {
+        return next({ statusCode: 400 });
+      }
+    } else if (Array.isArray(fields)) {
+      for (const field of fields) {
+        if (!isValidEnumValue(FieldType, field.toString())) {
+          return next({ statusCode: 400 });
+        }
+      }
+    }
 
-//     const pageNumber = Number(page);
-//     const limitNumber = Number(limit);
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
 
-//     if (isNaN(pageNumber) || isNaN(limitNumber)) {
-//       next({ statusCode: 400 });
-//       return;
-//     }
+    if (isNaN(pageNumber) || isNaN(limitNumber)) {
+      next({ statusCode: 400 });
+      return;
+    }
 
-//     const result = await ChallengesService.getChallenges({
-//       documentType: documentType as DocumentType,
-//       fields: fields as FieldType | FieldType[],
-//       approvalStatus: approvalStatus as ApprovalStatus,
-//       keyword: keyword as string,
-//       page: pageNumber,
-//       limit: limitNumber,
-//     });
-//     res.status(200).send(result);
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+    const result = await ChallengesService.getChallengeList({
+      documentType,
+      fields,
+      approvalStatus,
+      keyword,
+      page,
+      limit,
+    });
+    res.status(200).send(result);
+  } catch (err) {
+    next(err);
+  }
+};
 
 // const postChallenge: Controller = async (req, res, next) => {
   
 // };
 
 const ChallengesController = {
-  // getChallenges,
+  getChallengeList,
   getChallenge,
   // postChallenge,
 };

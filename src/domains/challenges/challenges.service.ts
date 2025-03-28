@@ -1,9 +1,8 @@
 import { FieldType } from '@prisma/client';
 import prisma from '../../prismaClient';
-import { GetChallengesParams } from '../../types/challenges';
-import { Challenge } from './challenges.type';
+import { GetChallengeListQuery, GetChallengeResponse } from './challenges.type';
 
-const getChallenge = async (id : string): Promise<{challenge : Challenge}> => {
+const getChallenge = async (id : string): Promise<GetChallengeResponse> => {
   const challenge = await prisma.challenge.findUnique({
     where: {
       id,
@@ -12,15 +11,18 @@ const getChallenge = async (id : string): Promise<{challenge : Challenge}> => {
   return {challenge};
 }
 
-const getChallenges = async ({
+const getChallengeList = async ({
   documentType,
   fields,
   approvalStatus,
   keyword,
   page,
   limit,
-}: GetChallengesParams) => {
-  const skip = (page - 1) * limit;
+}: GetChallengeListQuery) => {
+  const pageNum = Number(page);
+  const limitNum = Number(limit);
+
+  const skip = (pageNum - 1) * limitNum;
   const fieldCondition =
     Array.isArray(fields) && fields.length > 0
       ? { in: fields as FieldType[] }
@@ -42,7 +44,7 @@ const getChallenges = async ({
         }),
       },
       skip,
-      take: limit,
+      take: limitNum,
     }),
     prisma.challenge.count({
       where: {
@@ -62,14 +64,11 @@ const getChallenges = async ({
   return { challenges, totalCount };
 };
 
-const postChallenge = () => {
-
-}
 
 const ChallengesService = {
-  getChallenges,
+  getChallengeList,
   getChallenge,
-  postChallenge,
+  // postChallenge,
 };
 
 export default ChallengesService;

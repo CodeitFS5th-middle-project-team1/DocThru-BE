@@ -7,9 +7,8 @@ model Challenge {
   documentType        DocumentType
   deadline            DateTime // 마감 일자
   maxParticipants     Int // 최대 참가자 수
-  currentParticipants Int // 현재 참가자 수
+  currentParticipants Int @default(0) // 현재 참가자 수
   description         String // 챌린지 설명
-  content             String // 챌린지 내용
   deletedAt           DateTime?
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
