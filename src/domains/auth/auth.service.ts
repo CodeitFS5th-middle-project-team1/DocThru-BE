@@ -1,14 +1,9 @@
 import prisma from '../../prismaClient';
 import bcrpyt from 'bcrypt';
 import CustomError from '../../types/error';
+import { SignUpBodyDTO } from './auth.types';
 
-interface SignupDTO {
-  email: string;
-  nickName: string;
-  password: string;
-}
-
-const createUser = async (data: SignupDTO) => {
+const createUser = async (data: SignUpBodyDTO) => {
   const hashedPassword = await bcrpyt.hash(data.password, 10);
 
   try {
