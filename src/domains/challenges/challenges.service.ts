@@ -1,14 +1,15 @@
 import { FieldType } from '@prisma/client';
 import prisma from '../../prismaClient';
 import { GetChallengesParams } from '../../types/challenges';
+import { Challenge } from './challenges.type';
 
-const getChallenge = async (id : string) => {
+const getChallenge = async (id : string): Promise<{challenge : Challenge}> => {
   const challenge = await prisma.challenge.findUnique({
     where: {
       id,
     }
   })
-  return { challenge };
+  return {challenge};
 }
 
 const getChallenges = async ({
@@ -61,9 +62,14 @@ const getChallenges = async ({
   return { challenges, totalCount };
 };
 
+const postChallenge = () => {
+
+}
+
 const ChallengesService = {
   getChallenges,
   getChallenge,
+  postChallenge,
 };
 
 export default ChallengesService;
