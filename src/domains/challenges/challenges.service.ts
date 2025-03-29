@@ -126,11 +126,21 @@ const updateChallenge = async ({
   return challenge;
 };
 
+const deleteChallenge = async (id: string): Promise<GetChallengeResponse> => {
+  const challenge = await prisma.challenge.delete({
+    where: {
+      id,
+    },
+  });
+  return { challenge };
+};
+
 const ChallengesService = {
   getChallengeList,
   getChallenge,
   postChallenge,
   updateChallenge,
+  deleteChallenge,
 };
 
 export default ChallengesService;

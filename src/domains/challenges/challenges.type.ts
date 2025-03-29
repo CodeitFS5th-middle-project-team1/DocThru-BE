@@ -9,6 +9,10 @@ export interface PostChallengeResponse {
   code: number;
 }
 
+export interface DeleteChallengeResponse {
+  code: number;
+}
+
 export interface UpdateChallengeResponse {
   challenge: Challenge | null;
   code: number;
