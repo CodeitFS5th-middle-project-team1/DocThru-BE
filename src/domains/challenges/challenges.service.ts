@@ -1,6 +1,6 @@
 import { DocumentType, FieldType } from '@prisma/client';
 import prisma from '../../prismaClient';
-import { GetChallengeResponse } from './challenges.type';
+import { GetChallengeResponse, UpdateChallengeRequest } from './challenges.type';
 import {
   ChallengeParamsSchema,
   ChallengeQueriesSchema,
@@ -51,6 +51,7 @@ const getChallengeList = async ({
       },
       skip,
       take: limitNum,
+      orderBy: { createdAt : "desc" },
     }),
     prisma.challenge.count({
       where: {
@@ -96,10 +97,40 @@ const postChallenge = async ({
   return challenge;
 };
 
+const updateChallenge = async ({
+  id,
+  title,
+  description,
+  documentType,
+  field,
+  maxParticipants,
+  deadline,
+  originURL
+} : UpdateChallengeRequest
+) => {
+  const challenge = await prisma.challenge.update({
+    where: {
+      id,
+    },
+    data: {
+      title,
+      description,
+      documentType,
+      field,
+      maxParticipants,
+      deadline,
+      originURL,
+    },
+  });
+
+  return challenge;
+};
+
 const ChallengesService = {
   getChallengeList,
   getChallenge,
   postChallenge,
+  updateChallenge,
 };
 
 export default ChallengesService;

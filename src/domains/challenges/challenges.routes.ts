@@ -12,7 +12,7 @@ router.get(
   ChallengesController.getChallengeList
 ); //챌린지 목록 조회
 router.post('/',validateRequestData({ body: ChallengeBodySchema}), ChallengesController.postChallenge); //챌린지 신청
-router.patch('/:challengeId'); //챌린지 수정
+router.patch('/:challengeId', validateRequestData({ params: ChallengeParamsSchema }), ChallengesController.updateChallenge); //챌린지 수정
 router.delete('/:challengeId'); //챌린지 삭제
 router.get(
   '/:challengeId',
