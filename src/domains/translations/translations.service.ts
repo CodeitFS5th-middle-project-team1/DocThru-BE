@@ -40,7 +40,7 @@ const checkUserExists = async (userId: string) => {
 
   return user;
 };
-const getTranslations = async ({
+const getTranslationList = async ({
   challengeId,
   page,
   limit,
@@ -123,7 +123,7 @@ const createTranslation = async (
 };
 
 const TranslationsService = {
-  getTranslations,
+  getTranslationList,
   createTranslation,
 };
 

@@ -1,8 +1,18 @@
-import { Controller } from '../../types/express';
+import {
+  GetController,
+  PostController,
+  PutController,
+  DeleteController,
+} from '../../types/express';
 import TranslationsService from './translations.service';
 import {
   TranslationListResponse,
   CreateTranslationRequest,
+  ChallengeParams,
+  GetTranslationListQuery,
+  CreateTranslationBody,
+  TranslationResponse,
+  CreateTranslationResponse,
 } from './translations.types';
 
 /**
@@ -81,7 +91,11 @@ import {
  *       500:
  *         description: 서버 오류
  */
-const getTranslations: Controller = async (req, res, next) => {
+const getTranslationList: GetController<
+  ChallengeParams,
+  GetTranslationListQuery,
+  TranslationListResponse
+> = async (req, res, next) => {
   try {
     const { challengeId } = req.params;
     const page = parseInt(req.query.page as string) || 1;
@@ -92,13 +106,13 @@ const getTranslations: Controller = async (req, res, next) => {
     }
 
     const { translations, totalCount }: TranslationListResponse =
-      await TranslationsService.getTranslations({
+      await TranslationsService.getTranslationList({
         challengeId,
         page,
         limit,
       });
 
-    res.status(200).json({
+    res.status(200).send({
       translations,
       totalCount,
       message: '번역물',
@@ -210,14 +224,18 @@ const getTranslations: Controller = async (req, res, next) => {
  *       500:
  *         description: 서버 오류
  */
-const createTranslation: Controller = async (req, res, next) => {
+const createTranslation: PostController<
+  ChallengeParams,
+  CreateTranslationBody,
+  CreateTranslationResponse
+> = async (req, res, next) => {
   try {
     const { challengeId } = req.params;
     const { title, content, userId } = req.body;
 
     // 요청 데이터 검증
     if (!title || !content || !userId) {
-      return next({ statusCode: 400, message: 'Missing required fields' });
+      return next({ statusCode: 400 });
     }
 
     const translation = await TranslationsService.createTranslation({
@@ -227,9 +245,7 @@ const createTranslation: Controller = async (req, res, next) => {
       challengeId,
     });
 
-    res.status(201).json({
-      translation,
-    });
+    res.status(201).send(translation);
   } catch (err) {
     next(err);
   }
@@ -237,7 +253,7 @@ const createTranslation: Controller = async (req, res, next) => {
 
 const TranslationsController = {
   createTranslation,
-  getTranslations,
+  getTranslationList,
 };
 
 export default TranslationsController;
