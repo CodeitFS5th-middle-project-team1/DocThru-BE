@@ -9,7 +9,7 @@ export interface GetTranslationListQuery {
 }
 export interface TranslationListResponse {
   totalCount: number;
-  translations: Translation[] | [];
+  translations: TranslationResponse[];
 }
 
 export interface TranslationParams extends ChallengeParams {
@@ -18,7 +18,16 @@ export interface TranslationParams extends ChallengeParams {
 }
 
 export interface TranslationResponse {
-  translation: Translation | null;
+  id: string;
+  title: string;
+  content: string;
+  userId: string;
+  challengeId: string;
+  likeCount: number;
+  createdAt: Date;
+  updatedAt?: Date;
+  userNickname?: string; // 추가 필드 (선택적)
+  isLiked?: boolean; // 추가 필드 (선택적)
 }
 
 // 번역물 상세 조회 응답 타입
@@ -37,16 +46,16 @@ export interface TranslationByIdResponse {
   deletedAt?: Date | null;
 }
 
-// export interface CreateTranslationResponse {
-//   id: string;
-//   title: string;
-//   content: string;
-//   userId: string;
-//   challengeId: string;
-//   likeCount: number;
-//   createdAt: Date;
-//   updatedAt?: Date;
-// }
+export interface PostTranslationResponse {
+  id: string;
+  title: string;
+  content: string;
+  userId: string;
+  challengeId: string;
+  likeCount: number;
+  createdAt: Date;
+  updatedAt?: Date;
+}
 
 // export interface UpdateTranslationRequest {
 //   title?: string;

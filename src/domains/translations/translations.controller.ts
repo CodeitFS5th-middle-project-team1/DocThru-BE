@@ -1,20 +1,17 @@
+import TranslationsService from './translations.service';
 import {
   GetController,
   PostController,
-  PutController,
   DeleteController,
 } from '../../types/express';
-import TranslationsService from './translations.service';
 import {
   TranslationListResponse,
-  CreateTranslationRequest,
   ChallengeParams,
-  GetTranslationListQuery,
-  CreateTranslationBody,
   TranslationResponse,
-  CreateTranslationResponse,
+  GetTranslationListQuery,
+  PostTranslationResponse,
 } from './translations.types';
-
+import { TranslationRequestBody } from './translations.validation';
 /**
  * @swagger
  *  /api/challenges/{challengeId}/translations:
@@ -87,7 +84,7 @@ import {
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Challenge ID is required
+ *                   example: 잘못된 요청입니다. 요청이 올바른 형식이 아닙니다
  *       500:
  *         description: 서버 오류
  */
@@ -98,11 +95,12 @@ const getTranslationList: GetController<
 > = async (req, res, next) => {
   try {
     const { challengeId } = req.params;
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 5;
+    const page = Number(req.query.page) || 1; // Number 생성자와 nullish 병합 연산자 사용
+    const limit = Number(req.query.limit) || 5;
 
+    //TODO: validation 파일로 처리?
     if (!challengeId) {
-      return next({ statusCode: 400, message: 'Challenge ID is required' });
+      return next({ statusCode: 400 });
     }
 
     const { translations, totalCount }: TranslationListResponse =
@@ -115,7 +113,6 @@ const getTranslationList: GetController<
     res.status(200).send({
       translations,
       totalCount,
-      message: '번역물',
     });
   } catch (err) {
     next(err);
@@ -210,7 +207,7 @@ const getTranslationList: GetController<
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Missing required fields"
+ *                   example: "잘못된 요청입니다. 요청이 올바른 형식이 아닙니다."
  *       404:
  *         description: 챌린지 또는 사용자를 찾을 수 없음
  *         content:
@@ -220,39 +217,38 @@ const getTranslationList: GetController<
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Challenge with ID {challengeId} not found"
+ *                   example: "요청한 리소스를 찾을 수 없습니다."
  *       500:
  *         description: 서버 오류
  */
-const createTranslation: PostController<
+const postTranslation: PostController<
   ChallengeParams,
-  CreateTranslationBody,
-  CreateTranslationResponse
+  TranslationRequestBody,
+  { translation: PostTranslationResponse }
 > = async (req, res, next) => {
   try {
     const { challengeId } = req.params;
     const { title, content, userId } = req.body;
-
-    // 요청 데이터 검증
-    if (!title || !content || !userId) {
-      return next({ statusCode: 400 });
+    //TODO: validation 파일로 처리?
+    if (!userId) {
+      return next({ statusCode: 400, message: 'User ID is required' });
     }
 
-    const translation = await TranslationsService.createTranslation({
+    const result = await TranslationsService.postTranslation({
       title,
       content,
       userId,
       challengeId,
     });
 
-    res.status(201).send(translation);
+    res.status(201).send({ translation: result });
   } catch (err) {
     next(err);
   }
 };
 
 const TranslationsController = {
-  createTranslation,
+  postTranslation,
   getTranslationList,
 };
 
