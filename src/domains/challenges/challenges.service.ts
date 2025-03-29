@@ -89,7 +89,7 @@ const postChallenge = async ({
       maxParticipants,
       deadline,
       originURL,
-      userId:"testUserId",
+      userId:"user-1",
     },
   });
 
