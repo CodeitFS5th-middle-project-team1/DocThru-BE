@@ -462,9 +462,9 @@ const updateTranslation: PatchController<
     res.status(200).send(updatedTranslation);
   } catch (error) {
     if (error instanceof CustomError) {
-      res.status(error.statusCode).send({ message: error.message });
+      res.status(error.statusCode).send({ error: error.message });
     } else {
-      res.status(500).send({ message: 'Internal Server Error' });
+      res.status(500).send({ message });
     }
   }
 };

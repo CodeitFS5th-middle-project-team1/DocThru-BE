@@ -1,6 +1,5 @@
 model Feedback {
   id             String      @id @default(uuid())
-  idx            Int         @default(autoincrement())
   translationId  String
   translation    Translation @relation(fields: [translationId], references: [id], onDelete: Cascade)
   userId         String
