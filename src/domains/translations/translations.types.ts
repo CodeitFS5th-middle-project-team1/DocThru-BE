@@ -1,4 +1,5 @@
 import z from 'zod';
+import { UserRole } from '@prisma/client';
 // export const TranslationParamsSchema = z.object({
 //   challengeId: z.string().uuid({ message: 'id는 uuid 형식이여야 합니다.' }),
 // });
@@ -50,6 +51,31 @@ export const TranslationRequestBody = z.object({
 });
 
 export type TranslationRequestBody = z.infer<typeof TranslationRequestBody>;
+
+// 번역물 수정 요청 바디 스키마
+export const TranslationUpdateBodySchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .refine((val) => val.length >= 1 && val.length <= 20, {
+      message: '제목은 최소 1자 이상 최대 20자 이하로 입력해주세요.',
+    }),
+  content: z
+    .string()
+    .trim()
+    .refine((val) => val.length >= 1 && val.length <= 300, {
+      message: '내용은 최소 1자 이상 최대 300자 이하로 입력해주세요.',
+    }),
+  userId: z.string().min(1, { message: '사용자 ID는 필수 항목입니다.' }),
+  userRole: z
+    .nativeEnum(UserRole, {
+      errorMap: () => ({ message: '유효한 UserRole이 아닙니다.' }),
+    })
+    .optional(),
+});
+
+// 번역물 수정 요청 바디 타입
+export type TranslationUpdateBody = z.infer<typeof TranslationUpdateBodySchema>;
 
 export const TranslationResponseSchema = z.object({
   id: z.string(),

@@ -1,3 +1,4 @@
+import { UserRole } from '@prisma/client';
 import prisma from '../../prismaClient';
 import {
   TranslationListResponse,
@@ -6,6 +7,8 @@ import {
   TranslationRequestParams,
   TranslationRequestListQuery,
 } from './translations.types';
+import { checkPermission } from '../../utils/checkPermission';
+import CustomError from '../../types/error';
 
 // 번역물 목록 조회
 const getTranslationList = async ({
@@ -188,8 +191,127 @@ const getTranslationById = async ({
   };
 };
 
-export default {
+/**
+ * 번역물을 수정합니다. 작성자 본인 또는 관리자만 수정할 수 있습니다.
+ * @param translationId 수정할 번역물 ID
+ * @param challengeId 챌린지 ID
+ * @param userId 요청한 사용자 ID
+ * @param userRole 요청한 사용자의 역할 (권한 확인용)
+ * @param updateData 수정할 데이터 (제목, 내용)
+ * @returns 수정된 번역물 정보
+ */
+const updateTranslation = async ({
+  translationId,
+  challengeId,
+  userId,
+  userRole,
+  updateData,
+}: {
+  translationId: string;
+  challengeId: string;
+  userId: string;
+  userRole?: UserRole;
+  updateData: {
+    title?: string;
+    content?: string;
+  };
+}): Promise<TranslationResponse> => {
+  try {
+    // Challenge의 유효성 검증
+    const challenge = await prisma.challenge.findUnique({
+      where: {
+        id: challengeId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+
+    if (!challenge) {
+      throw {
+        statusCode: 404,
+        message: `챌린지 ID ${challengeId}를 찾을 수 없거나 이미 삭제되었습니다.`,
+        errorContext: 'challengeLookup',
+      };
+    }
+
+    // Translation의 유효성 검증 및 권한 확인
+    const translation = await prisma.translation.findUnique({
+      where: {
+        id: translationId,
+        challengeId,
+        deletedAt: null,
+      },
+      include: {
+        user: {
+          select: {
+            id: true, // userId도 조회하여 권한 확인에 사용
+            nickname: true,
+          },
+        },
+      },
+    });
+
+    if (!translation) {
+      throw {
+        statusCode: 404,
+        message: `번역물 ID ${translationId}를 찾을 수 없습니다.`,
+        errorContext: 'translationLookup',
+      };
+    }
+
+    // 권한 확인 함수사용 - 작성자 본인 또는 관리자만 수정 가능
+    if (!checkPermission(translation.user, userId, userRole)) {
+      throw new CustomError(
+        403,
+        '작성자 본인 또는 관리자만 수정할 수 있습니다.'
+      );
+    }
+
+    // 데이터 업데이트
+    const updatedTranslation = await prisma.translation.update({
+      where: { id: translationId },
+      data: {
+        title: updateData.title ?? translation.title,
+        content: updateData.content ?? translation.content,
+        updatedAt: new Date(),
+      },
+      include: {
+        user: { select: { nickname: true } },
+      },
+    });
+
+    return {
+      id: updatedTranslation.id,
+      title: updatedTranslation.title,
+      content: updatedTranslation.content,
+      userId: updatedTranslation.userId,
+      userNickname: updatedTranslation.user?.nickname,
+      challengeId: updatedTranslation.challengeId,
+      likeCount: updatedTranslation.likeCount,
+      createdAt: updatedTranslation.createdAt,
+      updatedAt: updatedTranslation.updatedAt,
+    };
+  } catch (error) {
+    // console.error('번역물 수정 중 오류 발생:', {
+    //   challengeId,
+    //   translationId,
+    //   error,
+    // });
+
+    if (error.statusCode) {
+      throw error;
+    }
+
+    throw {
+      statusCode: 500,
+      message: '서버 내부 오류가 발생했습니다.',
+    };
+  }
+};
+
+export const TranslationsService = {
   getTranslationList,
   postTranslation,
   getTranslationById,
+  updateTranslation,
 };
