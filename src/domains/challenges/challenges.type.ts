@@ -23,7 +23,14 @@ export interface GetChallengeResponse {
 }
 
 export interface GetChallengeListResponse {
-  challenges: Challenge[] | [];
+  challenges:{
+    title: string;
+    field: FieldType;
+    maxParticipants: number;
+    currentParticipants: number;
+    deadline: Date;
+    documentType: DocumentType;
+  }[]
   totalCount: number;
 }
 

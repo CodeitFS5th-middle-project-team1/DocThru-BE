@@ -17,6 +17,85 @@ const getChallenge = async (id: string): Promise<GetChallengeResponse> => {
   return { challenge };
 };
 
+/**
+ * @swagger
+ * /api/challenges:
+ *   get:
+ *     summary: Retrieve a list of challenges
+ *     description: Fetch a paginated list of challenges based on filters such as document type, fields, approval status, and keyword.
+ *     tags:
+ *       - Challenges
+ *     parameters:
+ *       - in: query
+ *         name: documentType
+ *         schema:
+ *           type: string
+ *           enum: [TYPE_A, TYPE_B, TYPE_C] # Replace with actual DocumentType enum values
+ *         description: Filter challenges by document type
+ *       - in: query
+ *         name: fields
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [FIELD_X, FIELD_Y, FIELD_Z] # Replace with actual FieldType enum values
+ *         description: Filter challenges by fields
+ *       - in: query
+ *         name: approvalStatus
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, APPROVED, REJECTED] # Replace with actual approval status values
+ *         description: Filter challenges by approval status
+ *       - in: query
+ *         name: keyword
+ *         schema:
+ *           type: string
+ *         description: Search challenges by title or description
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of challenges per page
+ *     responses:
+ *       200:
+ *         description: A list of challenges and the total count
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 challenges:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       title:
+ *                         type: string
+ *                       field:
+ *                         type: string
+ *                       maxParticipants:
+ *                         type: integer
+ *                       currentParticipants:
+ *                         type: integer
+ *                       deadline:
+ *                         type: string
+ *                         format: date-time
+ *                       documentType:
+ *                         type: string
+ *                 totalCount:
+ *                   type: integer
+ *       400:
+ *         description: Invalid request parameters
+ *       500:
+ *         description: Internal server error
+ */
 const getChallengeList = async ({
   documentType,
   fields,
@@ -52,6 +131,14 @@ const getChallengeList = async ({
       skip,
       take: limitNum,
       orderBy: { createdAt : "desc" },
+      select: {
+        title: true,
+        field: true,
+        maxParticipants: true,
+        currentParticipants: true,
+        deadline: true,
+        documentType: true,
+      }
     }),
     prisma.challenge.count({
       where: {
