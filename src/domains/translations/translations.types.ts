@@ -1,38 +1,67 @@
-import { Translation } from '@prisma/client';
+import z from 'zod';
+// export const TranslationParamsSchema = z.object({
+//   challengeId: z.string().uuid({ message: 'id는 uuid 형식이여야 합니다.' }),
+// });
 
-export interface ChallengeParams {
-  challengeId: string;
-}
-export interface GetTranslationListQuery {
-  page?: string;
-  limit?: string;
-}
+export const TranslationParamsSchema = z.object({
+  challengeId: z.string().min(1, { message: '챌린지 ID는 필수 항목입니다.' }),
+});
+
+// 쿼리 파라미터 스키마
+export const TranslationListQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().default(5),
+});
+
+export type TranslationRequestParams = z.infer<typeof TranslationParamsSchema>;
+export type TranslationRequestListQuery = z.infer<
+  typeof TranslationListQuerySchema
+>;
+
 export interface TranslationListResponse {
   totalCount: number;
   translations: TranslationResponse[];
 }
 
-export interface TranslationParams extends ChallengeParams {
-  translationId: string;
-  userId?: string; // 좋아요 여부 확인용 선택적 파라미터
-}
+export const TranslationParamsWithIdSchema = TranslationParamsSchema.extend({
+  translationId: z.string().uuid({ message: 'id는 uuid 형식이여야 합니다.' }),
+});
+export const TranslationRequestBody = z.object({
+  title: z
+    .string()
+    .trim()
+    .refine((val) => val.length >= 1 && val.length <= 20, {
+      message: '제목은 최소 1자 이상 최대 20자 이하로 입력해주세요.',
+    }),
 
-export interface TranslationResponse {
-  id: string;
-  title: string;
-  content: string;
-  userId: string;
-  challengeId: string;
-  likeCount: number;
-  createdAt: Date;
-  updatedAt?: Date;
-  userNickname?: string; // 추가 필드 (선택적)
-  isLiked?: boolean; // 추가 필드 (선택적)
-}
+  content: z
+    .string()
+    .trim()
+    .refine((val) => val.length >= 1 && val.length <= 300, {
+      message: '내용은 최소 1자 이상 최대 300자 이하로 입력해주세요.',
+    }),
+
+  userId: z.string().min(1, { message: '사용자 ID를 입력해주세요' }),
+});
+
+export type TranslationRequestBody = z.infer<typeof TranslationRequestBody>;
+
+export const TranslationResponseSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  content: z.string(),
+  userId: z.string(),
+  challengeId: z.string(),
+  likeCount: z.number().int(),
+  createdAt: z.date(),
+  updatedAt: z.date().optional(),
+  userNickname: z.string().optional(),
+  isLiked: z.boolean().optional(),
+});
+export type TranslationResponse = z.infer<typeof TranslationResponseSchema>;
 
 // 번역물 상세 조회 응답 타입
-//isLiked 사용자가 해당 번역물을 좋아요 했는지 여부를 나타내는 boolean
-//TODO: isLiked는 로직 처리 프론트에서 처리하는게 좋을듯
+//TODO: isLiked는 로직 처리
 export interface TranslationByIdResponse {
   id: string;
   title: string;
@@ -44,17 +73,6 @@ export interface TranslationByIdResponse {
   createdAt: Date;
   updatedAt?: Date;
   deletedAt?: Date | null;
-}
-
-export interface PostTranslationResponse {
-  id: string;
-  title: string;
-  content: string;
-  userId: string;
-  challengeId: string;
-  likeCount: number;
-  createdAt: Date;
-  updatedAt?: Date;
 }
 
 // export interface UpdateTranslationRequest {
