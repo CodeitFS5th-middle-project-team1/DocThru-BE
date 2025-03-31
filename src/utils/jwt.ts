@@ -16,8 +16,8 @@ const createToken = (
     id: user.id,
     role: user.role,
   };
-  const expiresIn = tokenType === 'access' ? '10s' : '1m';
-return jwt.sign(payload, secretKey, { expiresIn });
+  const expiresIn = tokenType === 'access' ? '10m' : '1h';
+  return jwt.sign(payload, secretKey, { expiresIn });
 };
 
 const verifyToken = (token: string): CustomJwtPayload | null => {
