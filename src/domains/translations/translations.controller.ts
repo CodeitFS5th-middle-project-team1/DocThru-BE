@@ -245,7 +245,7 @@ const postTranslation: PostController<
  *  /api/challenges/{challengeId}/translations/{translationId}:
  *   get:
  *     summary: 번역물 상세 조회
- *     description: 특정 번역물의 상세 정보를 조회합니다. 로그인한 사용자의 경우 본인의 좋아요 여부도 함께 반환합니다.
+ *     description: 특정 번역물의 상세 정보를 조회합니다.
  *     tags: [Translations]
  *     parameters:
  *       - in: path
@@ -296,7 +296,7 @@ const postTranslation: PostController<
  *                   description: 좋아요 수
  *                 isLiked:
  *                   type: boolean
- *                   description: 현재 사용자의 좋아요 여부 (로그인 시에만)
+ *                   description: 사용자의 좋아요 여부
  *                 createdAt:
  *                   type: string
  *                   format: date-time
