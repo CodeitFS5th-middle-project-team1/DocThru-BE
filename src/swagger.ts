@@ -10,6 +10,20 @@ const options: swaggerJSDoc.Options = {
       version: '1.0.0',
       description: 'Express + TypeScript + Prisma API 문서',
     },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
   },
   apis: ['./src/domains/*/*.ts'], // API 경로
 };
