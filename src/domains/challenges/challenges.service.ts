@@ -1,15 +1,21 @@
-import { FieldType } from '@prisma/client';
+import { DocumentType, FieldType } from '@prisma/client';
 import prisma from '../../prismaClient';
-import { GetChallengeListQuery, GetChallengeResponse } from './challenges.type';
+import { GetChallengeResponse, UpdateChallengeRequest } from './challenges.type';
+import {
+  ChallengeParamsSchema,
+  ChallengeQueriesSchema,
+  ChallengeRequestBody,
+  ChallengeRequestQueries,
+} from './challenges.validation';
 
-const getChallenge = async (id : string): Promise<GetChallengeResponse> => {
+const getChallenge = async (id: string): Promise<GetChallengeResponse> => {
   const challenge = await prisma.challenge.findUnique({
     where: {
       id,
-    }
-  })
-  return {challenge};
-}
+    },
+  });
+  return { challenge };
+};
 
 const getChallengeList = async ({
   documentType,
@@ -18,7 +24,7 @@ const getChallengeList = async ({
   keyword,
   page,
   limit,
-}: GetChallengeListQuery) => {
+}: ChallengeRequestQueries) => {
   const pageNum = Number(page);
   const limitNum = Number(limit);
 
@@ -45,6 +51,7 @@ const getChallengeList = async ({
       },
       skip,
       take: limitNum,
+      orderBy: { createdAt : "desc" },
     }),
     prisma.challenge.count({
       where: {
@@ -64,11 +71,76 @@ const getChallengeList = async ({
   return { challenges, totalCount };
 };
 
+const postChallenge = async ({
+  title,
+  description,
+  documentType,
+  field,
+  maxParticipants,
+  deadline,
+  originURL
+}: ChallengeRequestBody
+) => {
+  const challenge = await prisma.challenge.create({
+    data: {
+      title,
+      description,
+      documentType,
+      field,
+      maxParticipants,
+      deadline,
+      originURL,
+      userId:"user-1",
+    },
+  });
+
+  return challenge;
+};
+
+const updateChallenge = async ({
+  id,
+  title,
+  description,
+  documentType,
+  field,
+  maxParticipants,
+  deadline,
+  originURL
+} : UpdateChallengeRequest
+) => {
+  const challenge = await prisma.challenge.update({
+    where: {
+      id,
+    },
+    data: {
+      title,
+      description,
+      documentType,
+      field,
+      maxParticipants,
+      deadline,
+      originURL,
+    },
+  });
+
+  return challenge;
+};
+
+const deleteChallenge = async (id: string): Promise<GetChallengeResponse> => {
+  const challenge = await prisma.challenge.delete({
+    where: {
+      id,
+    },
+  });
+  return { challenge };
+};
 
 const ChallengesService = {
   getChallengeList,
   getChallenge,
-  // postChallenge,
+  postChallenge,
+  updateChallenge,
+  deleteChallenge,
 };
 
 export default ChallengesService;
