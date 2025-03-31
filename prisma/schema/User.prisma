@@ -8,6 +8,7 @@ model User {
   rank               UserRank  @default(NORMAL)
   participationCount Int       @default(0)
   recommendedCount   Int       @default(0)
+  refreshToken       String?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   deletedAt          DateTime?

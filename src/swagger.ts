@@ -8,7 +8,7 @@ const options: swaggerJSDoc.Options = {
     info: {
       title: 'API 문서',
       version: '1.0.0',
-      description: 'Express + TypeScript + Prisma API 문서',
+      description: '1팀 DocThru API 문서',
     },
   },
   apis: ['./src/domains/*/*.ts'], // API 경로

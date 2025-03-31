@@ -1,9 +1,24 @@
 import ChallengesService from './challenges.service';
 import { isValidEnumValue } from '../../utils/isValidEnumValue';
 import { ApprovalStatus, DocumentType, FieldType } from '@prisma/client';
-import { Controller } from '../../types/express';
-import { isValidUUID } from '../../utils/isUUID';
-import { GetChallengeParam, GetChallengeResponse } from './challenges.type';
+import {
+  DeleteController,
+  GetController,
+  PatchController,
+  PostController,
+} from '../../types/express';
+import {
+  GetChallengeListResponse,
+  GetChallengeResponse,
+  UpdateChallengeResponse,
+  PostChallengeResponse,
+  DeleteChallengeResponse,
+} from './challenges.type';
+import {
+  ChallengeRequestBody,
+  ChallengeRequestParams,
+  ChallengeRequestQueries,
+} from './challenges.validation';
 
 /**
  * @swagger
@@ -113,13 +128,13 @@ import { GetChallengeParam, GetChallengeResponse } from './challenges.type';
  *       500:
  *         description: 서버 오류
  */
-const getChallenge: Controller<GetChallengeParam, never, never, GetChallengeResponse> = async (req, res, next) => {
+const getChallenge: GetController<
+  ChallengeRequestParams,
+  never,
+  GetChallengeResponse
+> = async (req, res, next) => {
   try {
     const id = req.params.challengeId;
-    if (!isValidUUID(id)) {
-      next({ statusCode: 400 });
-      return;
-    }
     const result = await ChallengesService.getChallenge(id);
     if (!result) {
       next({ statusCode: 404 });
@@ -286,76 +301,396 @@ const getChallenge: Controller<GetChallengeParam, never, never, GetChallengeResp
  *         description: 서버 오류
  */
 
-// const getChallenges: Controller = async (req, res, next) => {
-//   try {
-//     const {
-//       documentType,
-//       fields,
-//       approvalStatus,
-//       keyword,
-//       page = '1',
-//       limit = '10',
-//     } = req.query;
-//     // 쿼리 구조분해 된 것들 각각 검증 필요
-//     if (
-//       documentType &&
-//       !isValidEnumValue(DocumentType, documentType.toString())
-//     ) {
-//       next({ statusCode: 400 });
-//       return;
-//     }
+const getChallengeList: GetController<
+  never,
+  ChallengeRequestQueries,
+  GetChallengeListResponse
+> = async (req, res, next) => {
+  try {
+    const {
+      documentType,
+      fields,
+      approvalStatus,
+      keyword,
+      page = '1',
+      limit = '10',
+    } = req.query;
 
-//     if (
-//       approvalStatus &&
-//       !isValidEnumValue(ApprovalStatus, approvalStatus.toString())
-//     ) {
-//       next({ statusCode: 400 });
-//       return;
-//     }
+    const result = await ChallengesService.getChallengeList({
+      documentType,
+      fields,
+      approvalStatus,
+      keyword,
+      page,
+      limit,
+    });
+    res.status(200).send(result);
+  } catch (err) {
+    next(err);
+  }
+};
 
-//     // fields 검증 (배열 형식이나 단일 값 검증)
-//     if (fields && !Array.isArray(fields)) {
-//       if (!isValidEnumValue(FieldType, fields.toString())) {
-//         return next({ statusCode: 400 });
-//       }
-//     } else if (Array.isArray(fields)) {
-//       for (const field of fields) {
-//         if (!isValidEnumValue(FieldType, field.toString())) {
-//           return next({ statusCode: 400 });
-//         }
-//       }
-//     }
+/**
+ * @swagger
+ * /api/challenges:
+ *   post:
+ *     tags:
+ *       - Challenges
+ *     summary: 챌린지 생성
+ *     description: 새로운 챌린지를 생성합니다.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: 챌린지 제목
+ *                 example: "프론트엔드 번역 챌린지"
+ *               description:
+ *                 type: string
+ *                 description: 챌린지 설명
+ *                 example: "프론트엔드 관련 문서를 번역하는 챌린지입니다."
+ *               documentType:
+ *                 type: string
+ *                 description: 문서 타입
+ *                 enum: [BLOG, OFFICIAL]
+ *                 example: "BLOG"
+ *               field:
+ *                 type: string
+ *                 description: 챌린지 분야
+ *                 enum: [NEXTJS, MODERNJS, API, WEB, CAREER]
+ *                 example: "NEXTJS"
+ *               maxParticipants:
+ *                 type: integer
+ *                 description: 최대 참가자 수
+ *                 example: 10
+ *               deadline:
+ *                 type: string
+ *                 format: date-time
+ *                 description: 챌린지 마감일
+ *                 example: "2025-04-01T00:00:00.000Z"
+ *               originURL:
+ *                 type: string
+ *                 format: url
+ *                 description: 원본 문서 URL
+ *                 example: "https://example.com/original-doc"
+ *     responses:
+ *       201:
+ *         description: 챌린지가 성공적으로 생성되었습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: 생성된 챌린지 ID
+ *                   example: "123e4567-e89b-12d3-a456-426614174000"
+ *                 title:
+ *                   type: string
+ *                   description: 챌린지 제목
+ *                   example: "프론트엔드 번역 챌린지"
+ *                 description:
+ *                   type: string
+ *                   description: 챌린지 설명
+ *                   example: "프론트엔드 관련 문서를 번역하는 챌린지입니다."
+ *                 documentType:
+ *                   type: string
+ *                   description: 문서 타입
+ *                   example: "BLOG"
+ *                 field:
+ *                   type: string
+ *                   description: 챌린지 분야
+ *                   example: "NEXTJS"
+ *                 maxParticipants:
+ *                   type: integer
+ *                   description: 최대 참가자 수
+ *                   example: 10
+ *                 deadline:
+ *                   type: string
+ *                   format: date-time
+ *                   description: 챌린지 마감일
+ *                   example: "2025-04-01T00:00:00.000Z"
+ *                 originURL:
+ *                   type: string
+ *                   format: url
+ *                   description: 원본 문서 URL
+ *                   example: "https://example.com/original-doc"
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: 생성된 날짜
+ *                   example: "2025-03-29T12:00:00.000Z"
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: 마지막 업데이트 날짜
+ *                   example: "2025-03-29T12:00:00.000Z"
+ *       400:
+ *         description: 잘못된 요청 데이터
+ *       500:
+ *         description: 서버 오류
+ */
+const postChallenge: PostController<
+  never,
+  ChallengeRequestBody,
+  PostChallengeResponse
+> = async (req, res, next) => {
+  try {
+    const {
+      title,
+      description,
+      documentType,
+      field,
+      maxParticipants,
+      deadline,
+      originURL,
+    } = req.body;
+    const result = await ChallengesService.postChallenge({
+      title,
+      description,
+      documentType,
+      field,
+      maxParticipants,
+      deadline,
+      originURL,
+    });
+    res.status(200).send({ challenge: result, code: 200 });
+  } catch (err) {
+    next(err);
+  }
+};
 
-//     const pageNumber = Number(page);
-//     const limitNumber = Number(limit);
+/**
+ * @swagger
+ * /api/challenges/{challengeId}:
+ *   patch:
+ *     tags:
+ *       - Challenges
+ *     summary: 챌린지 수정
+ *     description: 챌린지 ID를 이용해 기존 챌린지 정보를 수정합니다.
+ *     parameters:
+ *       - in: path
+ *         name: challengeId
+ *         required: true
+ *         description: 수정할 챌린지의 ID
+ *         schema:
+ *           type: string
+ *           example: "123e4567-e89b-12d3-a456-426614174000"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: 챌린지 제목
+ *                 example: "수정된 프론트엔드 번역 챌린지"
+ *               description:
+ *                 type: string
+ *                 description: 챌린지 설명
+ *                 example: "수정된 프론트엔드 관련 문서를 번역하는 챌린지입니다."
+ *               documentType:
+ *                 type: string
+ *                 description: 문서 타입
+ *                 enum: [BLOG, OFFICIAL]
+ *                 example: "BLOG"
+ *               field:
+ *                 type: string
+ *                 description: 챌린지 분야
+ *                 enum: [NEXTJS, MODERNJS, API, WEB, CAREER]
+ *                 example: "NEXTJS"
+ *               maxParticipants:
+ *                 type: integer
+ *                 description: 최대 참가자 수
+ *                 example: 15
+ *               deadline:
+ *                 type: string
+ *                 format: date-time
+ *                 description: 챌린지 마감일
+ *                 example: "2025-05-01T00:00:00.000Z"
+ *               originURL:
+ *                 type: string
+ *                 format: url
+ *                 description: 원본 문서 URL
+ *                 example: "https://example.com/updated-doc"
+ *     responses:
+ *       200:
+ *         description: 챌린지가 성공적으로 수정되었습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 challenge:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: 챌린지 ID
+ *                       example: "123e4567-e89b-12d3-a456-426614174000"
+ *                     title:
+ *                       type: string
+ *                       description: 챌린지 제목
+ *                       example: "수정된 프론트엔드 번역 챌린지"
+ *                     description:
+ *                       type: string
+ *                       description: 챌린지 설명
+ *                       example: "수정된 프론트엔드 관련 문서를 번역하는 챌린지입니다."
+ *                     documentType:
+ *                       type: string
+ *                       description: 문서 타입
+ *                       example: "BLOG"
+ *                     field:
+ *                       type: string
+ *                       description: 챌린지 분야
+ *                       example: "NEXTJS"
+ *                     maxParticipants:
+ *                       type: integer
+ *                       description: 최대 참가자 수
+ *                       example: 15
+ *                     deadline:
+ *                       type: string
+ *                       format: date-time
+ *                       description: 챌린지 마감일
+ *                       example: "2025-05-01T00:00:00.000Z"
+ *                     originURL:
+ *                       type: string
+ *                       format: url
+ *                       description: 원본 문서 URL
+ *                       example: "https://example.com/updated-doc"
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: 마지막 업데이트 날짜
+ *                       example: "2025-03-30T12:00:00.000Z"
+ *       400:
+ *         description: 잘못된 요청 데이터
+ *       404:
+ *         description: 챌린지를 찾을 수 없음
+ *       500:
+ *         description: 서버 오류
+ */
+const updateChallenge: PatchController<
+  ChallengeRequestParams,
+  ChallengeRequestBody,
+  UpdateChallengeResponse
+> = async (req, res, next) => {
+  try {
+    const id = req.params.challengeId;
+    const {
+      title,
+      description,
+      documentType,
+      field,
+      maxParticipants,
+      deadline,
+      originURL,
+    } = req.body;
+    const result = await ChallengesService.updateChallenge({
+      id,
+      title,
+      description,
+      documentType,
+      field,
+      maxParticipants,
+      deadline,
+      originURL,
+    });
+    res.status(200).send({ challenge: result, code: 200 });
+  } catch (err) {
+    next(err);
+  }
+};
 
-//     if (isNaN(pageNumber) || isNaN(limitNumber)) {
-//       next({ statusCode: 400 });
-//       return;
-//     }
-
-//     const result = await ChallengesService.getChallenges({
-//       documentType: documentType as DocumentType,
-//       fields: fields as FieldType | FieldType[],
-//       approvalStatus: approvalStatus as ApprovalStatus,
-//       keyword: keyword as string,
-//       page: pageNumber,
-//       limit: limitNumber,
-//     });
-//     res.status(200).send(result);
-//   } catch (err) {
-//     next(err);
-//   }
-// };
-
-// const postChallenge: Controller = async (req, res, next) => {
-  
-// };
+/**
+ * @swagger
+ * /api/challenges/{challengeId}:
+ *   delete:
+ *     tags:
+ *       - Challenges
+ *     summary: 챌린지 삭제
+ *     description: 챌린지 ID를 이용해 기존 챌린지를 삭제합니다.
+ *     parameters:
+ *       - in: path
+ *         name: challengeId
+ *         required: true
+ *         description: 삭제할 챌린지의 ID
+ *         schema:
+ *           type: string
+ *           example: "123e4567-e89b-12d3-a456-426614174000"
+ *     responses:
+ *       200:
+ *         description: 챌린지가 성공적으로 삭제되었습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   description: 응답 코드
+ *                   example: 200
+ *       404:
+ *         description: 삭제할 챌린지를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   description: 응답 코드
+ *                   example: 404
+ *                 message:
+ *                   type: string
+ *                   description: 에러 메시지
+ *                   example: "챌린지를 찾을 수 없습니다."
+ *       500:
+ *         description: 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   description: 응답 코드
+ *                   example: 500
+ *                 message:
+ *                   type: string
+ *                   description: 에러 메시지
+ *                   example: "서버 오류가 발생했습니다."
+ */
+const deleteChallenge: DeleteController<
+  ChallengeRequestParams,
+  never,
+  DeleteChallengeResponse
+> = async (req, res, next) => {
+  try {
+    const id = req.params.challengeId;
+    const result = await ChallengesService.deleteChallenge(id);
+    if (!result) {
+      next({ statusCode: 404 });
+      return;
+    }
+    res.status(200).send({ code: 200 });
+  } catch (err) {
+    next(err);
+  }
+};
 
 const ChallengesController = {
-  // getChallenges,
+  getChallengeList,
   getChallenge,
-  // postChallenge,
+  postChallenge,
+  updateChallenge,
+  deleteChallenge,
 };
 
 export default ChallengesController;

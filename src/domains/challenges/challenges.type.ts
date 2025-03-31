@@ -1,29 +1,39 @@
-import { ApprovalStatus, FieldType } from '@prisma/client';
+import { Challenge, DocumentType, FieldType } from '@prisma/client';
 
 export interface GetChallengeParam {
   challengeId: string;
+}
+
+export interface PostChallengeResponse {
+  challenge: Challenge | null;
+  code: number;
+}
+
+export interface DeleteChallengeResponse {
+  code: number;
+}
+
+export interface UpdateChallengeResponse {
+  challenge: Challenge | null;
+  code: number;
 }
 
 export interface GetChallengeResponse {
   challenge: Challenge | null;
 }
 
-export type Challenge = {
+export interface GetChallengeListResponse {
+  challenges: Challenge[] | [];
+  totalCount: number;
+}
+
+export interface UpdateChallengeRequest {
   id: string;
-  field: FieldType;
-  userId: string;
   title: string;
-  originURL: string;
-  documentType: string;
-  deadline: Date; // Date 타입으로 수정
-  maxParticipants: number;
-  currentParticipants: number;
   description: string;
-  content: string;
-  deletedAt: Date | null; // Date 타입으로 수정
-  createdAt: Date; // Date 타입으로 수정
-  updatedAt: Date; // Date 타입으로 수정
-  deletedReason: string | null;
-  rejectedReason: string | null;
-  approvalStatus: ApprovalStatus;
-} | null;
+  documentType: DocumentType;
+  field: FieldType;
+  maxParticipants: number;
+  deadline: string;
+  originURL: string;
+}
