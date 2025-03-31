@@ -464,7 +464,135 @@ const updateTranslation: PatchController<
     if (error instanceof CustomError) {
       res.status(error.statusCode).send({ error: error.message });
     } else {
-      res.status(500).send({ message });
+      res.status(500).send({
+        message:
+          error instanceof Error ? error.message : 'An unknown error occurred',
+      });
+    }
+  }
+};
+/**
+ * @swagger
+ *  /api/challenges/{challengeId}/translations/{translationId}:
+ *   delete:
+ *     summary: 번역물 삭제
+ *     description: 번역물을 삭제합니다. 작성자 본인 또는 관리자만 삭제할 수 있습니다.
+ *     tags: [Translations]
+ *     parameters:
+ *       - in: path
+ *         name: challengeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 챌린지 ID
+ *       - in: path
+ *         name: translationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 삭제할 번역물 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: 요청한 사용자 ID
+ *                 example: "user-123"
+ *               userRole:
+ *                 type: string
+ *                 enum: [USER, ADMIN]
+ *                 description: 사용자 역할 (권한 확인)
+ *                 example: "USER"
+ *     responses:
+ *       200:
+ *         description: 번역물 삭제 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "번역물이 성공적으로 삭제되었습니다."
+ *       403:
+ *         description: 권한 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 403
+ *                 message:
+ *                   type: string
+ *                   example: "번역물 삭제 권한이 없습니다."
+ *       404:
+ *         description: 번역물 또는 챌린지를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 404
+ *                 message:
+ *                   type: string
+ *                   example: "번역물을 찾을 수 없습니다."
+ *       500:
+ *         description: 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 500
+ *                 message:
+ *                   type: string
+ *                   example: "서버 내부 오류가 발생했습니다."
+ */
+const deleteTranslation: DeleteController<
+  TranslationParamsWithId,
+  { userId: string; userRole?: UserRole },
+  { success: boolean; message: string }
+> = async (req, res, next) => {
+  try {
+    const { challengeId, translationId } = req.params;
+    const { userId, userRole } = req.body;
+
+    await TranslationsService.deleteTranslation({
+      translationId,
+      challengeId,
+      userId,
+      userRole,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: '번역물 삭제 성공',
+    });
+  } catch (error) {
+    // 수정된 코드
+    if (error instanceof CustomError) {
+      res.status(error.statusCode).send({ error: error.message });
+    } else {
+      res.status(500).send({
+        success: false,
+        message:
+          error instanceof Error ? error.message : 'An unknown error occurred',
+      });
     }
   }
 };
@@ -474,6 +602,7 @@ const TranslationsController = {
   getTranslationList,
   getTranslationById,
   updateTranslation,
+  deleteTranslation,
 };
 
 export default TranslationsController;
