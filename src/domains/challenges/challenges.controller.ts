@@ -1,8 +1,8 @@
 import ChallengesService from './challenges.service';
 import { isValidEnumValue } from '../../utils/isValidEnumValue';
 import { ApprovalStatus, DocumentType, FieldType } from '@prisma/client';
-import { GetController, PatchController, PostController } from '../../types/express';
-import { GetChallengeListResponse, GetChallengeResponse, UpdateChallengeResponse, PostChallengeResponse } from './challenges.type';
+import { DeleteController, GetController, PatchController, PostController } from '../../types/express';
+import { GetChallengeListResponse, GetChallengeResponse, UpdateChallengeResponse, PostChallengeResponse, DeleteChallengeResponse } from './challenges.type';
 import { ChallengeRequestBody, ChallengeRequestParams, ChallengeRequestQueries } from './challenges.validation';
 
 /**
@@ -578,11 +578,85 @@ const updateChallenge: PatchController<ChallengeRequestParams,ChallengeRequestBo
   }
 }
 
+/**
+ * @swagger
+ * /api/challenges/{challengeId}:
+ *   delete:
+ *     tags:
+ *       - Challenges
+ *     summary: 챌린지 삭제
+ *     description: 챌린지 ID를 이용해 기존 챌린지를 삭제합니다.
+ *     parameters:
+ *       - in: path
+ *         name: challengeId
+ *         required: true
+ *         description: 삭제할 챌린지의 ID
+ *         schema:
+ *           type: string
+ *           example: "123e4567-e89b-12d3-a456-426614174000"
+ *     responses:
+ *       200:
+ *         description: 챌린지가 성공적으로 삭제되었습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   description: 응답 코드
+ *                   example: 200
+ *       404:
+ *         description: 삭제할 챌린지를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   description: 응답 코드
+ *                   example: 404
+ *                 message:
+ *                   type: string
+ *                   description: 에러 메시지
+ *                   example: "챌린지를 찾을 수 없습니다."
+ *       500:
+ *         description: 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   description: 응답 코드
+ *                   example: 500
+ *                 message:
+ *                   type: string
+ *                   description: 에러 메시지
+ *                   example: "서버 오류가 발생했습니다."
+ */
+const deleteChallenge: DeleteController<ChallengeRequestParams, never, DeleteChallengeResponse> = async (req, res, next) => {
+  try {
+    const id = req.params.challengeId;
+    const result = await ChallengesService.deleteChallenge(id);
+    if (!result) {
+      next({ statusCode: 404 });
+      return;
+    }
+    res.status(200).send({code: 200});
+  } catch (err) {
+    next(err);
+  }
+};
+
 const ChallengesController = {
   getChallengeList,
   getChallenge,
   postChallenge,
   updateChallenge,
+  deleteChallenge
 };
 
 export default ChallengesController;
