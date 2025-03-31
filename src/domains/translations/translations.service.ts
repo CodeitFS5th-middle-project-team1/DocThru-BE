@@ -200,6 +200,7 @@ const getTranslationById = async ({
  * @param updateData 수정할 데이터 (제목, 내용)
  * @returns 수정된 번역물 정보
  */
+
 const updateTranslation = async ({
   translationId,
   challengeId,
@@ -281,7 +282,7 @@ const updateTranslation = async ({
       id: updatedTranslation.id,
       title: updatedTranslation.title,
       content: updatedTranslation.content,
-      userId: updatedTranslation.userId,
+      userId: userId,
       userNickname: updatedTranslation.user?.nickname,
       challengeId: updatedTranslation.challengeId,
       likeCount: updatedTranslation.likeCount,
