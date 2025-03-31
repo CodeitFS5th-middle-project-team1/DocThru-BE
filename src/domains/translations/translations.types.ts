@@ -23,9 +23,14 @@ export interface TranslationListResponse {
   translations: TranslationResponse[];
 }
 
+// 번역물 ID 포함 파라미터 타입
 export const TranslationParamsWithIdSchema = TranslationParamsSchema.extend({
-  translationId: z.string().uuid({ message: 'id는 uuid 형식이여야 합니다.' }),
+  translationId: z.string().min(1, { message: '번역물 ID는 필수 항목입니다.' }),
 });
+
+export type TranslationParamsWithId = z.infer<
+  typeof TranslationParamsWithIdSchema
+>;
 export const TranslationRequestBody = z.object({
   title: z
     .string()

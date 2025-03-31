@@ -101,16 +101,15 @@ const getTranslationList: GetController<
     const { challengeId } = req.params;
     const { page, limit } = req.query;
 
-    const { translations, totalCount } =
-      await TranslationsService.getTranslationList({
-        challengeId,
-        page,
-        limit,
-      });
+    const result = await TranslationsService.getTranslationList({
+      challengeId,
+      page,
+      limit,
+    });
 
     res.status(200).send({
-      translations,
-      totalCount,
+      translations: result.translations,
+      totalCount: result.totalCount,
     });
   } catch (err) {
     next(err);
@@ -343,6 +342,7 @@ const getTranslationById: GetController<
 const TranslationsController = {
   postTranslation,
   getTranslationList,
+  getTranslationById,
 };
 
 export default TranslationsController;

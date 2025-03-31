@@ -1,9 +1,24 @@
 import ChallengesService from './challenges.service';
 import { isValidEnumValue } from '../../utils/isValidEnumValue';
 import { ApprovalStatus, DocumentType, FieldType } from '@prisma/client';
-import { DeleteController, GetController, PatchController, PostController } from '../../types/express';
-import { GetChallengeListResponse, GetChallengeResponse, UpdateChallengeResponse, PostChallengeResponse, DeleteChallengeResponse } from './challenges.type';
-import { ChallengeRequestBody, ChallengeRequestParams, ChallengeRequestQueries } from './challenges.validation';
+import {
+  DeleteController,
+  GetController,
+  PatchController,
+  PostController,
+} from '../../types/express';
+import {
+  GetChallengeListResponse,
+  GetChallengeResponse,
+  UpdateChallengeResponse,
+  PostChallengeResponse,
+  DeleteChallengeResponse,
+} from './challenges.type';
+import {
+  ChallengeRequestBody,
+  ChallengeRequestParams,
+  ChallengeRequestQueries,
+} from './challenges.validation';
 
 /**
  * @swagger
@@ -113,7 +128,11 @@ import { ChallengeRequestBody, ChallengeRequestParams, ChallengeRequestQueries }
  *       500:
  *         description: 서버 오류
  */
-const getChallenge: GetController<ChallengeRequestParams, never, GetChallengeResponse> = async (req, res, next) => {
+const getChallenge: GetController<
+  ChallengeRequestParams,
+  never,
+  GetChallengeResponse
+> = async (req, res, next) => {
   try {
     const id = req.params.challengeId;
     const result = await ChallengesService.getChallenge(id);
@@ -282,7 +301,11 @@ const getChallenge: GetController<ChallengeRequestParams, never, GetChallengeRes
  *         description: 서버 오류
  */
 
-const getChallengeList: GetController<never,ChallengeRequestQueries,GetChallengeListResponse> = async (req, res, next) => {
+const getChallengeList: GetController<
+  never,
+  ChallengeRequestQueries,
+  GetChallengeListResponse
+> = async (req, res, next) => {
   try {
     const {
       documentType,
@@ -306,7 +329,6 @@ const getChallengeList: GetController<never,ChallengeRequestQueries,GetChallenge
     next(err);
   }
 };
-
 
 /**
  * @swagger
@@ -412,7 +434,11 @@ const getChallengeList: GetController<never,ChallengeRequestQueries,GetChallenge
  *       500:
  *         description: 서버 오류
  */
-const postChallenge: PostController<never,ChallengeRequestBody,PostChallengeResponse> = async (req, res, next) => {
+const postChallenge: PostController<
+  never,
+  ChallengeRequestBody,
+  PostChallengeResponse
+> = async (req, res, next) => {
   try {
     const {
       title,
@@ -431,10 +457,10 @@ const postChallenge: PostController<never,ChallengeRequestBody,PostChallengeResp
       maxParticipants,
       deadline,
       originURL,
-    })
-    res.status(200).send({challenge: result, code: 200});
+    });
+    res.status(200).send({ challenge: result, code: 200 });
   } catch (err) {
-    next(err)
+    next(err);
   }
 };
 
@@ -550,7 +576,11 @@ const postChallenge: PostController<never,ChallengeRequestBody,PostChallengeResp
  *       500:
  *         description: 서버 오류
  */
-const updateChallenge: PatchController<ChallengeRequestParams,ChallengeRequestBody,UpdateChallengeResponse> = async (req, res, next) => {
+const updateChallenge: PatchController<
+  ChallengeRequestParams,
+  ChallengeRequestBody,
+  UpdateChallengeResponse
+> = async (req, res, next) => {
   try {
     const id = req.params.challengeId;
     const {
@@ -571,12 +601,12 @@ const updateChallenge: PatchController<ChallengeRequestParams,ChallengeRequestBo
       maxParticipants,
       deadline,
       originURL,
-    })
-    res.status(200).send({challenge: result, code: 200});
+    });
+    res.status(200).send({ challenge: result, code: 200 });
   } catch (err) {
-    next(err)
+    next(err);
   }
-}
+};
 
 /**
  * @swagger
@@ -637,7 +667,11 @@ const updateChallenge: PatchController<ChallengeRequestParams,ChallengeRequestBo
  *                   description: 에러 메시지
  *                   example: "서버 오류가 발생했습니다."
  */
-const deleteChallenge: DeleteController<ChallengeRequestParams, never, DeleteChallengeResponse> = async (req, res, next) => {
+const deleteChallenge: DeleteController<
+  ChallengeRequestParams,
+  never,
+  DeleteChallengeResponse
+> = async (req, res, next) => {
   try {
     const id = req.params.challengeId;
     const result = await ChallengesService.deleteChallenge(id);
@@ -645,7 +679,7 @@ const deleteChallenge: DeleteController<ChallengeRequestParams, never, DeleteCha
       next({ statusCode: 404 });
       return;
     }
-    res.status(200).send({code: 200});
+    res.status(200).send({ code: 200 });
   } catch (err) {
     next(err);
   }
@@ -656,7 +690,7 @@ const ChallengesController = {
   getChallenge,
   postChallenge,
   updateChallenge,
-  deleteChallenge
+  deleteChallenge,
 };
 
 export default ChallengesController;

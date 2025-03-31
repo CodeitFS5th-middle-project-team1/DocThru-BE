@@ -5,9 +5,8 @@ import {
   TranslationRequestBody,
   TranslationRequestParams,
   TranslationRequestListQuery,
-  TranslationParamsWithId,
 } from './translations.types';
-import errorHandler from '../../middleware/errorHandler';
+
 // 번역물 목록 조회
 const getTranslationList = async ({
   challengeId,
@@ -15,14 +14,18 @@ const getTranslationList = async ({
   limit,
 }: TranslationRequestParams &
   TranslationRequestListQuery): Promise<TranslationListResponse> => {
-  const pageNum = Number(page);
-  const limitNum = Number(limit);
+  const pageNum = Number(page || 1);
+  const limitNum = Number(limit || 5);
+
+  // skip 계산
+  const skipNum = (pageNum - 1) * limitNum;
+
   const [translations, totalCount] = await Promise.all([
     prisma.translation.findMany({
       where: { challengeId, deletedAt: null },
       orderBy: { likeCount: 'desc' },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: skipNum,
+      take: limitNum,
       include: { user: { select: { nickname: true } } },
     }),
     prisma.translation.count({
@@ -111,83 +114,78 @@ const getTranslationById = async ({
   translationId,
   challengeId,
   userId,
-}: TranslationParamsWithId & { userId?: string }): Promise<
-  TranslationResponse & { isLiked?: boolean }
-> => {
-  try {
-    // 챌린지 존재 여부 확인
-    const challenge = await prisma.challenge.findUnique({
-      where: {
-        id: challengeId,
-        deletedAt: null, // 삭제되지 않은 챌린지만 조회
-      },
-      select: { id: true },
-    });
-    // 챌린지 ID가 유효한지 확인 (선택적)
-    // if (!challenge) {
-    //   throw {
-    //     statusCode: 404,
-    //     message: `챌린지 ID ${challengeId}를 찾을 수 없거나 이미 삭제되었습니다.`,
-    //   };
-    // }
+}: {
+  translationId: string;
+  challengeId: string;
+  userId?: string;
+}): Promise<TranslationResponse & { isLiked?: boolean }> => {
+  const challenge = await prisma.challenge.findUnique({
+    where: {
+      id: challengeId,
+      deletedAt: null, // 삭제되지 않은 챌린지만 조회
+    },
+    select: { id: true },
+  });
 
-    // 번역물 조회
-    const translation = await prisma.translation.findFirst({
-      where: {
-        id: translationId,
-        challengeId,
-        deletedAt: null, // 삭제되지 않은 번역물만 조회
-      },
-      include: {
-        user: {
-          select: {
-            nickname: true,
-          },
+  //TODO: 에러처리 부분을 어떻게 처리할지 고민
+  if (!challenge) {
+    throw {
+      statusCode: 404,
+      message: `챌린지 ID ${challengeId}를 찾을 수 없거나 이미 삭제되었습니다.`,
+    };
+  }
+
+  const translation = await prisma.translation.findUnique({
+    where: {
+      id: translationId,
+      challengeId,
+      deletedAt: null, // 삭제되지 않은 번역물인지
+    },
+    include: {
+      user: {
+        select: {
+          nickname: true,
         },
       },
-    });
+    },
+  });
 
-    //번역물 존재 여부 확인
-    if (!translation) {
-      throw {
-        statusCode: 404,
-        message: `번역물 ID ${translationId}를 찾을 수 없거나 이미 삭제되었습니다.`,
-      };
-    }
-
-    // 사용자의 좋아요 여부 isLiked 확인
-    let isLiked = false;
-    if (userId) {
-      try {
-        const like = await prisma.like.findFirst({
-          where: {
-            userId,
-            translationId,
-          },
-          select: { id: true },
-        });
-        isLiked = !!like;
-      } catch (likeError) {
-        console.error('좋아요 상태 확인 중 오류 발생:', likeError);
-        // isLiked는 기본값 false
-      }
-    }
-
-    return {
-      id: translation.id,
-      title: translation.title,
-      content: translation.content,
-      userId: translation.userId,
-      userNickname: translation.user?.nickname,
-      challengeId: translation.challengeId,
-      likeCount: translation.likeCount,
-      isLiked,
-      createdAt: translation.createdAt,
-      updatedAt: translation.updatedAt,
+  //TODO:
+  if (!translation) {
+    throw {
+      statusCode: 404,
+      message: `번역물 ID ${translationId}를 찾을 수 없습니다.`,
     };
-  } catch (error) {
-    throw error;
   }
+  //좋아요 여부 확인
+  let isLiked = false;
+  if (userId) {
+    try {
+      const like = await prisma.like.findFirst({
+        where: {
+          userId,
+          translationId,
+        },
+        select: { id: true },
+      });
+      isLiked = !!like;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  return {
+    id: translation.id,
+    title: translation.title,
+    content: translation.content,
+    userId: translation.userId,
+    userNickname: translation.user?.nickname,
+    challengeId: translation.challengeId,
+    likeCount: translation.likeCount,
+    isLiked,
+    createdAt: translation.createdAt,
+    updatedAt: translation.updatedAt,
+  };
 };
 
 export default {
