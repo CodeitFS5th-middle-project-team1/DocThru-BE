@@ -14,8 +14,8 @@ export type PostController<P, B, D> = (
   next: NextFunction
 ) => Promise<void>;
 
-// PUT 요청용 컨트롤러
-export type PutController<P, B, D> = (
+// PATCH 요청용 컨트롤러
+export type PatchController<P, B, D> = (
   req: Request<P, any, B>, // Query는 없음
   res: Response<D>,
   next: NextFunction

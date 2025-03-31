@@ -4,13 +4,8 @@ export interface GetChallengeParam {
   challengeId: string;
 }
 
-export interface GetChallengeListQuery {
-  documentType: DocumentType | undefined;
-  fields: FieldType | FieldType[];
-  approvalStatus: ApprovalStatus;
-  keyword: string | undefined;
-  page: string;
-  limit: string;
+export interface PostChallengeResponse {
+  challenge: Challenge | null;
 }
 
 export interface GetChallengeResponse {
@@ -20,4 +15,3 @@ export interface GetChallengeListResponse {
   challenges: Challenge[] | [];
   totalCount: number;
 }
-

@@ -1,9 +1,9 @@
 import ChallengesService from './challenges.service';
 import { isValidEnumValue } from '../../utils/isValidEnumValue';
 import { ApprovalStatus, DocumentType, FieldType } from '@prisma/client';
-import { GetController } from '../../types/express';
-import { isValidUUID } from '../../utils/isUUID';
-import { GetChallengeListQuery, GetChallengeListResponse, GetChallengeParam, GetChallengeResponse } from './challenges.type';
+import { GetController, PostController } from '../../types/express';
+import { GetChallengeListResponse, GetChallengeResponse, PostChallengeResponse } from './challenges.type';
+import { ChallengeRequestBody, ChallengeRequestParams, ChallengeRequestQueries } from './challenges.validation';
 
 /**
  * @swagger
@@ -113,13 +113,9 @@ import { GetChallengeListQuery, GetChallengeListResponse, GetChallengeParam, Get
  *       500:
  *         description: 서버 오류
  */
-const getChallenge: GetController<GetChallengeParam, never, GetChallengeResponse> = async (req, res, next) => {
+const getChallenge: GetController<ChallengeRequestParams, never, GetChallengeResponse> = async (req, res, next) => {
   try {
     const id = req.params.challengeId;
-    if (!isValidUUID(id)) {
-      next({ statusCode: 400 });
-      return;
-    }
     const result = await ChallengesService.getChallenge(id);
     if (!result) {
       next({ statusCode: 404 });
@@ -286,7 +282,7 @@ const getChallenge: GetController<GetChallengeParam, never, GetChallengeResponse
  *         description: 서버 오류
  */
 
-const getChallengeList: GetController<never,GetChallengeListQuery,GetChallengeListResponse> = async (req, res, next) => {
+const getChallengeList: GetController<never,ChallengeRequestQueries,GetChallengeListResponse> = async (req, res, next) => {
   try {
     const {
       documentType,
@@ -296,43 +292,6 @@ const getChallengeList: GetController<never,GetChallengeListQuery,GetChallengeLi
       page = '1',
       limit = '10',
     } = req.query;
-    // 쿼리 구조분해 된 것들 각각 검증 필요
-    if (
-      documentType &&
-      !isValidEnumValue(DocumentType, documentType.toString())
-    ) {
-      next({ statusCode: 400 });
-      return;
-    }
-
-    if (
-      approvalStatus &&
-      !isValidEnumValue(ApprovalStatus, approvalStatus.toString())
-    ) {
-      next({ statusCode: 400 });
-      return;
-    }
-
-    // fields 검증 (배열 형식이나 단일 값 검증)
-    if (fields && !Array.isArray(fields)) {
-      if (!isValidEnumValue(FieldType, fields.toString())) {
-        return next({ statusCode: 400 });
-      }
-    } else if (Array.isArray(fields)) {
-      for (const field of fields) {
-        if (!isValidEnumValue(FieldType, field.toString())) {
-          return next({ statusCode: 400 });
-        }
-      }
-    }
-
-    const pageNumber = Number(page);
-    const limitNumber = Number(limit);
-
-    if (isNaN(pageNumber) || isNaN(limitNumber)) {
-      next({ statusCode: 400 });
-      return;
-    }
 
     const result = await ChallengesService.getChallengeList({
       documentType,
@@ -348,14 +307,141 @@ const getChallengeList: GetController<never,GetChallengeListQuery,GetChallengeLi
   }
 };
 
-// const postChallenge: Controller = async (req, res, next) => {
-  
-// };
+
+/**
+ * @swagger
+ * /api/challenges:
+ *   post:
+ *     tags:
+ *       - Challenges
+ *     summary: 챌린지 생성
+ *     description: 새로운 챌린지를 생성합니다.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: 챌린지 제목
+ *                 example: "프론트엔드 번역 챌린지"
+ *               description:
+ *                 type: string
+ *                 description: 챌린지 설명
+ *                 example: "프론트엔드 관련 문서를 번역하는 챌린지입니다."
+ *               documentType:
+ *                 type: string
+ *                 description: 문서 타입
+ *                 enum: [BLOG, OFFICIAL]
+ *                 example: "BLOG"
+ *               field:
+ *                 type: string
+ *                 description: 챌린지 분야
+ *                 enum: [NEXTJS, MODERNJS, API, WEB, CAREER]
+ *                 example: "NEXTJS"
+ *               maxParticipants:
+ *                 type: integer
+ *                 description: 최대 참가자 수
+ *                 example: 10
+ *               deadline:
+ *                 type: string
+ *                 format: date-time
+ *                 description: 챌린지 마감일
+ *                 example: "2025-04-01T00:00:00.000Z"
+ *               originURL:
+ *                 type: string
+ *                 format: url
+ *                 description: 원본 문서 URL
+ *                 example: "https://example.com/original-doc"
+ *     responses:
+ *       201:
+ *         description: 챌린지가 성공적으로 생성되었습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: 생성된 챌린지 ID
+ *                   example: "123e4567-e89b-12d3-a456-426614174000"
+ *                 title:
+ *                   type: string
+ *                   description: 챌린지 제목
+ *                   example: "프론트엔드 번역 챌린지"
+ *                 description:
+ *                   type: string
+ *                   description: 챌린지 설명
+ *                   example: "프론트엔드 관련 문서를 번역하는 챌린지입니다."
+ *                 documentType:
+ *                   type: string
+ *                   description: 문서 타입
+ *                   example: "BLOG"
+ *                 field:
+ *                   type: string
+ *                   description: 챌린지 분야
+ *                   example: "NEXTJS"
+ *                 maxParticipants:
+ *                   type: integer
+ *                   description: 최대 참가자 수
+ *                   example: 10
+ *                 deadline:
+ *                   type: string
+ *                   format: date-time
+ *                   description: 챌린지 마감일
+ *                   example: "2025-04-01T00:00:00.000Z"
+ *                 originURL:
+ *                   type: string
+ *                   format: url
+ *                   description: 원본 문서 URL
+ *                   example: "https://example.com/original-doc"
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: 생성된 날짜
+ *                   example: "2025-03-29T12:00:00.000Z"
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: 마지막 업데이트 날짜
+ *                   example: "2025-03-29T12:00:00.000Z"
+ *       400:
+ *         description: 잘못된 요청 데이터
+ *       500:
+ *         description: 서버 오류
+ */
+const postChallenge: PostController<never,ChallengeRequestBody,PostChallengeResponse> = async (req, res, next) => {
+  try {
+    const {
+      title,
+      description,
+      documentType,
+      field,
+      maxParticipants,
+      deadline,
+      originURL,
+    } = req.body;
+    const result = await ChallengesService.postChallenge({
+      title,
+      description,
+      documentType,
+      field,
+      maxParticipants,
+      deadline,
+      originURL,
+    })
+    res.status(200).send({challenge: result});
+  } catch (err) {
+    next(err)
+  }
+};
 
 const ChallengesController = {
   getChallengeList,
   getChallenge,
-  // postChallenge,
+  postChallenge,
 };
 
 export default ChallengesController;
