@@ -10,6 +10,7 @@ model Translation {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
+  lastModifiedBy String?
 
   // Relations
   feedbacks Feedback[]
