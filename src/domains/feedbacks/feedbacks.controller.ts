@@ -127,6 +127,97 @@ const getFeedBackList: GetController<
   return;
 };
 
+/**
+ * @swagger
+ * /api/translations/{translationId}/feedbacks:
+ *   post:
+ *     tags:
+ *       - Feedbacks
+ *     summary: 번역에 대한 피드백 생성
+ *     description: 특정 번역에 대한 피드백을 생성합니다.
+ *     parameters:
+ *       - in: path
+ *         name: translationId
+ *         required: true
+ *         description: 피드백을 생성할 번역의 ID
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: 피드백을 작성할 사용자 ID
+ *               content:
+ *                 type: string
+ *                 description: 피드백 내용
+ *     responses:
+ *       201:
+ *         description: 피드백이 성공적으로 생성됨
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 feedback:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: 생성된 피드백 ID
+ *                     idx:
+ *                       type: integer
+ *                       description: 피드백 인덱스
+ *                     translationId:
+ *                       type: string
+ *                       description: 피드백이 달린 번역 ID
+ *                     userId:
+ *                       type: string
+ *                       description: 피드백을 작성한 사용자 ID
+ *                     userNickname:
+ *                       type: string
+ *                       description: 피드백을 작성한 사용자 닉네임
+ *                     userProfileImg:
+ *                       type: string
+ *                       nullable: true
+ *                       description: 피드백을 작성한 사용자 프로필 이미지
+ *                     content:
+ *                       type: string
+ *                       description: 피드백 내용
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: 피드백 작성 시간
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: 피드백 수정 시간
+ *                     deletedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       nullable: true
+ *                       description: 피드백 삭제 시간
+ *             example:
+ *               feedback:
+ *                 id: "4b40576d-7eaf-4d3c-a577-918ebd55905c"
+ *                 idx: 3
+ *                 translationId: "02f43933-41fb-4dd5-8426-700f17beb6fa"
+ *                 userId: "a7a54ed2-53be-4931-b8f4-f87bd4358adf"
+ *                 userNickname: "codeit"
+ *                 userProfileImg: null
+ *                 content: "테스트 피드백 우리지금만나 아 당장만나 우리지금만나 아 당장만나"
+ *                 createdAt: "2025-04-01T08:09:43.305Z"
+ *                 updatedAt: "2025-04-01T08:09:43.305Z"
+ *                 deletedAt: null
+ *       400:
+ *         description: 존재하지 않는 translationId 또는 유저
+ *       500:
+ *         description: 서버 오류
+ */
 const postFeedback: PostController<
   FeedBackParams,
   PostFeedBackBodyParams,
