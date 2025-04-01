@@ -7,3 +7,7 @@ export interface GetFeedbackListResponse {
 export interface PostFeedBackResponse {
   feedback: Feedback;
 }
+
+export interface PatchFeedBackResponse {
+  feedback: Feedback;
+}

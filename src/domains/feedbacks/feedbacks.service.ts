@@ -42,8 +42,31 @@ const createFeedback = async ({
   return feedback;
 };
 
+const checkFeedbackByID = async (feedbackId: string) => {
+  const feedback = await prisma.feedback.findUnique({
+    where: {
+      id: feedbackId,
+    },
+  });
+  return feedback;
+};
+
+const updateFeedback = async (feedbackId: string, content: string) => {
+  const feedback = await prisma.feedback.update({
+    where: {
+      id: feedbackId,
+    },
+    data: {
+      content,
+    },
+  });
+  return feedback;
+};
+
 export default {
   fetchFeedbackList,
   checkTranslations,
   createFeedback,
+  checkFeedbackByID,
+  updateFeedback,
 };

@@ -1,8 +1,17 @@
-import { GetController, PostController } from '../../types/express';
-import { FeedBackParams, PostFeedBackBodyParams } from './feedbacks.validation';
+import {
+  GetController,
+  PatchController,
+  PostController,
+} from '../../types/express';
+import {
+  FeedBackParams,
+  ModifyFeedBackParams,
+  PostFeedBackBodyParams,
+} from './feedbacks.validation';
 import FeedbackService from './feedbacks.service';
 import {
   GetFeedbackListResponse,
+  PatchFeedBackResponse,
   PostFeedBackResponse,
 } from './feedbacks.type';
 import AuthService from '../auth/auth.service';
@@ -149,9 +158,6 @@ const getFeedBackList: GetController<
  *           schema:
  *             type: object
  *             properties:
- *               userId:
- *                 type: string
- *                 description: 피드백을 작성할 사용자 ID
  *               content:
  *                 type: string
  *                 description: 피드백 내용
@@ -224,7 +230,8 @@ const postFeedback: PostController<
   PostFeedBackResponse
 > = async (req, res, next) => {
   const translationId = req.params.translationId;
-  const { userId, content } = req.body;
+  const { content } = req.body;
+  const userId = req.user?.id ?? '';
 
   const existedTranslaition = await FeedbackService.checkTranslations(
     translationId
@@ -253,7 +260,40 @@ const postFeedback: PostController<
   return;
 };
 
+const patchFeedback: PatchController<
+  ModifyFeedBackParams,
+  PostFeedBackBodyParams,
+  PatchFeedBackResponse
+> = async (req, res, next) => {
+  const feedbackId = req.params.feedbackId;
+  const { content } = req.body;
+  const userId = req.user?.id ?? '';
+  const userRole = req.user?.role ?? 'USER';
+
+  const existedFeedback = await FeedbackService.checkFeedbackByID(feedbackId);
+
+  if (!existedFeedback) {
+    return next({ statusCode: 400, message: '존재하지 않는 feedbackId' });
+  }
+
+  if (existedFeedback.userId !== userId && userRole !== 'ADMIN') {
+    return next({ statusCode: 403, message: '권한이 없습니다.' });
+  }
+
+  const updatedFeedback = await FeedbackService.updateFeedback(
+    feedbackId,
+    content
+  );
+
+  res.status(200).json({
+    feedback: updatedFeedback,
+  });
+  
+  return;
+};
+
 export default {
   getFeedBackList,
   postFeedback,
+  patchFeedback,
 };
