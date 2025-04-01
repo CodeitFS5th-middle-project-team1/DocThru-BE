@@ -13,19 +13,19 @@ const router = Router();
 
 router.get(
   '/',
-  validateRequestData({ params: ChallengeQueriesSchema }),
+  validateRequestData({ query: ChallengeQueriesSchema }),
   ChallengesController.getChallengeList
 ); //챌린지 목록 조회
 router.get(
   '/user',
   verifyJWTToken,
-  validateRequestData({ params: ChallengeQueriesSchema }),
+  validateRequestData({ query: ChallengeQueriesSchema }),
   ChallengesController.getChallengeListByUser
 ); // 유저의 챌린지 신청 기록 조회
 router.get(
   '/manage',
   verifyJWTToken,
-  validateRequestData({ params: ChallengeQueriesSchema }),
+  validateRequestData({ query: ChallengeQueriesSchema }),
   ChallengesController.getChallengeListByAdmin
 );
 router.post(
@@ -37,7 +37,7 @@ router.post(
 router.patch(
   '/:challengeId',
   verifyJWTToken,
-  validateRequestData({ params: ChallengeParamsSchema }),
+  validateRequestData({ params: ChallengeParamsSchema, body: ChallengeBodySchema }),
   ChallengesController.patchChallenge
 ); //챌린지 수정
 router.delete(
