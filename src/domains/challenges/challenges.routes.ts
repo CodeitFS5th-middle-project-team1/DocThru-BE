@@ -11,13 +11,17 @@ import {
 import { verifyJWTToken } from '../../middleware/verifyJWTToken';
 const router = Router();
 
-router.use(verifyJWTToken);
-
 router.get(
   '/',
   validateRequestData({ params: ChallengeQueriesSchema }),
   ChallengesController.getChallengeList
 ); //챌린지 목록 조회
+router.get(
+  '/manage',
+  verifyJWTToken,
+  validateRequestData({ params: ChallengeQueriesSchema }),
+  ChallengesController.getChallengeListByAdmin
+);
 router.post(
   '/',
   validateRequestData({ body: ChallengeBodySchema }),
