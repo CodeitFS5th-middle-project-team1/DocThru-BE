@@ -725,7 +725,7 @@ const patchChallenge: PatchController<
     const existChallenge = await ChallengesService.getChallenge(id);
     const isEqualUser = req.user?.id === existChallenge.challenge?.userId;
     const authRole = req.user?.role;
-    if(!existChallenge){
+    if(!existChallenge.challenge){
       next({ status: 404 });
       return;
     }
@@ -827,6 +827,10 @@ const deleteChallenge: DeleteController<
     const existChallenge = await ChallengesService.getChallenge(id);
     const isEqualUser = req.user?.id === existChallenge.challenge?.userId;
     const authRole = req.user?.role;
+    if(!existChallenge.challenge){
+      next({ status: 404 });
+      return;
+    }
     if (authRole !== "ADMIN" && !isEqualUser) {
       next({ status: 403 });
       return;
