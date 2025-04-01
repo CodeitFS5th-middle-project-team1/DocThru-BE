@@ -6,10 +6,12 @@ import {
   TranslationRequestBody,
   TranslationParamsWithIdSchema,
   TranslationUpdateBodySchema,
+  TranslationDeleteBodySchema,
 } from './translations.types';
 import FeedbackRouter from '../feedbacks/feedbacks.routes';
 import LikeRouter from '../likes/likes.routes';
 import TranslationsController from './translations.controller';
+import { UserRole } from '@prisma/client';
 const router = Router({ mergeParams: true });
 
 router.get(
@@ -37,8 +39,25 @@ router.get(
   }),
   TranslationsController.getTranslationById
 );
-router.patch('/:translationId'); // 작업물 수정
-router.delete('/:translationId'); // 작업물 삭제
+// 번역물 수정
+router.patch(
+  '/:translationId',
+  validateRequestData({
+    params: TranslationParamsWithIdSchema,
+    body: TranslationUpdateBodySchema,
+  }),
+  TranslationsController.updateTranslation as unknown as RequestHandler
+);
+// 번역물 삭제
+router.delete(
+  '/:translationId',
+  validateRequestData({
+    params: TranslationParamsWithIdSchema,
+    body: TranslationDeleteBodySchema,
+  }),
+  TranslationsController.deleteTranslation as unknown as RequestHandler
+);
+
 router.post('/draftedTranslations'); // 작업물 임시 저장
 router.get('/draftedTranslations'); // 작업물 임시 저장 가져오기
 router.use('/:translationId/feedbacks', FeedbackRouter);

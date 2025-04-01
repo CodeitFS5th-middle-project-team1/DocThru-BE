@@ -36,15 +36,15 @@ export const TranslationRequestBody = z.object({
   title: z
     .string()
     .trim()
-    .refine((val) => val.length >= 1 && val.length <= 20, {
-      message: '제목은 최소 1자 이상 최대 20자 이하로 입력해주세요.',
+    .refine((val) => val.length >= 1 && val.length <= 50, {
+      message: '제목은 최소 1자 이상 최대 50자 이하로 입력해주세요.',
     }),
 
   content: z
     .string()
     .trim()
-    .refine((val) => val.length >= 1 && val.length <= 300, {
-      message: '내용은 최소 1자 이상 최대 300자 이하로 입력해주세요.',
+    .refine((val) => val.length >= 1 && val.length <= 1000, {
+      message: '내용은 최소 1자 이상 최대 1000자 이하로 입력해주세요.',
     }),
 
   userId: z.string().min(1, { message: '사용자 ID를 입력해주세요' }),
@@ -57,14 +57,14 @@ export const TranslationUpdateBodySchema = z.object({
   title: z
     .string()
     .trim()
-    .refine((val) => val.length >= 1 && val.length <= 20, {
-      message: '제목은 최소 1자 이상 최대 20자 이하로 입력해주세요.',
+    .refine((val) => val.length >= 1 && val.length <= 50, {
+      message: '제목은 최소 1자 이상 최대 50자 이하로 입력해주세요.',
     }),
   content: z
     .string()
     .trim()
-    .refine((val) => val.length >= 1 && val.length <= 300, {
-      message: '내용은 최소 1자 이상 최대 300자 이하로 입력해주세요.',
+    .refine((val) => val.length >= 1 && val.length <= 1000, {
+      message: '내용은 최소 1자 이상 최대 1000자 이하로 입력해주세요.',
     }),
   userId: z.string().min(1, { message: '사용자 ID는 필수 항목입니다.' }),
   userRole: z
@@ -114,11 +114,6 @@ export interface TranslationByIdResponse {
   deletedAt?: Date | null;
 }
 
-// export interface UpdateTranslationRequest {
-//   title?: string;
-//   content?: string;
-// }
-
 export interface UpdateTranslationResponse {
   id: string;
   title: string;
@@ -129,3 +124,16 @@ export interface UpdateTranslationResponse {
   //createdAt: Date;
   updatedAt: Date;
 }
+
+// 번역물 삭제 요청 바디 스키마
+export const TranslationDeleteBodySchema = z.object({
+  userId: z.string().min(1, { message: '사용자 ID는 필수 항목입니다.' }),
+  userRole: z
+    .nativeEnum(UserRole, {
+      errorMap: () => ({ message: '유효한 사용자 역할이 아닙니다.' }),
+    })
+    .optional(),
+});
+
+// 번역물 삭제 요청 바디 타입
+export type TranslationDeleteBody = z.infer<typeof TranslationDeleteBodySchema>;
