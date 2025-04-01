@@ -1,9 +1,7 @@
-import { DocumentType, FieldType } from '@prisma/client';
+import { FieldType } from '@prisma/client';
 import prisma from '../../prismaClient';
 import { GetChallengeResponse, UpdateChallengeRequest } from './challenges.type';
 import {
-  ChallengeParamsSchema,
-  ChallengeQueriesSchema,
   ChallengeRequestBody,
   ChallengeRequestQueries,
 } from './challenges.validation';
@@ -71,7 +69,7 @@ const getChallengeList = async ({
   return { challenges, totalCount };
 };
 
-const postChallenge = async ({
+const createChallenge = async ({
   title,
   description,
   documentType,
@@ -138,7 +136,7 @@ const deleteChallenge = async (id: string): Promise<GetChallengeResponse> => {
 const ChallengesService = {
   getChallengeList,
   getChallenge,
-  postChallenge,
+  createChallenge,
   updateChallenge,
   deleteChallenge,
 };
