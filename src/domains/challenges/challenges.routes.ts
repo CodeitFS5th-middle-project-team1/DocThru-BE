@@ -4,7 +4,10 @@ import ParticipationRouter from '../participants/participants.routes';
 import ChallengesController from './challenges.controller';
 import { validateRequestData } from '../../middleware/validateRequestData';
 import { ChallengeBodySchema, ChallengeParamsSchema, ChallengeQueriesSchema } from './challenges.validation';
+import { verifyJWTToken } from '../../middleware/verifyJWTToken';
 const router = Router();
+
+router.use(verifyJWTToken);
 
 router.get(
   '/',
