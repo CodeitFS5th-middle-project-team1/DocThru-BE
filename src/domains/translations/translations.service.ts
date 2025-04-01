@@ -1,4 +1,6 @@
+import { UserRole } from '@prisma/client';
 import prisma from '../../prismaClient';
+import CustomError from '../../types/error';
 import {
   TranslationListResponse,
   TranslationResponse,
@@ -202,8 +204,228 @@ const createTranslation = async ({
     updatedAt: translation.updatedAt,
   };
 };
+/**
+ * 번역물을 수정합니다. 작성자 본인 또는 관리자만 수정할 수 있습니다.
+ * @param translationId 수정할 번역물 ID
+ * @param challengeId 챌린지 ID
+ * @param userId 요청한 사용자 ID
+ * @param userRole 요청한 사용자의 역할 (권한 확인용)
+ * @param updateData 수정할 데이터 (제목, 내용)
+ * @returns 수정된 번역물 정보
+ */
+
+const updateTranslation = async ({
+  translationId,
+  challengeId,
+  userId,
+  userRole,
+  updateData,
+}: {
+  translationId: string;
+  challengeId: string;
+  userId: string;
+  userRole?: UserRole;
+  updateData: {
+    title?: string;
+    content?: string;
+  };
+}): Promise<TranslationResponse> => {
+  try {
+    // Challenge의 유효성 검증
+    const challenge = await prisma.challenge.findUnique({
+      where: {
+        id: challengeId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+
+    if (!challenge) {
+      throw {
+        statusCode: 404,
+        message: `챌린지 ID ${challengeId}를 찾을 수 없거나 이미 삭제되었습니다.`,
+        errorContext: 'challengeLookup',
+      };
+    }
+
+    // Translation의 유효성 검증 및 권한 확인
+    const translation = await prisma.translation.findUnique({
+      where: {
+        id: translationId,
+        challengeId,
+        deletedAt: null,
+      },
+      include: {
+        user: {
+          select: {
+            id: true, // userId도 조회하여 권한 확인에 사용
+            nickname: true,
+          },
+        },
+      },
+    });
+
+    if (!translation) {
+      throw {
+        statusCode: 404,
+        message: `번역물 ID ${translationId}를 찾을 수 없습니다.`,
+        errorContext: 'translationLookup',
+      };
+    }
+
+    // 권한 확인 함수사용 - 작성자 본인 또는 관리자만 수정 가능
+    //TODO: 반복 사용되므로 함수로 분리하는게 좋을 듯
+    const isOwner = translation.userId === userId;
+    const isAdmin = userRole === UserRole.ADMIN;
+    if (!isOwner && !isAdmin) {
+      throw new CustomError(403, '이 번역물에 대한 수정 권한이 없습니다.');
+    }
+
+    const updatedTranslation = await prisma.translation.update({
+      where: { id: translationId },
+      data: {
+        title: updateData.title ?? translation.title,
+        content: updateData.content ?? translation.content,
+        updatedAt: new Date(),
+      },
+      include: {
+        user: { select: { nickname: true } },
+      },
+    });
+
+    return {
+      id: updatedTranslation.id,
+      title: updatedTranslation.title,
+      content: updatedTranslation.content,
+      user: {
+        id: userId,
+        nickname: updatedTranslation.user?.nickname || null,
+      },
+      challengeId: updatedTranslation.challengeId,
+      likeCount: updatedTranslation.likeCount,
+      createdAt: updatedTranslation.createdAt,
+      updatedAt: updatedTranslation.updatedAt,
+    };
+  } catch (error) {
+    // console.error('번역물 수정 중 오류 발생:', {
+    //   challengeId,
+    //   translationId,
+    //   error,
+    // });
+
+    if (error instanceof CustomError && error.statusCode) {
+      throw error;
+    }
+
+    throw {
+      statusCode: 500,
+      message: '서버 내부 오류가 발생했습니다.',
+    };
+  }
+};
+/**
+ * 번역물을 삭제합니다. 작성자 본인 또는 관리자만 삭제할 수 있습니다.
+ * @param translationId 삭제할 번역물 ID
+ * @param challengeId 챌린지 ID
+ * @param userId 요청한 사용자 ID
+ * @param userRole 요청한 사용자의 역할 (권한 확인용)
+ * @returns 삭제 성공 여부
+ */
+const deleteTranslation = async ({
+  translationId,
+  challengeId,
+  userId,
+  userRole,
+}: {
+  translationId: string;
+  challengeId: string;
+  userId: string;
+  userRole?: UserRole;
+}): Promise<{ success: boolean }> => {
+  try {
+    const challenge = await prisma.challenge.findUnique({
+      where: {
+        id: challengeId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+
+    if (!challenge) {
+      throw new CustomError(
+        404,
+        `챌린지 ID ${challengeId}를 찾을 수 없거나 이미 삭제되었습니다.`
+      );
+    }
+
+    const translation = await prisma.translation.findUnique({
+      where: {
+        id: translationId,
+        challengeId,
+        deletedAt: null,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            nickname: true,
+          },
+        },
+      },
+    });
+
+    if (!translation) {
+      throw new CustomError(
+        404,
+        `번역물 ID ${translationId}를 찾을 수 없거나 이미 삭제되었습니다.`
+      );
+    }
+
+    // 권한 확인
+    console.log('권한 검사 정보:', {
+      translationUserId: translation.userId,
+      requestUserId: userId,
+      userRole,
+      isMatch: translation.userId === userId,
+      isAdmin: userRole === UserRole.ADMIN,
+    });
+    const isOwner = translation.userId === userId;
+    const isAdmin = userRole === UserRole.ADMIN;
+    if (!isOwner && !isAdmin) {
+      throw new CustomError(403, '이 번역물에 대한 삭제 권한이 없습니다.');
+    }
+
+    // 번역물 soft delete (실제로 삭제하지 않고 deletedAt 필드 업데이트)
+    await prisma.translation.update({
+      where: { id: translationId },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('번역물 삭제 중 오류 발생:', {
+      challengeId,
+      translationId,
+      error,
+    });
+
+    if (error instanceof CustomError) {
+      throw error;
+    }
+
+    throw new CustomError(
+      500,
+      error instanceof Error ? error.message : '서버 내부 오류가 발생했습니다.'
+    );
+  }
+};
+
 export const TranslationsService = {
   getTranslationList,
   getTranslationById,
   createTranslation,
+  updateTranslation,
+  deleteTranslation,
 };
