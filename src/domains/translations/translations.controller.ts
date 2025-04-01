@@ -231,7 +231,7 @@ const postTranslation: PostController<
     const { challengeId } = req.params;
     const { title, content, userId } = req.body;
 
-    const result = await TranslationsService.postTranslation({
+    const result = await TranslationsService.createTranslation({
       title,
       content,
       userId,
@@ -343,137 +343,10 @@ const getTranslationById: GetController<
   }
 };
 
-/**
- * @swagger
- *  /api/challenges/{challengeId}/translations/{translationId}:
- *   patch:
- *     summary: 번역물 수정
- *     description: 번역물의 제목과 내용을 수정합니다. 작성자 본인 또는 관리자만 수정할 수 있습니다.
- *     tags: [Translations]
- *     parameters:
- *       - in: path
- *         name: challengeId
- *         required: true
- *         schema:
- *           type: string
- *         description: 챌린지 ID
- *       - in: path
- *         name: translationId
- *         required: true
- *         schema:
- *           type: string
- *         description: 수정할 번역물 ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - userId
- *             properties:
- *               title:
- *                 type: string
- *                 description: 수정할 제목
- *                 example: "업데이트된 번역 제목"
- *               content:
- *                 type: string
- *                 description: 수정할 내용
- *                 example: "업데이트된 번역 내용이 여기에 포함됩니다."
- *               userId:
- *                 type: string
- *                 description: 요청한 사용자 ID
- *                 example: "user-123"
- *               userRole:
- *                 type: string
- *                 enum: [USER, ADMIN]
- *                 description: 사용자 역할 (권한 확인)
- *                 example: "USER"
- *     responses:
- *       200:
- *         description: 번역물 수정 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   description: 번역물 ID
- *                 title:
- *                   type: string
- *                   description: 수정된 제목
- *                 content:
- *                   type: string
- *                   description: 수정된 내용
- *                 userId:
- *                   type: string
- *                   description: 작성자 ID
- *                 userNickname:
- *                   type: string
- *                   description: 작성자 닉네임
- *                 challengeId:
- *                   type: string
- *                   description: 챌린지 ID
- *                 likeCount:
- *                   type: integer
- *                   description: 좋아요 수
- *                 updatedAt:
- *                   type: string
- *                   format: date-time
- *                   description: 수정 일시
- *       400:
- *         description: 잘못된 요청
- *       403:
- *         description: 권한 없음
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "번역물 수정 권한이 없습니다."
- *       404:
- *         description: 번역물 또는 챌린지를 찾을 수 없음
- *       500:
- *         description: 서버 오류
- */
-const updateTranslation: PatchController<
-  TranslationParamsWithId,
-  TranslationUpdateBody,
-  TranslationResponse
-> = async (req, res, next) => {
-  try {
-    const { challengeId, translationId } = req.params;
-    const { title, content, userId, userRole } = req.body;
-
-    const updatedTranslation = await TranslationsService.updateTranslation({
-      translationId,
-      challengeId,
-      userId,
-      userRole,
-      updateData: {
-        title,
-        content,
-      },
-    });
-
-    res.status(200).send(updatedTranslation);
-  } catch (error) {
-    if (error instanceof CustomError) {
-      res.status(error.statusCode).send({ message: error.message });
-    } else {
-      res.status(500).send({ message: 'Internal Server Error' });
-    }
-  }
-};
-
 const TranslationsController = {
   postTranslation,
   getTranslationList,
   getTranslationById,
-  updateTranslation,
 };
 
 export default TranslationsController;

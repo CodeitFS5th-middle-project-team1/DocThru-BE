@@ -77,18 +77,26 @@ export const TranslationUpdateBodySchema = z.object({
 // 번역물 수정 요청 바디 타입
 export type TranslationUpdateBody = z.infer<typeof TranslationUpdateBodySchema>;
 
+// 유저 정보 스키마
+export const UserInfoSchema = z.object({
+  id: z.string(),
+  nickname: z.string().nullable(),
+});
+
+// TranslationResponseSchema 수정
 export const TranslationResponseSchema = z.object({
   id: z.string(),
   title: z.string(),
   content: z.string(),
-  userId: z.string(),
+  user: UserInfoSchema,
   challengeId: z.string(),
   likeCount: z.number().int(),
   createdAt: z.date(),
   updatedAt: z.date().optional(),
-  userNickname: z.string().optional(),
   isLiked: z.boolean().optional(),
 });
+
+export type UserInfo = z.infer<typeof UserInfoSchema>;
 export type TranslationResponse = z.infer<typeof TranslationResponseSchema>;
 
 // 번역물 상세 조회 응답 타입
@@ -111,12 +119,13 @@ export interface TranslationByIdResponse {
 //   content?: string;
 // }
 
-// export interface UpdateTranslationResponse {
-//   id: string;
-//   title: string;
-//   content: string;
-//   userId: string;
-//   challengeId: string;
-//   likeCount: number;
-//   updatedAt: Date;
-// }
+export interface UpdateTranslationResponse {
+  id: string;
+  title: string;
+  content: string;
+  userId: string;
+  challengeId: string;
+  likeCount: number;
+  //createdAt: Date;
+  updatedAt: Date;
+}
