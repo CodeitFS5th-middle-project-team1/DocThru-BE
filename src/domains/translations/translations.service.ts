@@ -87,7 +87,7 @@ const getTranslationById = async ({
     where: {
       id: translationId,
       challengeId,
-      deletedAt: null, // 삭제되지 않은 번역물인지
+      deletedAt: null,
     },
     include: {
       user: {

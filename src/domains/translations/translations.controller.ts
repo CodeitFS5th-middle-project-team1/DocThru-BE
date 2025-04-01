@@ -264,11 +264,6 @@ const postTranslation: PostController<
  *         schema:
  *           type: string
  *         description: 번역물 ID
- *       - in: query
- *         name: userId
- *         schema:
- *           type: string
- *         description: 조회 중인 사용자 ID (인증된 사용자인 경우)
  *     responses:
  *       200:
  *         description: 번역물 상세 조회 성공
@@ -329,7 +324,7 @@ const getTranslationById: GetController<
 > = async (req, res, next) => {
   try {
     const { challengeId, translationId } = req.params;
-    const { userId } = req.query; // 선택적: 로그인한 사용자 ID
+    const { userId } = req.query;
 
     const translation = await TranslationsService.getTranslationById({
       translationId,
