@@ -1,7 +1,11 @@
-import { GetController } from '../../types/express';
-import { GetFeedBackListParams } from './feedbacks.validation';
+import { GetController, PostController } from '../../types/express';
+import { FeedBackParams, PostFeedBackBodyParams } from './feedbacks.validation';
 import FeedbackService from './feedbacks.service';
-import { GetFeedbackListResponse } from './feedbacks.type';
+import {
+  GetFeedbackListResponse,
+  PostFeedBackResponse,
+} from './feedbacks.type';
+import AuthService from '../auth/auth.service';
 
 /**
  * @swagger
@@ -99,7 +103,7 @@ import { GetFeedbackListResponse } from './feedbacks.type';
  *         description: 서버 오류
  */
 const getFeedBackList: GetController<
-  GetFeedBackListParams,
+  FeedBackParams,
   never,
   GetFeedbackListResponse
 > = async (req, res, next) => {
@@ -123,6 +127,42 @@ const getFeedBackList: GetController<
   return;
 };
 
+const postFeedback: PostController<
+  FeedBackParams,
+  PostFeedBackBodyParams,
+  PostFeedBackResponse
+> = async (req, res, next) => {
+  const translationId = req.params.translationId;
+  const { userId, content } = req.body;
+
+  const existedTranslaition = await FeedbackService.checkTranslations(
+    translationId
+  );
+
+  if (!existedTranslaition) {
+    return next({ statusCode: 400, message: '존재하지 않는 translationId' });
+  }
+
+  const existedUser = await AuthService.checkId(userId);
+
+  if (!existedUser) {
+    return next({ statusCode: 400, message: '존재하지 않는 유저' });
+  }
+
+  const feedback = await FeedbackService.createFeedback({
+    translationId,
+    userId: existedUser.id,
+    userNickName: existedUser.nickname,
+    content,
+  });
+
+  res.status(201).json({
+    feedback,
+  });
+  return;
+};
+
 export default {
   getFeedBackList,
+  postFeedback,
 };

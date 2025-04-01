@@ -1,5 +1,12 @@
 import prisma from '../../prismaClient';
 
+interface CreateFeedbackParams {
+  translationId: string;
+  userId: string;
+  userNickName: string;
+  content: string;
+}
+
 const checkTranslations = async (translationId: string) => {
   const translation = await prisma.translation.findUnique({
     where: {
@@ -18,7 +25,25 @@ const fetchFeedbackList = async (translationId: string) => {
   return feedbacks;
 };
 
+const createFeedback = async ({
+  translationId,
+  userId,
+  userNickName,
+  content,
+}: CreateFeedbackParams) => {
+  const feedback = await prisma.feedback.create({
+    data: {
+      translationId,
+      userId,
+      userNickname: userNickName,
+      content,
+    },
+  });
+  return feedback;
+};
+
 export default {
   fetchFeedbackList,
   checkTranslations,
+  createFeedback,
 };

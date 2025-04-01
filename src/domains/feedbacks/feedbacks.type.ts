@@ -3,3 +3,7 @@ import { Feedback } from '@prisma/client';
 export interface GetFeedbackListResponse {
   feedbacks: Feedback[];
 }
+
+export interface PostFeedBackResponse {
+  feedback: Feedback;
+}
