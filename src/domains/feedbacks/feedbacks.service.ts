@@ -63,10 +63,20 @@ const updateFeedback = async (feedbackId: string, content: string) => {
   return feedback;
 };
 
+const deleteFeedback = async (feedbackId: string) => {
+  const feedback = await prisma.feedback.delete({
+    where: {
+      id: feedbackId,
+    },
+  });
+  return feedback;
+};
+
 export default {
   fetchFeedbackList,
   checkTranslations,
   createFeedback,
   checkFeedbackByID,
   updateFeedback,
+  deleteFeedback,
 };

@@ -1,4 +1,5 @@
 import {
+  DeleteController,
   GetController,
   PatchController,
   PostController,
@@ -10,6 +11,7 @@ import {
 } from './feedbacks.validation';
 import FeedbackService from './feedbacks.service';
 import {
+  DeleteFeedBackResponse,
   GetFeedbackListResponse,
   PatchFeedBackResponse,
   PostFeedBackResponse,
@@ -384,7 +386,33 @@ const patchFeedback: PatchController<
   res.status(200).json({
     feedback: updatedFeedback,
   });
-  
+  return;
+};
+
+const deleteFeedback: DeleteController<
+  ModifyFeedBackParams,
+  never,
+  DeleteFeedBackResponse
+> = async (req, res, next) => {
+  const feedbackId = req.params.feedbackId;
+  const userId = req.user?.id ?? '';
+  const userRole = req.user?.role ?? 'USER';
+
+  const existedFeedback = await FeedbackService.checkFeedbackByID(feedbackId);
+
+  if (!existedFeedback) {
+    return next({ statusCode: 400, message: '존재하지 않는 feedbackId' });
+  }
+
+  if (existedFeedback.userId !== userId && userRole !== 'ADMIN') {
+    return next({ statusCode: 403, message: '권한이 없습니다.' });
+  }
+
+  const deletedFeedback = await FeedbackService.deleteFeedback(feedbackId);
+
+  res.status(204).json({
+    feedback: deletedFeedback,
+  });
   return;
 };
 
@@ -392,4 +420,5 @@ export default {
   getFeedBackList,
   postFeedback,
   patchFeedback,
+  deleteFeedback,
 };

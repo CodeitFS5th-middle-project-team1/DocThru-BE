@@ -30,6 +30,10 @@ router.patch(
   }),
   FeedbackController.patchFeedback
 ); // 피드백 수정
-router.delete('/:feedbackId'); // 피드백 삭제
+router.delete(
+  '/:feedbackId',
+  validateRequestData({ params: ModifyFeedBackSchema }),
+  FeedbackController.deleteFeedback
+); // 피드백 삭제
 
 export default router;

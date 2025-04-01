@@ -11,3 +11,7 @@ export interface PostFeedBackResponse {
 export interface PatchFeedBackResponse {
   feedback: Feedback;
 }
+
+export interface DeleteFeedBackResponse {
+  feedback: Feedback;
+}
