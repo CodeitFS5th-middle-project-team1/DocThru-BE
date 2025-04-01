@@ -50,6 +50,14 @@ const getChallengeList = async ({
       skip,
       take: limitNum,
       orderBy: { createdAt : "desc" },
+      select: {
+        title: true,
+        field: true,
+        maxParticipants: true,
+        currentParticipants: true,
+        deadline: true,
+        documentType: true,
+      }
     }),
     prisma.challenge.count({
       where: {
@@ -66,7 +74,14 @@ const getChallengeList = async ({
     }),
   ]);
 
-  return { challenges, totalCount };
+  const challengesWithIsMax = challenges.map((challenge) => {
+    if(challenge.maxParticipants === challenge.currentParticipants){
+      return {...challenge, isMax: true};
+    }
+    else return {...challenge, isMax: false};
+  })
+
+  return { challengesWithIsMax, totalCount };
 };
 
 const createChallenge = async ({
