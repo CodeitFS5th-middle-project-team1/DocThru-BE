@@ -8,7 +8,6 @@ export const verifyJWTToken = async (
   next: NextFunction
 ) => {
   try {
-    console.log("test jwttoken middle")
     const authorization = req.headers.authorization;
     if (!authorization?.startsWith('Bearer ')) {
       return next({ statusCode: 401, message: 'Bearer 없음.' });

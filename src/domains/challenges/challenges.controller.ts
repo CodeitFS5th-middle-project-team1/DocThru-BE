@@ -251,6 +251,117 @@ const getChallengeListByAdmin: GetController<
 
 /**
  * @swagger
+ * /api/challenges/user:
+ *   get:
+ *     tags:
+ *       - Challenges
+ *     summary: 사용자별 챌린지 목록 조회
+ *     description: 사용자가 생성한 챌린지 목록을 조회합니다.
+ *     parameters:
+ *       - in: query
+ *         name: orderBy
+ *         schema:
+ *           type: string
+ *           enum: [applyFirst, applyLast, deadLineFirst, deadLineLast]
+ *         description: 챌린지 정렬 기준
+ *       - in: query
+ *         name: approvalStatus
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, APPROVED, REJECTED]
+ *         description: 승인 상태로 필터링
+ *       - in: query
+ *         name: keyword
+ *         schema:
+ *           type: string
+ *         description: 제목 또는 설명에서 키워드 검색
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: 페이지 번호
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: 페이지당 항목 수
+ *     responses:
+ *       200:
+ *         description: 성공적으로 사용자별 챌린지 목록 반환
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 challenges:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: 챌린지 ID
+ *                       title:
+ *                         type: string
+ *                         description: 챌린지 제목
+ *                       approvalStatus:
+ *                         type: string
+ *                         description: 승인 상태
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: 생성 날짜
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: 마지막 업데이트 날짜
+ *                 totalCount:
+ *                   type: integer
+ *                   description: 총 챌린지 수
+ *             example:
+ *               challenges:
+ *                 - id: "123e4567-e89b-12d3-a456-426614174000"
+ *                   title: "프론트엔드 번역 챌린지"
+ *                   approvalStatus: "APPROVED"
+ *                   createdAt: "2025-03-29T12:00:00.000Z"
+ *                   updatedAt: "2025-03-30T12:00:00.000Z"
+ *                 - id: "789e4567-e89b-12d3-a456-426614174001"
+ *                   title: "백엔드 번역 챌린지"
+ *                   approvalStatus: "PENDING"
+ *                   createdAt: "2025-03-28T12:00:00.000Z"
+ *                   updatedAt: "2025-03-29T12:00:00.000Z"
+ *               totalCount: 2
+ *       403:
+ *         description: 사용자 인증 실패
+ *       500:
+ *         description: 서버 오류
+ */
+const getChallengeListByUser: GetController<
+  never,
+  ChallengeRequestQueries,
+  GetChallengeListByAdminResponse
+> = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const { orderBy, page = '1', limit = '10', approvalStatus, keyword } = req.query;
+    const result = await ChallengesService.getChallengeListByUser({
+      orderBy,
+      page,
+      limit,
+      approvalStatus,
+      keyword,
+      userId: userId as string,
+    });
+    res.status(200).send(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * @swagger
  * /api/challenges:
  *   get:
  *     summary: Retrieve a list of challenges
@@ -475,6 +586,7 @@ const postChallenge: PostController<
       deadline,
       originURL,
     } = req.body;
+    const userId = req.user?.id;
     const result = await ChallengesService.createChallenge({
       title,
       description,
@@ -483,6 +595,7 @@ const postChallenge: PostController<
       maxParticipants,
       deadline,
       originURL,
+      userId: userId as string,
     });
     res.status(200).send({ challenge: result, code: 200 });
   } catch (err) {
@@ -609,6 +722,17 @@ const patchChallenge: PatchController<
 > = async (req, res, next) => {
   try {
     const id = req.params.challengeId;
+    const existChallenge = await ChallengesService.getChallenge(id);
+    const isEqualUser = req.user?.id === existChallenge.challenge?.userId;
+    const authRole = req.user?.role;
+    if(!existChallenge){
+      next({ status: 404 });
+      return;
+    }
+    if (authRole !== "ADMIN" && !isEqualUser) {
+      next({ status: 403 });
+      return;
+    }
     const {
       title,
       description,
@@ -700,6 +824,13 @@ const deleteChallenge: DeleteController<
 > = async (req, res, next) => {
   try {
     const id = req.params.challengeId;
+    const existChallenge = await ChallengesService.getChallenge(id);
+    const isEqualUser = req.user?.id === existChallenge.challenge?.userId;
+    const authRole = req.user?.role;
+    if (authRole !== "ADMIN" && !isEqualUser) {
+      next({ status: 403 });
+      return;
+    }
     const result = await ChallengesService.deleteChallenge(id);
     if (!result) {
       next({ statusCode: 404 });
@@ -713,6 +844,7 @@ const deleteChallenge: DeleteController<
 
 const ChallengesController = {
   getChallengeList,
+  getChallengeListByUser,
   getChallengeListByAdmin,
   getChallenge,
   postChallenge,

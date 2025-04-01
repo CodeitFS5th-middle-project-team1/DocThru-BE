@@ -1,9 +1,11 @@
 import { FieldType, Prisma } from '@prisma/client';
 import prisma from '../../prismaClient';
 import {
+  CreateChallengeArgs,
+  GetChallengeListByUserArgs,
   GetChallengeResponse,
   Order,
-  UpdateChallengeRequest,
+  UpdateChallengeArgs,
 } from './challenges.type';
 import {
   ChallengeRequestBody,
@@ -54,6 +56,7 @@ const getChallengeList = async ({
       take: limitNum,
       orderBy: { createdAt: 'desc' },
       select: {
+        id: true,
         title: true,
         field: true,
         maxParticipants: true,
@@ -76,6 +79,7 @@ const getChallengeList = async ({
       },
     }),
   ]);
+
 
   const challengesWithIsMax = challenges.map((challenge) => {
     if (challenge.maxParticipants === challenge.currentParticipants) {
@@ -139,6 +143,7 @@ const getChallengeListByAdmin = async ({
       take: limitNum,
       orderBy: order,
       select: {
+        id: true,
         idx: true,
         title: true,
         field: true,
@@ -165,6 +170,90 @@ const getChallengeListByAdmin = async ({
   return { challenges, totalCount };
 };
 
+
+const getChallengeListByUser = async ({
+  orderBy,
+  page,
+  limit,
+  approvalStatus,
+  keyword,
+  userId,
+}: GetChallengeListByUserArgs) => {
+  const pageNum = Number(page);
+  const limitNum = Number(limit);
+
+  const skip = (pageNum - 1) * limitNum;
+
+  const order = (() => {
+    const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {
+    };
+
+    switch (orderBy) {
+      case Order.applyFirst:
+        orderCondition.approvalAt = 'desc'; // 추가 조건
+        break;
+      case Order.applyLast:
+        orderCondition.approvalAt = 'asc'; // 추가 조건
+        break;
+      case Order.deadLineFirst:
+        orderCondition.deadline = 'desc'; // 추가 조건
+        break;
+      case Order.deadLineLast:
+        orderCondition.deadline = 'asc'; // 추가 조건
+        break;
+      default:
+        // 기본값 (idx: 'desc')이 이미 설정되어 있음
+        orderCondition.idx = 'desc';
+        break;
+    }
+
+    return orderCondition;
+  })();
+
+  const [challenges, totalCount] = await Promise.all([
+    prisma.challenge.findMany({
+      where: {
+        userId,
+        approvalStatus: approvalStatus || undefined,
+        ...(keyword && {
+          OR: [
+            { title: { contains: keyword, mode: 'insensitive' } },
+            { description: { contains: keyword, mode: 'insensitive' } },
+          ],
+        }),
+      },
+      skip,
+      take: limitNum,
+      orderBy: order,
+      select: {
+        id: true,
+        idx: true,
+        title: true,
+        field: true,
+        maxParticipants: true,
+        deadline: true,
+        createdAt: true,
+        documentType: true,
+        approvalStatus: true,
+      },
+    }),
+    prisma.challenge.count({
+      where: {
+        userId,
+        approvalStatus: approvalStatus || undefined,
+        ...(keyword && {
+          OR: [
+            { title: { contains: keyword, mode: 'insensitive' } },
+            { description: { contains: keyword, mode: 'insensitive' } },
+          ],
+        }),
+      },
+    }),
+  ]);
+
+  return { challenges, totalCount };
+};
+
 const createChallenge = async ({
   title,
   description,
@@ -173,7 +262,8 @@ const createChallenge = async ({
   maxParticipants,
   deadline,
   originURL,
-}: ChallengeRequestBody) => {
+  userId,
+}: CreateChallengeArgs) => {
   const challenge = await prisma.challenge.create({
     data: {
       title,
@@ -183,7 +273,7 @@ const createChallenge = async ({
       maxParticipants,
       deadline,
       originURL,
-      userId: 'user-1',
+      userId,
     },
   });
 
@@ -199,7 +289,7 @@ const updateChallenge = async ({
   maxParticipants,
   deadline,
   originURL,
-}: UpdateChallengeRequest) => {
+}: UpdateChallengeArgs) => {
   const challenge = await prisma.challenge.update({
     where: {
       id,
@@ -229,6 +319,7 @@ const deleteChallenge = async (id: string): Promise<GetChallengeResponse> => {
 
 const ChallengesService = {
   getChallengeList,
+  getChallengeListByUser,
   getChallengeListByAdmin,
   getChallenge,
   createChallenge,
