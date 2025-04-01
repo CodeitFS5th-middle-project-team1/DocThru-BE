@@ -389,6 +389,91 @@ const patchFeedback: PatchController<
   return;
 };
 
+/**
+ * @swagger
+ * /api/translations/{translationId}/feedbacks/{feedbackId}:
+ *   delete:
+ *     tags:
+ *       - Feedbacks
+ *     summary: 번역에 대한 피드백 삭제
+ *     description: 특정 번역에 대한 피드백을 삭제합니다. 피드백 작성자 또는 관리자만 삭제 가능합니다.
+ *     parameters:
+ *       - in: path
+ *         name: translationId
+ *         required: true
+ *         description: 피드백이 달린 번역의 ID
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: feedbackId
+ *         required: true
+ *         description: 삭제할 피드백의 ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: 피드백이 성공적으로 삭제됨
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 feedback:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: 피드백 ID
+ *                     idx:
+ *                       type: integer
+ *                       description: 피드백 인덱스
+ *                     translationId:
+ *                       type: string
+ *                       description: 피드백이 달린 번역 ID
+ *                     userId:
+ *                       type: string
+ *                       description: 피드백을 작성한 사용자 ID
+ *                     userNickname:
+ *                       type: string
+ *                       description: 피드백을 작성한 사용자 닉네임
+ *                     userProfileImg:
+ *                       type: string
+ *                       nullable: true
+ *                       description: 피드백을 작성한 사용자 프로필 이미지
+ *                     content:
+ *                       type: string
+ *                       description: 피드백 내용
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: 피드백 작성 시간
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: 피드백 수정 시간
+ *                     deletedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: 피드백 삭제 시간
+ *             example:
+ *               feedback:
+ *                 id: "4b40576d-7eaf-4d3c-a577-918ebd55905c"
+ *                 idx: 3
+ *                 translationId: "02f43933-41fb-4dd5-8426-700f17beb6fa"
+ *                 userId: "a7a54ed2-53be-4931-b8f4-f87bd4358adf"
+ *                 userNickname: "codeit"
+ *                 userProfileImg: null
+ *                 content: "삭제된 피드백입니다."
+ *                 createdAt: "2025-04-01T08:09:43.305Z"
+ *                 updatedAt: "2025-04-01T08:30:00.000Z"
+ *                 deletedAt: "2025-04-01T09:00:00.000Z"
+ *       400:
+ *         description: 존재하지 않는 feedbackId
+ *       403:
+ *         description: 권한이 없음 (피드백 작성자 또는 관리자가 아님)
+ *       500:
+ *         description: 서버 오류
+ */
 const deleteFeedback: DeleteController<
   ModifyFeedBackParams,
   never,
