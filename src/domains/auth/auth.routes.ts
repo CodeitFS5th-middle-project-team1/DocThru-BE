@@ -9,6 +9,7 @@ import {
   testQueriesSchema,
 } from './auth.types';
 import { validateRequestData } from '../../middleware/validateRequestData';
+import { verifyJWTToken } from '../../middleware/verifyJWTToken';
 
 const router = Router();
 
@@ -28,13 +29,10 @@ router.post('/logout'); //로그아웃
 
 // TODO: 테스트 용 api, 삭제 예정
 router.post(
-  '/test/:id/:params2',
-  validateRequestData({
-    params: testParamsSchema,
-    query: testQueriesSchema,
-    body: testBodySchema,
-  }),
+  '/test',
+  verifyJWTToken,
   async (req: Request, res: Response, next: NextFunction) => {
+    console.log('Hello!!!!!!!!!!!!!!!!!!!!!!!');
     console.log(req.params);
     console.log(req.query);
     const { email, password } = req.body;
