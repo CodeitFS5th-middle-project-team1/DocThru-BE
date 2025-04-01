@@ -1,5 +1,24 @@
-import { Controller } from '../../types/express';
-import TranslationsService from './translations.service';
+import { UserRole } from '@prisma/client';
+import {
+  GetController,
+  PostController,
+  DeleteController,
+  PatchController,
+} from '../../types/express';
+import {
+  TranslationListResponse,
+  TranslationParamsSchema,
+  TranslationResponse,
+  TranslationResponseSchema,
+  TranslationRequestListQuery,
+  TranslationRequestBody,
+  TranslationRequestParams,
+  TranslationParamsWithId,
+  TranslationUpdateBody,
+} from './translations.types';
+
+import { TranslationsService } from './translations.service';
+import CustomError from '../../types/error';
 
 /**
  * @swagger
@@ -73,39 +92,256 @@ import TranslationsService from './translations.service';
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Challenge ID is required
+ *                   example: 잘못된 요청입니다. 요청이 올바른 형식이 아닙니다
  *       500:
  *         description: 서버 오류
  */
-const getTranslations: Controller = async (req, res, next) => {
+const getTranslationList: GetController<
+  TranslationRequestParams,
+  TranslationRequestListQuery,
+  TranslationListResponse
+> = async (req, res, next) => {
   try {
     const { challengeId } = req.params;
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 5;
+    const { page, limit } = req.query;
 
-    if (!challengeId) {
-      return next({ statusCode: 400, message: 'Challenge ID is required' });
-    }
-
-    const { translations, totalCount } =
-      await TranslationsService.getTranslations({
-        challengeId,
-        page,
-        limit,
-      });
-
-    res.status(200).json({
-      translations,
-      totalCount,
-      message: '번역물',
+    const result = await TranslationsService.getTranslationList({
+      challengeId,
+      page,
+      limit,
     });
+
+    res.status(200).send({
+      translations: result.translations,
+      totalCount: result.totalCount,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+/**
+ * @swagger
+ *  /api/challenges/{challengeId}/translations:
+ *   post:
+ *     summary: 번역 작업물 생성 (제출)
+ *     description: 사용자가 완성한 번역 작업물을 제출합니다. 제목, 내용, 사용자 ID가 필요합니다.
+ *     tags: [Translations]
+ *     parameters:
+ *       - in: path
+ *         name: challengeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 작업물에 대한 챌린지 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - content
+ *               - userId
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: 번역 작업물 제목
+ *                 example: "NEXT.js 기술문서 번역본"
+ *               content:
+ *                 type: string
+ *                 description: 번역 작업물 내용
+ *                 example: "번역된 내용이 여기에 들어갑니다."
+ *               userId:
+ *                 type: string
+ *                 description: 작업물을 생성한 사용자 ID
+ *                 example: "user-12"
+ *     responses:
+ *       201:
+ *         description: 번역 작업물 생성 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                   description: 요청 성공 여부
+ *                 message:
+ *                   type: string
+ *                   example: "Translation created successfully"
+ *                   description: 성공 메시지
+ *                 translation:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: 생성된 번역물의 ID
+ *                     title:
+ *                       type: string
+ *                       description: 번역물 제목
+ *                     content:
+ *                       type: string
+ *                       description: 번역물 내용
+ *                     userId:
+ *                       type: string
+ *                       description: 생성한 사용자 ID
+ *                     challengeId:
+ *                       type: string
+ *                       description: 속한 챌린지 ID
+ *                     likeCount:
+ *                       type: integer
+ *                       description: 좋아요 수 (초기값 0)
+ *                       example: 0
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: 생성 일시
+ *
+ *       400:
+ *         description: 잘못된 요청
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "잘못된 요청입니다. 요청이 올바른 형식이 아닙니다."
+ *       404:
+ *         description: 챌린지 또는 사용자를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "요청한 리소스를 찾을 수 없습니다."
+ *       500:
+ *         description: 서버 오류
+ */
+const postTranslation: PostController<
+  TranslationRequestParams,
+  TranslationRequestBody,
+  TranslationResponse
+> = async (req, res, next) => {
+  try {
+    const { challengeId } = req.params;
+    const { title, content, userId } = req.body;
+
+    const result = await TranslationsService.createTranslation({
+      title,
+      content,
+      userId,
+      challengeId,
+    });
+
+    res.status(201).send(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * @swagger
+ *  /api/challenges/{challengeId}/translations/{translationId}:
+ *   get:
+ *     summary: 번역물 상세 조회
+ *     description: 특정 번역물의 상세 정보를 조회합니다.
+ *     tags: [Translations]
+ *     parameters:
+ *       - in: path
+ *         name: challengeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 챌린지 ID
+ *       - in: path
+ *         name: translationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 번역물 ID
+ *     responses:
+ *       200:
+ *         description: 번역물 상세 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: 번역물 ID
+ *                 title:
+ *                   type: string
+ *                   description: 번역물 제목
+ *                 content:
+ *                   type: string
+ *                   description: 번역물 내용
+ *                 userId:
+ *                   type: string
+ *                   description: 작성자 ID
+ *                 userNickname:
+ *                   type: string
+ *                   description: 작성자 닉네임
+ *                 challengeId:
+ *                   type: string
+ *                   description: 챌린지 ID
+ *                 likeCount:
+ *                   type: integer
+ *                   description: 좋아요 수
+ *                 isLiked:
+ *                   type: boolean
+ *                   description: 사용자의 좋아요 여부
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: 생성 일시
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: 최종 수정 일시
+ *       404:
+ *         description: 번역물 또는 챌린지를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "번역물을 찾을 수 없습니다."
+ *       500:
+ *         description: 서버 오류
+ */
+const getTranslationById: GetController<
+  TranslationRequestParams & { translationId: string },
+  { userId?: string },
+  TranslationResponse & { isLiked?: boolean }
+> = async (req, res, next) => {
+  try {
+    const { challengeId, translationId } = req.params;
+    const { userId } = req.query;
+
+    const translation = await TranslationsService.getTranslationById({
+      translationId,
+      challengeId,
+      userId,
+    });
+
+    res.status(200).send(translation);
   } catch (err) {
     next(err);
   }
 };
 
 const TranslationsController = {
-  getTranslations,
+  postTranslation,
+  getTranslationList,
+  getTranslationById,
 };
 
 export default TranslationsController;
