@@ -50,11 +50,34 @@ const saveRefreshToken = async (email: string, refreshToken: string) => {
   });
 };
 
+const getRefreshToken = async (id: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id,
+    },
+    select: {
+      refreshToken: true,
+    },
+  });
+  return user?.refreshToken;
+};
+
+const updateRefreshToken = async (id: string, newRefreshToken: string) => {
+  return await prisma.user.update({
+    where: {
+      id,
+    },
+    data: { refreshToken: newRefreshToken },
+  });
+};
+
 const AuthService = {
   createUser,
   checkEmail,
   checkPassword,
   saveRefreshToken,
+  getRefreshToken,
+  updateRefreshToken,
 };
 
 export default AuthService;
