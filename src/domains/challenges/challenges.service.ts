@@ -108,16 +108,16 @@ const getChallengeListByAdmin = async ({
 
     switch (orderBy) {
       case Order.applyFirst:
-        orderCondition.approvalAt = 'desc'; // 추가 조건
+        orderCondition.approvalAt = 'desc'; // 승인 최신 순
         break;
       case Order.applyLast:
-        orderCondition.approvalAt = 'asc'; // 추가 조건
+        orderCondition.approvalAt = 'asc'; // 승인 오래된 순
         break;
       case Order.deadLineFirst:
-        orderCondition.deadline = 'desc'; // 추가 조건
+        orderCondition.deadline = 'desc'; // 마감일 최신 순
         break;
       case Order.deadLineLast:
-        orderCondition.deadline = 'asc'; // 추가 조건
+        orderCondition.deadline = 'asc'; // 마감일 오래된 순
         break;
       default:
         // 기본값 (idx: 'desc')이 이미 설정되어 있음
@@ -190,16 +190,16 @@ const getChallengeListByUser = async ({
 
     switch (orderBy) {
       case Order.applyFirst:
-        orderCondition.approvalAt = 'desc'; // 추가 조건
+        orderCondition.approvalAt = 'desc'; // 승인 최신 순
         break;
       case Order.applyLast:
-        orderCondition.approvalAt = 'asc'; // 추가 조건
+        orderCondition.approvalAt = 'asc'; // 승인 오래된 순
         break;
       case Order.deadLineFirst:
-        orderCondition.deadline = 'desc'; // 추가 조건
+        orderCondition.deadline = 'desc'; // 마감일 최신 순
         break;
       case Order.deadLineLast:
-        orderCondition.deadline = 'asc'; // 추가 조건
+        orderCondition.deadline = 'asc'; // 마감일 오래된 순
         break;
       default:
         // 기본값 (idx: 'desc')이 이미 설정되어 있음

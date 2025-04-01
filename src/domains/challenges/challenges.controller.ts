@@ -125,7 +125,7 @@ import {
  *                 rejectedReason: null
  *                 approvalStatus: "PENDING"
  *       404:
- *         description: 챌린지를 찾을 수 없음
+ *         description: 요청한 리소스를 찾을 수 없습니다.
  *       500:
  *         description: 서버 오류
  */
@@ -219,7 +219,7 @@ const getChallenge: GetController<
  *                   type: integer
  *                   description: 총 챌린지 수
  *       403:
- *         description: 관리자 권한 없음
+ *         description: 권한 없음
  *       500:
  *         description: 서버 오류
  */
@@ -364,51 +364,43 @@ const getChallengeListByUser: GetController<
  * @swagger
  * /api/challenges:
  *   get:
- *     summary: Retrieve a list of challenges
- *     description: Fetch a paginated list of challenges based on filters such as document type, fields, approval status, and keyword.
  *     tags:
  *       - Challenges
+ *     summary: 챌린지 목록 조회
+ *     description: 필터 및 정렬 조건을 기반으로 챌린지 목록을 조회합니다.
  *     parameters:
  *       - in: query
  *         name: documentType
  *         schema:
  *           type: string
- *           enum: [TYPE_A, TYPE_B, TYPE_C] # Replace with actual DocumentType enum values
- *         description: Filter challenges by document type
+ *           enum: [BLOG, OFFICIAL]
+ *         description: 문서 타입으로 필터링
  *       - in: query
  *         name: fields
  *         schema:
- *           type: array
- *           items:
- *             type: string
- *             enum: [FIELD_X, FIELD_Y, FIELD_Z] # Replace with actual FieldType enum values
- *         description: Filter challenges by fields
- *       - in: query
- *         name: approvalStatus
- *         schema:
  *           type: string
- *           enum: [PENDING, APPROVED, REJECTED] # Replace with actual approval status values
- *         description: Filter challenges by approval status
+ *           enum: [NEXTJS, MODERNJS, API, WEB, CAREER]
+ *         description: 챌린지 분야로 필터링
  *       - in: query
  *         name: keyword
  *         schema:
  *           type: string
- *         description: Search challenges by title or description
+ *         description: 제목 또는 설명에서 키워드 검색
  *       - in: query
  *         name: page
  *         schema:
  *           type: integer
  *           default: 1
- *         description: Page number for pagination
+ *         description: 페이지 번호
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *           default: 10
- *         description: Number of challenges per page
+ *         description: 페이지당 항목 수
  *     responses:
  *       200:
- *         description: A list of challenges and the total count
+ *         description: 성공적으로 챌린지 목록 반환
  *         content:
  *           application/json:
  *             schema:
@@ -419,25 +411,48 @@ const getChallengeListByUser: GetController<
  *                   items:
  *                     type: object
  *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: 챌린지 ID
  *                       title:
  *                         type: string
- *                       field:
- *                         type: string
- *                       maxParticipants:
- *                         type: integer
- *                       currentParticipants:
- *                         type: integer
- *                       deadline:
- *                         type: string
- *                         format: date-time
+ *                         description: 챌린지 제목
  *                       documentType:
  *                         type: string
+ *                         description: 문서 타입
+ *                       field:
+ *                         type: string
+ *                         description: 챌린지 분야
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: 생성 날짜
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: 마지막 업데이트 날짜
  *                 totalCount:
  *                   type: integer
+ *                   description: 총 챌린지 수
+ *             example:
+ *               challenges:
+ *                 - id: "123e4567-e89b-12d3-a456-426614174000"
+ *                   title: "프론트엔드 번역 챌린지"
+ *                   documentType: "BLOG"
+ *                   field: "NEXTJS"
+ *                   createdAt: "2025-03-29T12:00:00.000Z"
+ *                   updatedAt: "2025-03-30T12:00:00.000Z"
+ *                 - id: "789e4567-e89b-12d3-a456-426614174001"
+ *                   title: "백엔드 번역 챌린지"
+ *                   documentType: "OFFICIAL"
+ *                   field: "API"
+ *                   createdAt: "2025-03-28T12:00:00.000Z"
+ *                   updatedAt: "2025-03-29T12:00:00.000Z"
+ *               totalCount: 2
  *       400:
- *         description: Invalid request parameters
+ *         description: 잘못된 요청 데이터
  *       500:
- *         description: Internal server error
+ *         description: 서버 오류
  */
 
 const getChallengeList: GetController<
@@ -515,7 +530,7 @@ const getChallengeList: GetController<
  *                 description: 원본 문서 URL
  *                 example: "https://example.com/original-doc"
  *     responses:
- *       201:
+ *       200:
  *         description: 챌린지가 성공적으로 생성되었습니다.
  *         content:
  *           application/json:
@@ -710,6 +725,10 @@ const postChallenge: PostController<
  *                       example: "2025-03-30T12:00:00.000Z"
  *       400:
  *         description: 잘못된 요청 데이터
+ *       401:
+ *         description: 로그인 정보 없음
+ *       403:
+ *         description: 권한 없음
  *       404:
  *         description: 챌린지를 찾을 수 없음
  *       500:
@@ -786,6 +805,10 @@ const patchChallenge: PatchController<
  *                   type: integer
  *                   description: 응답 코드
  *                   example: 200
+ *       401:
+ *         description: 로그인 정보 없음
+ *       403:
+ *         description: 권한 없음
  *       404:
  *         description: 삭제할 챌린지를 찾을 수 없음
  *         content:
