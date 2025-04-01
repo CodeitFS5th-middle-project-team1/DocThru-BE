@@ -449,7 +449,7 @@ const postChallenge: PostController<
       deadline,
       originURL,
     } = req.body;
-    const result = await ChallengesService.postChallenge({
+    const result = await ChallengesService.createChallenge({
       title,
       description,
       documentType,
@@ -576,11 +576,8 @@ const postChallenge: PostController<
  *       500:
  *         description: 서버 오류
  */
-const updateChallenge: PatchController<
-  ChallengeRequestParams,
-  ChallengeRequestBody,
-  UpdateChallengeResponse
-> = async (req, res, next) => {
+
+const patchChallenge: PatchController<ChallengeRequestParams,ChallengeRequestBody,UpdateChallengeResponse> = async (req, res, next) => {
   try {
     const id = req.params.challengeId;
     const {
@@ -689,8 +686,8 @@ const ChallengesController = {
   getChallengeList,
   getChallenge,
   postChallenge,
-  updateChallenge,
-  deleteChallenge,
+  patchChallenge,
+  deleteChallenge
 };
 
 export default ChallengesController;

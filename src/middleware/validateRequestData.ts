@@ -14,7 +14,7 @@ export const validateRequestData =
       if (schemas.body) {
         const result = schemas.body.safeParse(req.body);
         if (!result.success) {
-          next({ statusCode: 400 });
+          next({ statusCode: 400, message: result.error.flatten() });
           return;
         }
         req.body = result.data;
@@ -24,7 +24,7 @@ export const validateRequestData =
       if (schemas.query) {
         const result = schemas.query.safeParse(req.query);
         if (!result.success) {
-          next({ statusCode: 400 });
+          next({ statusCode: 400, message: result.error.flatten() });
           return;
         }
         req.query = result.data;
@@ -34,7 +34,7 @@ export const validateRequestData =
       if (schemas.params) {
         const result = schemas.params.safeParse(req.params);
         if (!result.success) {
-          next({ statusCode: 400 });
+          next({ statusCode: 400, message: result.error.flatten() });
           return;
         }
         req.params = result.data;
