@@ -1,6 +1,10 @@
-import { FieldType } from '@prisma/client';
+import { FieldType, Prisma } from '@prisma/client';
 import prisma from '../../prismaClient';
-import { GetChallengeResponse, UpdateChallengeRequest } from './challenges.type';
+import {
+  GetChallengeResponse,
+  Order,
+  UpdateChallengeRequest,
+} from './challenges.type';
 import {
   ChallengeRequestBody,
   ChallengeRequestQueries,
@@ -18,7 +22,6 @@ const getChallenge = async (id: string): Promise<GetChallengeResponse> => {
 const getChallengeList = async ({
   documentType,
   fields,
-  approvalStatus,
   keyword,
   page,
   limit,
@@ -39,7 +42,7 @@ const getChallengeList = async ({
       where: {
         documentType: documentType || undefined,
         field: fieldCondition || undefined,
-        approvalStatus,
+        approvalStatus: 'APPROVED',
         ...(keyword && {
           OR: [
             { title: { contains: keyword, mode: 'insensitive' } },
@@ -49,7 +52,7 @@ const getChallengeList = async ({
       },
       skip,
       take: limitNum,
-      orderBy: { createdAt : "desc" },
+      orderBy: { createdAt: 'desc' },
       select: {
         title: true,
         field: true,
@@ -57,13 +60,13 @@ const getChallengeList = async ({
         currentParticipants: true,
         deadline: true,
         documentType: true,
-      }
+      },
     }),
     prisma.challenge.count({
       where: {
         documentType: documentType || undefined,
         field: fieldCondition || undefined,
-        approvalStatus,
+        approvalStatus: 'APPROVED',
         ...(keyword && {
           OR: [
             { title: { contains: keyword, mode: 'insensitive' } },
@@ -75,13 +78,91 @@ const getChallengeList = async ({
   ]);
 
   const challengesWithIsMax = challenges.map((challenge) => {
-    if(challenge.maxParticipants === challenge.currentParticipants){
-      return {...challenge, isMax: true};
-    }
-    else return {...challenge, isMax: false};
-  })
+    if (challenge.maxParticipants === challenge.currentParticipants) {
+      return { ...challenge, isMax: true };
+    } else return { ...challenge, isMax: false };
+  });
 
   return { challengesWithIsMax, totalCount };
+};
+
+const getChallengeListByAdmin = async ({
+  orderBy,
+  page,
+  limit,
+  approvalStatus,
+  keyword,
+}: ChallengeRequestQueries) => {
+  const pageNum = Number(page);
+  const limitNum = Number(limit);
+
+  const skip = (pageNum - 1) * limitNum;
+
+  const order = (() => {
+    const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {
+    };
+
+    switch (orderBy) {
+      case Order.applyFirst:
+        orderCondition.approvalAt = 'desc'; // 추가 조건
+        break;
+      case Order.applyLast:
+        orderCondition.approvalAt = 'asc'; // 추가 조건
+        break;
+      case Order.deadLineFirst:
+        orderCondition.deadline = 'desc'; // 추가 조건
+        break;
+      case Order.deadLineLast:
+        orderCondition.deadline = 'asc'; // 추가 조건
+        break;
+      default:
+        // 기본값 (idx: 'desc')이 이미 설정되어 있음
+        orderCondition.idx = 'desc';
+        break;
+    }
+
+    return orderCondition;
+  })();
+
+  const [challenges, totalCount] = await Promise.all([
+    prisma.challenge.findMany({
+      where: {
+        approvalStatus: approvalStatus || undefined,
+        ...(keyword && {
+          OR: [
+            { title: { contains: keyword, mode: 'insensitive' } },
+            { description: { contains: keyword, mode: 'insensitive' } },
+          ],
+        }),
+      },
+      skip,
+      take: limitNum,
+      orderBy: order,
+      select: {
+        idx: true,
+        title: true,
+        field: true,
+        maxParticipants: true,
+        deadline: true,
+        createdAt: true,
+        documentType: true,
+        approvalStatus: true,
+      },
+    }),
+    prisma.challenge.count({
+      where: {
+        approvalStatus: approvalStatus || undefined,
+        ...(keyword && {
+          OR: [
+            { title: { contains: keyword, mode: 'insensitive' } },
+            { description: { contains: keyword, mode: 'insensitive' } },
+          ],
+        }),
+      },
+    }),
+  ]);
+
+  return { challenges, totalCount };
 };
 
 const createChallenge = async ({
@@ -91,9 +172,8 @@ const createChallenge = async ({
   field,
   maxParticipants,
   deadline,
-  originURL
-}: ChallengeRequestBody
-) => {
+  originURL,
+}: ChallengeRequestBody) => {
   const challenge = await prisma.challenge.create({
     data: {
       title,
@@ -103,7 +183,7 @@ const createChallenge = async ({
       maxParticipants,
       deadline,
       originURL,
-      userId:"user-1",
+      userId: 'user-1',
     },
   });
 
@@ -118,9 +198,8 @@ const updateChallenge = async ({
   field,
   maxParticipants,
   deadline,
-  originURL
-} : UpdateChallengeRequest
-) => {
+  originURL,
+}: UpdateChallengeRequest) => {
   const challenge = await prisma.challenge.update({
     where: {
       id,
@@ -150,6 +229,7 @@ const deleteChallenge = async (id: string): Promise<GetChallengeResponse> => {
 
 const ChallengesService = {
   getChallengeList,
+  getChallengeListByAdmin,
   getChallenge,
   createChallenge,
   updateChallenge,

@@ -1,4 +1,4 @@
-import { Challenge, DocumentType, FieldType } from '@prisma/client';
+import { ApprovalStatus, Challenge, DocumentType, FieldType } from '@prisma/client';
 
 export interface GetChallengeParam {
   challengeId: string;
@@ -22,8 +22,22 @@ export interface GetChallengeResponse {
   challenge: Challenge | null;
 }
 
+export interface GetChallengeListByAdminResponse {
+  challenges: {
+    idx: number;
+    title: string;
+    field: FieldType;
+    maxParticipants: number;
+    deadline: Date;
+    createdAt: Date;
+    documentType: DocumentType;
+    approvalStatus: ApprovalStatus;
+  }[],
+  totalCount: number;
+}
+
 export interface GetChallengeListResponse {
-  challengesWithIsMax:{
+  challengesWithIsMax: {
     title: string;
     field: FieldType;
     maxParticipants: number;
@@ -31,7 +45,7 @@ export interface GetChallengeListResponse {
     deadline: Date;
     documentType: DocumentType;
     isMax: boolean;
-  }[]
+  }[];
   totalCount: number;
 }
 
@@ -44,4 +58,11 @@ export interface UpdateChallengeRequest {
   maxParticipants: number;
   deadline: string;
   originURL: string;
+}
+
+export enum Order {
+  applyFirst = 'applyFirst',
+  applyLast = 'applyLast',
+  deadLineFirst = 'deadLineFirst',
+  deadLineLast = 'deadLineLast',
 }

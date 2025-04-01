@@ -1,9 +1,25 @@
 import ChallengesService from './challenges.service';
 import { isValidEnumValue } from '../../utils/isValidEnumValue';
 import { ApprovalStatus, DocumentType, FieldType } from '@prisma/client';
-import { DeleteController, GetController, PatchController, PostController } from '../../types/express';
-import { GetChallengeListResponse, GetChallengeResponse, UpdateChallengeResponse, PostChallengeResponse, DeleteChallengeResponse } from './challenges.type';
-import { ChallengeRequestBody, ChallengeRequestParams, ChallengeRequestQueries } from './challenges.validation';
+import {
+  DeleteController,
+  GetController,
+  PatchController,
+  PostController,
+} from '../../types/express';
+import {
+  GetChallengeListResponse,
+  GetChallengeResponse,
+  UpdateChallengeResponse,
+  PostChallengeResponse,
+  DeleteChallengeResponse,
+  GetChallengeListByAdminResponse,
+} from './challenges.type';
+import {
+  ChallengeRequestBody,
+  ChallengeRequestParams,
+  ChallengeRequestQueries,
+} from './challenges.validation';
 
 /**
  * @swagger
@@ -113,7 +129,11 @@ import { ChallengeRequestBody, ChallengeRequestParams, ChallengeRequestQueries }
  *       500:
  *         description: 서버 오류
  */
-const getChallenge: GetController<ChallengeRequestParams, never, GetChallengeResponse> = async (req, res, next) => {
+const getChallenge: GetController<
+  ChallengeRequestParams,
+  never,
+  GetChallengeResponse
+> = async (req, res, next) => {
   try {
     const id = req.params.challengeId;
     const result = await ChallengesService.getChallenge(id);
@@ -127,6 +147,107 @@ const getChallenge: GetController<ChallengeRequestParams, never, GetChallengeRes
   }
 };
 
+/**
+ * @swagger
+ * /api/challenges/manage:
+ *   get:
+ *     tags:
+ *       - Challenges
+ *     summary: 관리자용 챌린지 목록 조회
+ *     description: 관리자가 승인 상태, 키워드, 정렬 기준 등을 기반으로 챌린지 목록을 조회합니다.
+ *     parameters:
+ *       - in: query
+ *         name: orderBy
+ *         schema:
+ *           type: string
+ *           enum: [applyFirst, applyLast, deadLineFirst, deadLineLast] # Replace with actual sortable fields
+ *         description: 챌린지 정렬 기준
+ *       - in: query
+ *         name: approvalStatus
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, APPROVED, REJECTED] # Replace with actual approval status values
+ *         description: 승인 상태로 필터링
+ *       - in: query
+ *         name: keyword
+ *         schema:
+ *           type: string
+ *         description: 제목 또는 설명에서 키워드 검색
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: 페이지 번호
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: 페이지당 항목 수
+ *     responses:
+ *       200:
+ *         description: 성공적으로 챌린지 목록 반환
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 challenges:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: 챌린지 ID
+ *                       title:
+ *                         type: string
+ *                         description: 챌린지 제목
+ *                       approvalStatus:
+ *                         type: string
+ *                         description: 승인 상태
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: 생성 날짜
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: 마지막 업데이트 날짜
+ *                 totalCount:
+ *                   type: integer
+ *                   description: 총 챌린지 수
+ *       403:
+ *         description: 관리자 권한 없음
+ *       500:
+ *         description: 서버 오류
+ */
+const getChallengeListByAdmin: GetController<
+  never,
+  ChallengeRequestQueries,
+  GetChallengeListByAdminResponse
+> = async (req, res, next) => {
+  try {
+    const authRole = req.user?.role;
+    if (authRole !== "ADMIN") {
+      next({ status: 403 });
+      return;
+    }
+
+    const { orderBy, page = '1', limit = '10', approvalStatus, keyword } = req.query;
+    const result = await ChallengesService.getChallengeListByAdmin({
+      orderBy,
+      page,
+      limit,
+      approvalStatus,
+      keyword,
+    });
+    res.status(200).send(result);
+  } catch (err) {
+    next(err);
+  }
+};
 
 /**
  * @swagger
@@ -208,12 +329,15 @@ const getChallenge: GetController<ChallengeRequestParams, never, GetChallengeRes
  *         description: Internal server error
  */
 
-const getChallengeList: GetController<never,ChallengeRequestQueries,GetChallengeListResponse> = async (req, res, next) => {
+const getChallengeList: GetController<
+  never,
+  ChallengeRequestQueries,
+  GetChallengeListResponse
+> = async (req, res, next) => {
   try {
     const {
       documentType,
       fields,
-      approvalStatus,
       keyword,
       page = '1',
       limit = '10',
@@ -222,7 +346,6 @@ const getChallengeList: GetController<never,ChallengeRequestQueries,GetChallenge
     const result = await ChallengesService.getChallengeList({
       documentType,
       fields,
-      approvalStatus,
       keyword,
       page,
       limit,
@@ -232,7 +355,6 @@ const getChallengeList: GetController<never,ChallengeRequestQueries,GetChallenge
     next(err);
   }
 };
-
 
 /**
  * @swagger
@@ -338,7 +460,11 @@ const getChallengeList: GetController<never,ChallengeRequestQueries,GetChallenge
  *       500:
  *         description: 서버 오류
  */
-const postChallenge: PostController<never,ChallengeRequestBody,PostChallengeResponse> = async (req, res, next) => {
+const postChallenge: PostController<
+  never,
+  ChallengeRequestBody,
+  PostChallengeResponse
+> = async (req, res, next) => {
   try {
     const {
       title,
@@ -357,10 +483,10 @@ const postChallenge: PostController<never,ChallengeRequestBody,PostChallengeResp
       maxParticipants,
       deadline,
       originURL,
-    })
-    res.status(200).send({challenge: result, code: 200});
+    });
+    res.status(200).send({ challenge: result, code: 200 });
   } catch (err) {
-    next(err)
+    next(err);
   }
 };
 
@@ -476,7 +602,11 @@ const postChallenge: PostController<never,ChallengeRequestBody,PostChallengeResp
  *       500:
  *         description: 서버 오류
  */
-const patchChallenge: PatchController<ChallengeRequestParams,ChallengeRequestBody,UpdateChallengeResponse> = async (req, res, next) => {
+const patchChallenge: PatchController<
+  ChallengeRequestParams,
+  ChallengeRequestBody,
+  UpdateChallengeResponse
+> = async (req, res, next) => {
   try {
     const id = req.params.challengeId;
     const {
@@ -497,12 +627,12 @@ const patchChallenge: PatchController<ChallengeRequestParams,ChallengeRequestBod
       maxParticipants,
       deadline,
       originURL,
-    })
-    res.status(200).send({challenge: result, code: 200});
+    });
+    res.status(200).send({ challenge: result, code: 200 });
   } catch (err) {
-    next(err)
+    next(err);
   }
-}
+};
 
 /**
  * @swagger
@@ -563,7 +693,11 @@ const patchChallenge: PatchController<ChallengeRequestParams,ChallengeRequestBod
  *                   description: 에러 메시지
  *                   example: "서버 오류가 발생했습니다."
  */
-const deleteChallenge: DeleteController<ChallengeRequestParams, never, DeleteChallengeResponse> = async (req, res, next) => {
+const deleteChallenge: DeleteController<
+  ChallengeRequestParams,
+  never,
+  DeleteChallengeResponse
+> = async (req, res, next) => {
   try {
     const id = req.params.challengeId;
     const result = await ChallengesService.deleteChallenge(id);
@@ -571,7 +705,7 @@ const deleteChallenge: DeleteController<ChallengeRequestParams, never, DeleteCha
       next({ statusCode: 404 });
       return;
     }
-    res.status(200).send({code: 200});
+    res.status(200).send({ code: 200 });
   } catch (err) {
     next(err);
   }
@@ -579,10 +713,11 @@ const deleteChallenge: DeleteController<ChallengeRequestParams, never, DeleteCha
 
 const ChallengesController = {
   getChallengeList,
+  getChallengeListByAdmin,
   getChallenge,
   postChallenge,
   patchChallenge,
-  deleteChallenge
+  deleteChallenge,
 };
 
 export default ChallengesController;

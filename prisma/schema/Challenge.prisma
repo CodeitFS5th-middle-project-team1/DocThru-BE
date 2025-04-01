@@ -1,5 +1,6 @@
 model Challenge {
   id                  String         @id @default(uuid())
+  idx                 Int            @default(autoincrement())
   field               FieldType
   userId              String // User 모델과의 연결을 위한 외래 키
   title               String
@@ -7,14 +8,15 @@ model Challenge {
   documentType        DocumentType
   deadline            DateTime // 마감 일자
   maxParticipants     Int // 최대 참가자 수
-  currentParticipants Int @default(0) // 현재 참가자 수
+  currentParticipants Int            @default(0) // 현재 참가자 수
   description         String // 챌린지 설명
   deletedAt           DateTime?
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
   deletedReason       String? // 삭제 이유 
   rejectedReason      String? // 거절 이유 
-  approvalStatus      ApprovalStatus @default(PENDING)// 관리자 승인 상태 
+  approvalStatus      ApprovalStatus @default(PENDING) // 관리자 승인 상태 
+  approvalAt          DateTime?
 
   // Relations
   user                  User                   @relation(fields: [userId], references: [id])
