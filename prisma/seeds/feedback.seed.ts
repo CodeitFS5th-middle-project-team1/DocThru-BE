@@ -7,12 +7,15 @@ export const seedFeedbacks = async (prisma: PrismaClient) => {
 
   type CreateFeedbackInput = {
     id: string;
+    idx: number;
     translationId: string;
     userId: string;
     userNickname: string;
     userProfileImg?: string | null;
     content: string;
   };
+
+  let idx = 0;
 
   const feedbacks: CreateFeedbackInput[] = [];
 
@@ -27,6 +30,7 @@ export const seedFeedbacks = async (prisma: PrismaClient) => {
     for (const user of feedbackUsers) {
       feedbacks.push({
         id: uuidv4(),
+        idx: idx++,
         translationId: translation.id,
         userId: user.id,
         userNickname: user.nickname,
