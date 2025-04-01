@@ -76,7 +76,14 @@ const getChallengeList = async ({
     }),
   ]);
 
-  return { challenges, totalCount };
+  const challengesWithIsMax = challenges.map((challenge) => {
+    if(challenge.maxParticipants === challenge.currentParticipants){
+      return {...challenge, isMax: true};
+    }
+    else return {...challenge, isMax: false};
+  })
+
+  return { challengesWithIsMax, totalCount };
 };
 
 const postChallenge = async ({

@@ -23,13 +23,14 @@ export interface GetChallengeResponse {
 }
 
 export interface GetChallengeListResponse {
-  challenges:{
+  challengesWithIsMax:{
     title: string;
     field: FieldType;
     maxParticipants: number;
     currentParticipants: number;
     deadline: Date;
     documentType: DocumentType;
+    isMax: boolean;
   }[]
   totalCount: number;
 }
