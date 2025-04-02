@@ -94,11 +94,11 @@ const getChallengeListParticipating = async ({
   page,
   limit,
   userId,
-  onlySuccess,
+  isExpired,
 }: GetChallengeListParticipating) => {
   const pageNum = Number(page);
   const limitNum = Number(limit);
-  const successBoolean = onlySuccess === "true";
+  const successBoolean = isExpired === "true";
 
   const skip = (pageNum - 1) * limitNum;
   const fieldCondition =

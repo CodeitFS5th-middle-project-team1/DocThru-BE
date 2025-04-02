@@ -90,7 +90,7 @@ export interface GetChallengeListParticipating {
   page: string | undefined;
   limit: string | undefined;
   userId: string;
-  onlySuccess: string;
+  isExpired: string;
 }
 
 

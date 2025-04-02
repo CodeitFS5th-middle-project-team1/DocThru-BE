@@ -532,11 +532,11 @@ const getChallengeList: GetController<
  *           default: 10
  *         description: 페이지당 항목 수
  *       - in: query
- *         name: onlySuccess
+ *         name: isExpired
  *         schema:
  *           type: string
  *           enum: ["true", "false"]
- *         description: 성공한 챌린지만 필터링 여부
+ *         description: 성공한 챌린지만 필터링 여부 // true일 때 마감된 챌린지, false일 때 참여중 챌린지
  *     responses:
  *       200:
  *         description: 성공적으로 챌린지 목록 반환
@@ -606,7 +606,7 @@ const getChallengeListParticipating: GetController<
       keyword,
       page = '1',
       limit = '10',
-      onlySuccess = "false",
+      isExpired = "false",
     } = req.query;
     const userId = req.user?.id;
     const result = await ChallengesService.getChallengeListParticipating({
@@ -616,7 +616,7 @@ const getChallengeListParticipating: GetController<
       page,
       limit,
       userId: userId as string,
-      onlySuccess,
+      isExpired,
     });
     res.status(200).send(result);
   } catch (err) {
