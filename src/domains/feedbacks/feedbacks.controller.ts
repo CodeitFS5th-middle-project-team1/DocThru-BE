@@ -411,7 +411,7 @@ const patchFeedback: PatchController<
  *         schema:
  *           type: string
  *     responses:
- *       204:
+ *       200:
  *         description: 피드백이 성공적으로 삭제됨
  *         content:
  *           application/json:
@@ -495,7 +495,7 @@ const deleteFeedback: DeleteController<
 
   const deletedFeedback = await FeedbackService.deleteFeedback(feedbackId);
 
-  res.status(204).json({
+  res.status(200).json({
     feedback: deletedFeedback,
   });
   return;
