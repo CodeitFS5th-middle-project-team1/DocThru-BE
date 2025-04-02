@@ -22,7 +22,19 @@ const approveChallenge = async (id: string) => {
   return updateChallenge;
 };
 
+const rejectChallenge = async (id: string, rejectedReason: string) => {
+  const updateChallenge = await prisma.challenge.update({
+    where: { id },
+    data: {
+      rejectedReason,
+      approvalStatus: 'REJECTED',
+      rejectedAt: new Date(),
+    },
+  });
+  return updateChallenge;
+};
 export default {
   checkChallenge,
   approveChallenge,
+  rejectChallenge,
 };
