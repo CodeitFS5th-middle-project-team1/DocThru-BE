@@ -328,6 +328,19 @@ const deleteChallengeForce = async (id: string, deletedReason:string): Promise<G
   return { challenge };
 };
 
+const deleteChallenge = async (id: string): Promise<GetChallengeResponse> => {
+  const challenge = await prisma.challenge.update({
+    where: {
+      id,
+    },
+    data: {
+      deletedAt: new Date(),
+      approvalStatus: "DELETED",
+    }
+  });
+  return { challenge };
+};
+
 const ChallengesService = {
   getChallengeList,
   getChallengeListByUser,
@@ -336,6 +349,7 @@ const ChallengesService = {
   createChallenge,
   updateChallenge,
   deleteChallengeForce,
+  deleteChallenge,
 };
 
 export default ChallengesService;

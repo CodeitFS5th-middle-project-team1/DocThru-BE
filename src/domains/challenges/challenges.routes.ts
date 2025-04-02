@@ -46,6 +46,12 @@ router.patch(
   validateRequestData({ params: ChallengeParamsSchema }),
   ChallengesController.deleteChallengeForce
 ); //챌린지 관리자 삭제
+router.patch(
+  '/:challengeId/remove',
+  verifyJWTToken,
+  validateRequestData({ params: ChallengeParamsSchema }),
+  ChallengesController.deleteChallenge
+); //챌린지 관리자 삭제
 router.get(
   '/:challengeId',
   verifyJWTToken,
