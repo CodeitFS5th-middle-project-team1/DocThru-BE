@@ -40,12 +40,12 @@ router.patch(
   validateRequestData({ params: ChallengeParamsSchema, body: ChallengeBodySchema }),
   ChallengesController.patchChallenge
 ); //챌린지 수정
-router.delete(
-  '/:challengeId',
+router.patch(
+  '/:challengeId/removeForce',
   verifyJWTToken,
   validateRequestData({ params: ChallengeParamsSchema }),
-  ChallengesController.deleteChallenge
-); //챌린지 삭제
+  ChallengesController.deleteChallengeForce
+); //챌린지 관리자 삭제
 router.get(
   '/:challengeId',
   verifyJWTToken,

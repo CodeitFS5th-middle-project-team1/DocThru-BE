@@ -779,8 +779,8 @@ const patchChallenge: PatchController<
 
 /**
  * @swagger
- * /api/challenges/{challengeId}:
- *   delete:
+ * /api/challenges/{challengeId}/removeForce:
+ *   patch:
  *     tags:
  *       - Challenges
  *     summary: 챌린지 삭제
@@ -840,7 +840,7 @@ const patchChallenge: PatchController<
  *                   description: 에러 메시지
  *                   example: "서버 오류가 발생했습니다."
  */
-const deleteChallenge: DeleteController<
+const deleteChallengeForce: DeleteController<
   ChallengeRequestParams,
   never,
   DeleteChallengeResponse
@@ -848,17 +848,17 @@ const deleteChallenge: DeleteController<
   try {
     const id = req.params.challengeId;
     const existChallenge = await ChallengesService.getChallenge(id);
-    const isEqualUser = req.user?.id === existChallenge.challenge?.userId;
     const authRole = req.user?.role;
+    const deletedReason = req.body.deletedReason;
     if(!existChallenge.challenge){
       next({ status: 404 });
       return;
     }
-    if (authRole !== "ADMIN" && !isEqualUser) {
+    if (authRole !== "ADMIN") {
       next({ status: 403 });
       return;
     }
-    const result = await ChallengesService.deleteChallenge(id);
+    const result = await ChallengesService.deleteChallengeForce(id,deletedReason);
     if (!result) {
       next({ statusCode: 404 });
       return;
@@ -876,7 +876,7 @@ const ChallengesController = {
   getChallenge,
   postChallenge,
   patchChallenge,
-  deleteChallenge,
+  deleteChallengeForce,
 };
 
 export default ChallengesController;
