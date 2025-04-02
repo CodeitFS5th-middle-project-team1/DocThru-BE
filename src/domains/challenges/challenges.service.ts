@@ -63,6 +63,8 @@ const getChallengeList = async ({
         currentParticipants: true,
         deadline: true,
         documentType: true,
+        isParticipantsFull: true,
+        isDeadlineFull: true,
       },
     }),
     prisma.challenge.count({
@@ -152,6 +154,8 @@ const getChallengeListByAdmin = async ({
         createdAt: true,
         documentType: true,
         approvalStatus: true,
+        isParticipantsFull: true,
+        isDeadlineFull: true,
       },
     }),
     prisma.challenge.count({
@@ -235,6 +239,8 @@ const getChallengeListByUser = async ({
         createdAt: true,
         documentType: true,
         approvalStatus: true,
+        isParticipantsFull: true,
+        isDeadlineFull: true,
       },
     }),
     prisma.challenge.count({
