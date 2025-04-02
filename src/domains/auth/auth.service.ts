@@ -31,6 +31,16 @@ const checkEmail = async (email: string) => {
   return user;
 };
 
+const checkId = async (id: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  return user;
+};
+
 const checkPassword = async (
   userInputPassword: string,
   hashedPassword: string
@@ -74,6 +84,7 @@ const updateRefreshToken = async (id: string, newRefreshToken: string) => {
 const AuthService = {
   createUser,
   checkEmail,
+  checkId,
   checkPassword,
   saveRefreshToken,
   getRefreshToken,
