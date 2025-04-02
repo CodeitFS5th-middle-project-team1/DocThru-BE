@@ -14,6 +14,7 @@ export const ChallengeQueriesSchema = z.object({
   page: z.string({ message: "페이지는 문자열이어야 합니다."}).optional(),
   limit: z.string({ message: "페이지 사이즈는 문자열이어야 합니다."}).optional(),
   orderBy: z.nativeEnum(Order,{ errorMap: () => ({ message: "잘못된 정렬 유형입니다."})}).optional(),
+  onlySuccess: z.string({ message: "boolean 타입의 string으로 입력해주세요."}).optional(),
 });
 
 export const ChallengeBodySchema = z.object({

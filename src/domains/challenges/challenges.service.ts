@@ -94,9 +94,11 @@ const getChallengeListParticipating = async ({
   page,
   limit,
   userId,
+  onlySuccess,
 }: GetChallengeListParticipating) => {
   const pageNum = Number(page);
   const limitNum = Number(limit);
+  const successBoolean = onlySuccess === "true";
 
   const skip = (pageNum - 1) * limitNum;
   const fieldCondition =
@@ -118,6 +120,7 @@ const getChallengeListParticipating = async ({
             { description: { contains: keyword, mode: 'insensitive' } },
           ],
         }),
+        isDeadlineFull: successBoolean,
         userId,
       },
       skip,
@@ -146,12 +149,14 @@ const getChallengeListParticipating = async ({
             { description: { contains: keyword, mode: 'insensitive' } },
           ],
         }),
+        ...({ isDeadlineFull: successBoolean }),
         userId,
       },
     }),
   ]);
 
   return { challenges, totalCount };
+
 };
 
 

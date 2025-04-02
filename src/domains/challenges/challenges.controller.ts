@@ -493,7 +493,6 @@ const getChallengeList: GetController<
     next(err);
   }
 };
-
 /**
  * @swagger
  * /api/challenges/participating:
@@ -532,6 +531,12 @@ const getChallengeList: GetController<
  *           type: integer
  *           default: 10
  *         description: 페이지당 항목 수
+ *       - in: query
+ *         name: onlySuccess
+ *         schema:
+ *           type: string
+ *           enum: ["true", "false"]
+ *         description: 성공한 챌린지만 필터링 여부
  *     responses:
  *       200:
  *         description: 성공적으로 챌린지 목록 반환
@@ -601,6 +606,7 @@ const getChallengeListParticipating: GetController<
       keyword,
       page = '1',
       limit = '10',
+      onlySuccess = "false",
     } = req.query;
     const userId = req.user?.id;
     const result = await ChallengesService.getChallengeListParticipating({
@@ -610,6 +616,7 @@ const getChallengeListParticipating: GetController<
       page,
       limit,
       userId: userId as string,
+      onlySuccess,
     });
     res.status(200).send(result);
   } catch (err) {
@@ -918,7 +925,7 @@ const patchChallenge: PatchController<
  *   patch:
  *     tags:
  *       - Challenges
- *     summary: 챌린지 삭제
+ *     summary: 관리자 전용 챌린지 삭제
  *     description: 챌린지 ID를 이용해 기존 챌린지를 삭제합니다.
  *     parameters:
  *       - in: path
