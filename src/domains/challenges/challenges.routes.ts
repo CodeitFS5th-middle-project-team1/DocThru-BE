@@ -17,6 +17,12 @@ router.get(
   ChallengesController.getChallengeList
 ); //챌린지 목록 조회
 router.get(
+  '/participating',
+  verifyJWTToken,
+  validateRequestData({ query: ChallengeQueriesSchema }),
+  ChallengesController.getChallengeListParticipating
+); //챌린지 참여중 목록 조회
+router.get(
   '/user',
   verifyJWTToken,
   validateRequestData({ query: ChallengeQueriesSchema }),

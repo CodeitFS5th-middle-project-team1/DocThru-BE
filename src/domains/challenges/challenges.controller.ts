@@ -496,6 +496,129 @@ const getChallengeList: GetController<
 
 /**
  * @swagger
+ * /api/challenges/participating:
+ *   get:
+ *     tags:
+ *       - Challenges
+ *     summary: 챌린지 목록 조회
+ *     description: 필터 및 정렬 조건을 기반으로 챌린지 목록을 조회합니다.
+ *     parameters:
+ *       - in: query
+ *         name: documentType
+ *         schema:
+ *           type: string
+ *           enum: [BLOG, OFFICIAL]
+ *         description: 문서 타입으로 필터링
+ *       - in: query
+ *         name: fields
+ *         schema:
+ *           type: string
+ *           enum: [NEXTJS, MODERNJS, API, WEB, CAREER]
+ *         description: 챌린지 분야로 필터링
+ *       - in: query
+ *         name: keyword
+ *         schema:
+ *           type: string
+ *         description: 제목 또는 설명에서 키워드 검색
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: 페이지 번호
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: 페이지당 항목 수
+ *     responses:
+ *       200:
+ *         description: 성공적으로 챌린지 목록 반환
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 challenges:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: 챌린지 ID
+ *                       title:
+ *                         type: string
+ *                         description: 챌린지 제목
+ *                       documentType:
+ *                         type: string
+ *                         description: 문서 타입
+ *                       field:
+ *                         type: string
+ *                         description: 챌린지 분야
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: 생성 날짜
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: 마지막 업데이트 날짜
+ *                 totalCount:
+ *                   type: integer
+ *                   description: 총 챌린지 수
+ *             example:
+ *               challenges:
+ *                 - id: "123e4567-e89b-12d3-a456-426614174000"
+ *                   title: "프론트엔드 번역 챌린지"
+ *                   documentType: "BLOG"
+ *                   field: "NEXTJS"
+ *                   createdAt: "2025-03-29T12:00:00.000Z"
+ *                   updatedAt: "2025-03-30T12:00:00.000Z"
+ *                 - id: "789e4567-e89b-12d3-a456-426614174001"
+ *                   title: "백엔드 번역 챌린지"
+ *                   documentType: "OFFICIAL"
+ *                   field: "API"
+ *                   createdAt: "2025-03-28T12:00:00.000Z"
+ *                   updatedAt: "2025-03-29T12:00:00.000Z"
+ *               totalCount: 2
+ *       400:
+ *         description: 잘못된 요청 데이터
+ *       500:
+ *         description: 서버 오류
+ */
+
+const getChallengeListParticipating: GetController<
+  never,
+  ChallengeRequestQueries,
+  GetChallengeListResponse
+> = async (req, res, next) => {
+  try {
+    const {
+      documentType,
+      fields,
+      keyword,
+      page = '1',
+      limit = '10',
+    } = req.query;
+    const userId = req.user?.id;
+    const result = await ChallengesService.getChallengeListParticipating({
+      documentType,
+      fields,
+      keyword,
+      page,
+      limit,
+      userId: userId as string,
+    });
+    res.status(200).send(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * @swagger
  * /api/challenges:
  *   post:
  *     tags:
@@ -984,6 +1107,7 @@ const ChallengesController = {
   getChallengeList,
   getChallengeListByUser,
   getChallengeListByAdmin,
+  getChallengeListParticipating,
   getChallenge,
   postChallenge,
   patchChallenge,

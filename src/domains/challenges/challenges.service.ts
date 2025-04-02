@@ -3,6 +3,7 @@ import prisma from '../../prismaClient';
 import {
   CreateChallengeArgs,
   GetChallengeListByUserArgs,
+  GetChallengeListParticipating,
   GetChallengeResponse,
   Order,
   UpdateChallengeArgs,
@@ -82,15 +83,77 @@ const getChallengeList = async ({
     }),
   ]);
 
-
-  const challengesWithIsMax = challenges.map((challenge) => {
-    if (challenge.maxParticipants === challenge.currentParticipants) {
-      return { ...challenge, isMax: true };
-    } else return { ...challenge, isMax: false };
-  });
-
-  return { challengesWithIsMax, totalCount };
+  return { challenges, totalCount };
 };
+
+
+const getChallengeListParticipating = async ({
+  documentType,
+  fields,
+  keyword,
+  page,
+  limit,
+  userId,
+}: GetChallengeListParticipating) => {
+  const pageNum = Number(page);
+  const limitNum = Number(limit);
+
+  const skip = (pageNum - 1) * limitNum;
+  const fieldCondition =
+    Array.isArray(fields) && fields.length > 0
+      ? { in: fields as FieldType[] }
+      : fields
+      ? { equals: fields as FieldType }
+      : undefined;
+
+  const [challenges, totalCount] = await Promise.all([
+    prisma.challenge.findMany({
+      where: {
+        documentType: documentType || undefined,
+        field: fieldCondition || undefined,
+        approvalStatus: 'APPROVED',
+        ...(keyword && {
+          OR: [
+            { title: { contains: keyword, mode: 'insensitive' } },
+            { description: { contains: keyword, mode: 'insensitive' } },
+          ],
+        }),
+        userId,
+      },
+      skip,
+      take: limitNum,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        field: true,
+        maxParticipants: true,
+        currentParticipants: true,
+        deadline: true,
+        documentType: true,
+        isParticipantsFull: true,
+        isDeadlineFull: true,
+      },
+    }),
+    prisma.challenge.count({
+      where: {
+        documentType: documentType || undefined,
+        field: fieldCondition || undefined,
+        approvalStatus: 'APPROVED',
+        ...(keyword && {
+          OR: [
+            { title: { contains: keyword, mode: 'insensitive' } },
+            { description: { contains: keyword, mode: 'insensitive' } },
+          ],
+        }),
+        userId,
+      },
+    }),
+  ]);
+
+  return { challenges, totalCount };
+};
+
 
 const getChallengeListByAdmin = async ({
   orderBy,
@@ -345,6 +408,7 @@ const ChallengesService = {
   getChallengeList,
   getChallengeListByUser,
   getChallengeListByAdmin,
+  getChallengeListParticipating,
   getChallenge,
   createChallenge,
   updateChallenge,
