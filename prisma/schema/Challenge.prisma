@@ -15,8 +15,11 @@ model Challenge {
   updatedAt           DateTime       @updatedAt
   deletedReason       String? // 삭제 이유 
   rejectedReason      String? // 거절 이유 
+  rejectedAt          DateTime?
   approvalStatus      ApprovalStatus @default(PENDING) // 관리자 승인 상태 
   approvalAt          DateTime?
+  participantsFull    Boolean        @default(false)
+  deadlineFull        Boolean        @default(false)
 
   // Relations
   user                  User                   @relation(fields: [userId], references: [id])
@@ -44,4 +47,5 @@ enum ApprovalStatus {
   PENDING // 승인 대기중
   APPROVED // 승인됨
   REJECTED // 거절됨
+  DELETED
 }
