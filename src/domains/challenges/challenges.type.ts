@@ -24,6 +24,7 @@ export interface GetChallengeResponse {
 
 export interface GetChallengeListByAdminResponse {
   challenges: {
+    id: string;
     idx: number;
     title: string;
     field: FieldType;
@@ -38,6 +39,7 @@ export interface GetChallengeListByAdminResponse {
 
 export interface GetChallengeListResponse {
   challengesWithIsMax: {
+    id: string;
     title: string;
     field: FieldType;
     maxParticipants: number;
@@ -49,7 +51,7 @@ export interface GetChallengeListResponse {
   totalCount: number;
 }
 
-export interface UpdateChallengeRequest {
+export interface UpdateChallengeArgs {
   id: string;
   title: string;
   description: string;
@@ -59,6 +61,27 @@ export interface UpdateChallengeRequest {
   deadline: string;
   originURL: string;
 }
+
+export interface CreateChallengeArgs {
+  userId: string;
+  title: string;
+  description: string;
+  documentType: DocumentType;
+  field: FieldType;
+  maxParticipants: number;
+  deadline: string;
+  originURL: string;
+}
+
+export interface GetChallengeListByUserArgs {
+  orderBy: Order | undefined;
+  page: string | undefined;
+  limit: string | undefined;
+  approvalStatus: ApprovalStatus | undefined;
+  keyword: string | undefined;
+  userId: string;
+}
+
 
 export enum Order {
   applyFirst = 'applyFirst',

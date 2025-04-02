@@ -13,32 +13,42 @@ const router = Router();
 
 router.get(
   '/',
-  validateRequestData({ params: ChallengeQueriesSchema }),
+  validateRequestData({ query: ChallengeQueriesSchema }),
   ChallengesController.getChallengeList
 ); //챌린지 목록 조회
 router.get(
+  '/user',
+  verifyJWTToken,
+  validateRequestData({ query: ChallengeQueriesSchema }),
+  ChallengesController.getChallengeListByUser
+); // 유저의 챌린지 신청 기록 조회
+router.get(
   '/manage',
   verifyJWTToken,
-  validateRequestData({ params: ChallengeQueriesSchema }),
+  validateRequestData({ query: ChallengeQueriesSchema }),
   ChallengesController.getChallengeListByAdmin
 );
 router.post(
   '/',
+  verifyJWTToken,
   validateRequestData({ body: ChallengeBodySchema }),
   ChallengesController.postChallenge
 ); //챌린지 신청
 router.patch(
   '/:challengeId',
-  validateRequestData({ params: ChallengeParamsSchema }),
+  verifyJWTToken,
+  validateRequestData({ params: ChallengeParamsSchema, body: ChallengeBodySchema }),
   ChallengesController.patchChallenge
 ); //챌린지 수정
 router.delete(
   '/:challengeId',
+  verifyJWTToken,
   validateRequestData({ params: ChallengeParamsSchema }),
   ChallengesController.deleteChallenge
 ); //챌린지 삭제
 router.get(
   '/:challengeId',
+  verifyJWTToken,
   validateRequestData({ params: ChallengeParamsSchema }),
   ChallengesController.getChallenge
 ); //챌린지 상세 조회
