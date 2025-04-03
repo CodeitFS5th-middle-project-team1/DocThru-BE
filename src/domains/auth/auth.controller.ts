@@ -178,14 +178,17 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   const refreshToken = jwtUtils.createToken(existedUser, 'refresh');
   await AuthService.saveRefreshToken(existedUser.email, refreshToken);
 
+  res.set('Authorization', `Bearer ${accessToken}`);
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     sameSite: 'none',
     secure: true,
   });
 
+  const { password: p, refreshToken: r, ...restUser } = existedUser;
+
   res.status(200).json({
-    accessToken,
+    user: restUser,
   });
 };
 
