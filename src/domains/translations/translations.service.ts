@@ -73,7 +73,7 @@ const getTranslationById = async ({
       id: challengeId,
       deletedAt: null, // 삭제되지 않은 챌린지만 조회
     },
-    select: { id: true },
+    select: { id: true, documentType: true, field: true },
   });
 
   if (!challenge) {
@@ -133,6 +133,8 @@ const getTranslationById = async ({
     challengeId: translation.challengeId,
     likeCount: translation.likeCount,
     isLiked,
+    documentType: challenge.documentType,
+    field: challenge.field,
     createdAt: translation.createdAt,
     updatedAt: translation.updatedAt,
   };

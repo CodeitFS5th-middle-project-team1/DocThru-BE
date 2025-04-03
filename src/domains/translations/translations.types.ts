@@ -1,5 +1,5 @@
 import z from 'zod';
-import { UserRole } from '@prisma/client';
+import { DocumentType, FieldType, UserRole } from '@prisma/client';
 // export const TranslationParamsSchema = z.object({
 //   challengeId: z.string().uuid({ message: 'id는 uuid 형식이여야 합니다.' }),
 // });
@@ -82,7 +82,9 @@ export const UserInfoSchema = z.object({
   id: z.string(),
   nickname: z.string().nullable(),
 });
-
+// enum 타입을 zod 스키마로 변환
+const DocumentTypeSchema = z.nativeEnum(DocumentType);
+const FieldTypeSchema = z.nativeEnum(FieldType);
 // TranslationResponseSchema 수정
 export const TranslationResponseSchema = z.object({
   id: z.string(),
@@ -94,6 +96,8 @@ export const TranslationResponseSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date().optional(),
   isLiked: z.boolean().optional(),
+  documentType: DocumentTypeSchema.optional(), // 챌린지의 문서 타입
+  field: FieldTypeSchema.optional(), // 챌린지의 분야
 });
 
 export type UserInfo = z.infer<typeof UserInfoSchema>;
@@ -137,3 +141,8 @@ export const TranslationDeleteBodySchema = z.object({
 
 // 번역물 삭제 요청 바디 타입
 export type TranslationDeleteBody = z.infer<typeof TranslationDeleteBodySchema>;
+export const TranslationDetailResponseSchema = TranslationResponseSchema.extend(
+  {
+    isLiked: z.boolean().optional(),
+  }
+);
