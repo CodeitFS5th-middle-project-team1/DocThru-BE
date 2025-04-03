@@ -489,13 +489,13 @@ const deleteTranslation = async ({
             },
           });
 
-          console.log(
-            `챌린지 ID ${challengeId}의 참가자 수 업데이트: ${
-              challenge.currentParticipants
-            } -> ${newParticipantCount}, 상태: ${
-              challenge.isParticipantsFull ? '가득참' : '여유있음'
-            } -> 여유있음`
-          );
+          // console.log(
+          //   `챌린지 ID ${challengeId}의 참가자 수 업데이트: ${
+          //     challenge.currentParticipants
+          //   } -> ${newParticipantCount}, 상태: ${
+          //     challenge.isParticipantsFull ? '가득참' : '여유있음'
+          //   } -> 여유있음`
+          // );
         }
       }
     });
