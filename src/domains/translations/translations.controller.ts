@@ -124,7 +124,7 @@ const getTranslationList: GetController<
  *  /api/challenges/{challengeId}/translations:
  *   post:
  *     summary: 번역 작업물 생성 (제출)
- *     description: 사용자가 완성한 번역 작업물을 제출합니다. 제목, 내용, 사용자 ID가 필요합니다.
+ *     description: 사용자가 완성한 번역 작업물을 제출합니다. 챌린지의 참가자 수와 마감 기한을 검사하고, 번역물 생성 시 참가자 수를 자동으로 증가시킵니다.
  *     tags: [Translations]
  *     parameters:
  *       - in: path
@@ -164,51 +164,49 @@ const getTranslationList: GetController<
  *             schema:
  *               type: object
  *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                   description: 요청 성공 여부
- *                 message:
+ *                 id:
  *                   type: string
- *                   example: "Translation created successfully"
- *                   description: 성공 메시지
- *                 translation:
+ *                   description: 생성된 번역물의 ID
+ *                 title:
+ *                   type: string
+ *                   description: 번역물 제목
+ *                 content:
+ *                   type: string
+ *                   description: 번역물 내용
+ *                 user:
  *                   type: object
  *                   properties:
  *                     id:
  *                       type: string
- *                       description: 생성된 번역물의 ID
- *                     title:
+ *                       description: 사용자 ID
+ *                     nickname:
  *                       type: string
- *                       description: 번역물 제목
- *                     content:
- *                       type: string
- *                       description: 번역물 내용
- *                     userId:
- *                       type: string
- *                       description: 생성한 사용자 ID
- *                     challengeId:
- *                       type: string
- *                       description: 속한 챌린지 ID
- *                     likeCount:
- *                       type: integer
- *                       description: 좋아요 수 (초기값 0)
- *                       example: 0
- *                     createdAt:
- *                       type: string
- *                       format: date-time
- *                       description: 생성 일시
- *
- *       400:
- *         description: 잘못된 요청
+ *                       description: 사용자 닉네임
+ *                 challengeId:
+ *                   type: string
+ *                   description: 속한 챌린지 ID
+ *                 likeCount:
+ *                   type: integer
+ *                   description: 좋아요 수 (초기값 0)
+ *                   example: 0
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: 생성 일시
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: 수정 일시
+ *       403:
+ *         description: 참가자 수 제한 또는 마감 기한 초과
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 message:
+ *                 error:
  *                   type: string
- *                   example: "잘못된 요청입니다. 요청이 올바른 형식이 아닙니다."
+ *                   example: "이 챌린지는 참가자 수 제한으로 인해 더 이상 번역물을 제출할 수 없습니다."
  *       404:
  *         description: 챌린지 또는 사용자를 찾을 수 없음
  *         content:
@@ -216,11 +214,19 @@ const getTranslationList: GetController<
  *             schema:
  *               type: object
  *               properties:
- *                 message:
+ *                 error:
  *                   type: string
- *                   example: "요청한 리소스를 찾을 수 없습니다."
+ *                   example: "챌린지 ID abc123을 찾을 수 없거나 이미 삭제되었습니다."
  *       500:
  *         description: 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "서버 내부 오류가 발생했습니다."
  */
 const postTranslation: PostController<
   TranslationRequestParams,
@@ -472,7 +478,7 @@ const updateTranslation: PatchController<
  *  /api/challenges/{challengeId}/translations/{translationId}:
  *   delete:
  *     summary: 번역물 삭제
- *     description: 번역물을 삭제합니다. 작성자 본인 또는 관리자만 삭제할 수 있습니다.
+ *     description: 번역물을 삭제하고 챌린지의 참가자 수를 자동으로 감소시킵니다. 작성자 본인 또는 관리자만 삭제할 수 있습니다.
  *     tags: [Translations]
  *     parameters:
  *       - in: path
@@ -518,7 +524,17 @@ const updateTranslation: PatchController<
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: "번역물이 성공적으로 삭제되었습니다."
+ *                   example: "번역물 삭제 성공"
+ *       400:
+ *         description: 삭제된 챌린지의 번역물
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "이미 삭제된 챌린지의 번역물은 조작할 수 없습니다."
  *       403:
  *         description: 권한 없음
  *         content:
@@ -526,12 +542,9 @@ const updateTranslation: PatchController<
  *             schema:
  *               type: object
  *               properties:
- *                 code:
- *                   type: integer
- *                   example: 403
- *                 message:
+ *                 error:
  *                   type: string
- *                   example: "번역물 삭제 권한이 없습니다."
+ *                   example: "이 번역물에 대한 삭제 권한이 없습니다."
  *       404:
  *         description: 번역물 또는 챌린지를 찾을 수 없음
  *         content:
@@ -539,12 +552,9 @@ const updateTranslation: PatchController<
  *             schema:
  *               type: object
  *               properties:
- *                 code:
- *                   type: integer
- *                   example: 404
- *                 message:
+ *                 error:
  *                   type: string
- *                   example: "번역물을 찾을 수 없습니다."
+ *                   example: "번역물 ID abc123을 찾을 수 없거나 이미 삭제되었습니다."
  *       500:
  *         description: 서버 오류
  *         content:
@@ -552,17 +562,14 @@ const updateTranslation: PatchController<
  *             schema:
  *               type: object
  *               properties:
- *                 code:
- *                   type: integer
- *                   example: 500
- *                 message:
+ *                 error:
  *                   type: string
  *                   example: "서버 내부 오류가 발생했습니다."
  */
 const deleteTranslation: DeleteController<
   TranslationParamsWithId,
   { userId: string; userRole?: UserRole },
-  { success: boolean; message: string }
+  { success: boolean; message?: string }
 > = async (req, res, next) => {
   try {
     const { challengeId, translationId } = req.params;
