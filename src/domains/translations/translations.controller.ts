@@ -255,7 +255,7 @@ const postTranslation: PostController<
  *  /api/challenges/{challengeId}/translations/{translationId}:
  *   get:
  *     summary: 번역물 상세 조회
- *     description: 특정 번역물의 상세 정보를 조회합니다.
+ *     description: 특정 번역물의 상세 정보를 조회합니다. 챌린지의 문서 타입과 분야 정보도 함께 제공합니다.
  *     tags: [Translations]
  *     parameters:
  *       - in: path
@@ -270,9 +270,11 @@ const postTranslation: PostController<
  *         schema:
  *           type: string
  *         description: 번역물 ID
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: 번역물 상세 조회 성공
+ *         description: 번역물 상세 정보
  *         content:
  *           application/json:
  *             schema:
@@ -287,12 +289,15 @@ const postTranslation: PostController<
  *                 content:
  *                   type: string
  *                   description: 번역물 내용
- *                 userId:
- *                   type: string
- *                   description: 작성자 ID
- *                 userNickname:
- *                   type: string
- *                   description: 작성자 닉네임
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: 작성자 ID
+ *                     nickname:
+ *                       type: string
+ *                       description: 작성자 닉네임
  *                 challengeId:
  *                   type: string
  *                   description: 챌린지 ID
@@ -301,7 +306,17 @@ const postTranslation: PostController<
  *                   description: 좋아요 수
  *                 isLiked:
  *                   type: boolean
- *                   description: 사용자의 좋아요 여부
+ *                   description: 현재 사용자의 좋아요 여부 (인증된 사용자만)
+ *                 documentType:
+ *                   type: string
+ *                   enum: [BLOG, OFFICIAL]
+ *                   description: 챌린지의 문서 타입
+ *                   example: "BLOG"
+ *                 field:
+ *                   type: string
+ *                   enum: [NEXTJS, MODERNJS, API, WEB, CAREER]
+ *                   description: 챌린지의 분야
+ *                   example: "NEXTJS"
  *                 createdAt:
  *                   type: string
  *                   format: date-time
@@ -309,7 +324,7 @@ const postTranslation: PostController<
  *                 updatedAt:
  *                   type: string
  *                   format: date-time
- *                   description: 최종 수정 일시
+ *                   description: 수정 일시
  *       404:
  *         description: 번역물 또는 챌린지를 찾을 수 없음
  *         content:
@@ -317,11 +332,19 @@ const postTranslation: PostController<
  *             schema:
  *               type: object
  *               properties:
- *                 message:
+ *                 error:
  *                   type: string
- *                   example: "번역물을 찾을 수 없습니다."
+ *                   example: "번역물 ID abc123을 찾을 수 없습니다."
  *       500:
  *         description: 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "서버 내부 오류가 발생했습니다."
  */
 const getTranslationById: GetController<
   TranslationRequestParams & { translationId: string },
