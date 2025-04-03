@@ -10,6 +10,7 @@ import {
 } from './translations.types';
 import FeedbackRouter from '../feedbacks/feedbacks.routes';
 import LikeRouter from '../likes/likes.routes';
+import { verifyJWTToken } from '../../middleware/verifyJWTToken';
 import TranslationsController from './translations.controller';
 import { UserRole } from '@prisma/client';
 const router = Router({ mergeParams: true });
@@ -25,6 +26,7 @@ router.get(
 
 router.post(
   '/',
+  verifyJWTToken,
   validateRequestData({
     params: TranslationParamsSchema,
     body: TranslationRequestBody,
@@ -42,6 +44,7 @@ router.get(
 // 번역물 수정
 router.patch(
   '/:translationId',
+  verifyJWTToken,
   validateRequestData({
     params: TranslationParamsWithIdSchema,
     body: TranslationUpdateBodySchema,
@@ -51,6 +54,7 @@ router.patch(
 // 번역물 삭제
 router.delete(
   '/:translationId',
+  verifyJWTToken,
   validateRequestData({
     params: TranslationParamsWithIdSchema,
     body: TranslationDeleteBodySchema,

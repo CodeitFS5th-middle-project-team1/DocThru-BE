@@ -124,8 +124,10 @@ const getTranslationList: GetController<
  *  /api/challenges/{challengeId}/translations:
  *   post:
  *     summary: 번역 작업물 생성 (제출)
- *     description: 사용자가 완성한 번역 작업물을 제출합니다. 챌린지의 참가자 수와 마감 기한을 검사하고, 번역물 생성 시 참가자 수를 자동으로 증가시킵니다.
+ *     description: 사용자가 완성한 번역 작업물을 제출합니다. 인증된 사용자만 번역물을 제출할 수 있으며, 한 챌린지당 하나의 번역물만 제출 가능합니다. 챌린지 상태(승인됨/마감 여부)를 검증하고 참가자 수를 자동으로 증가시킵니다.
  *     tags: [Translations]
+ *     security:
+ *       - bearerAuth: []  # 인증 필요 명시
  *     parameters:
  *       - in: path
  *         name: challengeId
@@ -142,7 +144,6 @@ const getTranslationList: GetController<
  *             required:
  *               - title
  *               - content
- *               - userId
  *             properties:
  *               title:
  *                 type: string
@@ -152,10 +153,6 @@ const getTranslationList: GetController<
  *                 type: string
  *                 description: 번역 작업물 내용
  *                 example: "번역된 내용이 여기에 들어갑니다."
- *               userId:
- *                 type: string
- *                 description: 작업물을 생성한 사용자 ID
- *                 example: "user-12"
  *     responses:
  *       201:
  *         description: 번역 작업물 생성 성공
@@ -197,8 +194,8 @@ const getTranslationList: GetController<
  *                   type: string
  *                   format: date-time
  *                   description: 수정 일시
- *       403:
- *         description: 참가자 수 제한 또는 마감 기한 초과
+ *       401:
+ *         description: 인증 필요
  *         content:
  *           application/json:
  *             schema:
@@ -206,9 +203,19 @@ const getTranslationList: GetController<
  *               properties:
  *                 error:
  *                   type: string
- *                   example: "이 챌린지는 참가자 수 제한으로 인해 더 이상 번역물을 제출할 수 없습니다."
+ *                   example: "인증이 필요합니다. 로그인 후 다시 시도해주세요."
+ *       403:
+ *         description: 접근 거부 (챌린지 상태 문제 또는 중복 제출)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "이 챌린지는 아직 승인 대기 중이므로 번역물을 제출할 수 없습니다."
  *       404:
- *         description: 챌린지 또는 사용자를 찾을 수 없음
+ *         description: 챌린지를 찾을 수 없음
  *         content:
  *           application/json:
  *             schema:
@@ -217,6 +224,16 @@ const getTranslationList: GetController<
  *                 error:
  *                   type: string
  *                   example: "챌린지 ID abc123을 찾을 수 없거나 이미 삭제되었습니다."
+ *       409:
+ *         description: 이미 번역물 제출함
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "이미 이 챌린지에 번역물을 제출하셨습니다. 한 챌린지당 하나의 번역물만 제출할 수 있습니다."
  *       500:
  *         description: 서버 오류
  *         content:
@@ -235,12 +252,20 @@ const postTranslation: PostController<
 > = async (req, res, next) => {
   try {
     const { challengeId } = req.params;
-    const { title, content, userId } = req.body;
+    const { title, content } = req.body;
+
+    // 인증된 사용자 ID 확인
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(403);
+      return;
+    }
 
     const result = await TranslationsService.createTranslation({
       title,
       content,
-      userId,
+      userId, // 미들웨어에서 가져온 사용자 ID 사용
       challengeId,
     });
 

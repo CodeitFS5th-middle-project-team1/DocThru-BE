@@ -46,8 +46,6 @@ export const TranslationRequestBody = z.object({
     .refine((val) => val.length >= 1 && val.length <= 1000, {
       message: '내용은 최소 1자 이상 최대 1000자 이하로 입력해주세요.',
     }),
-
-  userId: z.string().min(1, { message: '사용자 ID를 입력해주세요' }),
 });
 
 export type TranslationRequestBody = z.infer<typeof TranslationRequestBody>;
