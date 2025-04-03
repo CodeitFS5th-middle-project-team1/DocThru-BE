@@ -3,6 +3,7 @@ import prisma from '../../prismaClient';
 import {
   CreateChallengeArgs,
   GetChallengeListByUserArgs,
+  GetChallengeListParticipating,
   GetChallengeResponse,
   Order,
   UpdateChallengeArgs,
@@ -63,6 +64,8 @@ const getChallengeList = async ({
         currentParticipants: true,
         deadline: true,
         documentType: true,
+        isParticipantsFull: true,
+        isDeadlineFull: true,
       },
     }),
     prisma.challenge.count({
@@ -80,15 +83,82 @@ const getChallengeList = async ({
     }),
   ]);
 
-
-  const challengesWithIsMax = challenges.map((challenge) => {
-    if (challenge.maxParticipants === challenge.currentParticipants) {
-      return { ...challenge, isMax: true };
-    } else return { ...challenge, isMax: false };
-  });
-
-  return { challengesWithIsMax, totalCount };
+  return { challenges, totalCount };
 };
+
+
+const getChallengeListParticipating = async ({
+  documentType,
+  fields,
+  keyword,
+  page,
+  limit,
+  userId,
+  isExpired,
+}: GetChallengeListParticipating) => {
+  const pageNum = Number(page);
+  const limitNum = Number(limit);
+  const successBoolean = isExpired === "true";
+
+  const skip = (pageNum - 1) * limitNum;
+  const fieldCondition =
+    Array.isArray(fields) && fields.length > 0
+      ? { in: fields as FieldType[] }
+      : fields
+      ? { equals: fields as FieldType }
+      : undefined;
+
+  const [challenges, totalCount] = await Promise.all([
+    prisma.challenge.findMany({
+      where: {
+        documentType: documentType || undefined,
+        field: fieldCondition || undefined,
+        approvalStatus: 'APPROVED',
+        ...(keyword && {
+          OR: [
+            { title: { contains: keyword, mode: 'insensitive' } },
+            { description: { contains: keyword, mode: 'insensitive' } },
+          ],
+        }),
+        isDeadlineFull: successBoolean,
+        userId,
+      },
+      skip,
+      take: limitNum,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        field: true,
+        maxParticipants: true,
+        currentParticipants: true,
+        deadline: true,
+        documentType: true,
+        isParticipantsFull: true,
+        isDeadlineFull: true,
+      },
+    }),
+    prisma.challenge.count({
+      where: {
+        documentType: documentType || undefined,
+        field: fieldCondition || undefined,
+        approvalStatus: 'APPROVED',
+        ...(keyword && {
+          OR: [
+            { title: { contains: keyword, mode: 'insensitive' } },
+            { description: { contains: keyword, mode: 'insensitive' } },
+          ],
+        }),
+        ...({ isDeadlineFull: successBoolean }),
+        userId,
+      },
+    }),
+  ]);
+
+  return { challenges, totalCount };
+
+};
+
 
 const getChallengeListByAdmin = async ({
   orderBy,
@@ -152,6 +222,8 @@ const getChallengeListByAdmin = async ({
         createdAt: true,
         documentType: true,
         approvalStatus: true,
+        isParticipantsFull: true,
+        isDeadlineFull: true,
       },
     }),
     prisma.challenge.count({
@@ -235,6 +307,8 @@ const getChallengeListByUser = async ({
         createdAt: true,
         documentType: true,
         approvalStatus: true,
+        isParticipantsFull: true,
+        isDeadlineFull: true,
       },
     }),
     prisma.challenge.count({
@@ -308,11 +382,29 @@ const updateChallenge = async ({
   return challenge;
 };
 
-const deleteChallenge = async (id: string): Promise<GetChallengeResponse> => {
-  const challenge = await prisma.challenge.delete({
+const deleteChallengeForce = async (id: string, deletedReason:string): Promise<GetChallengeResponse> => {
+  const challenge = await prisma.challenge.update({
     where: {
       id,
     },
+    data: {
+      deletedAt: new Date(),
+      deletedReason,
+      approvalStatus: "DELETED",
+    }
+  });
+  return { challenge };
+};
+
+const deleteChallenge = async (id: string): Promise<GetChallengeResponse> => {
+  const challenge = await prisma.challenge.update({
+    where: {
+      id,
+    },
+    data: {
+      deletedAt: new Date(),
+      approvalStatus: "DELETED",
+    }
   });
   return { challenge };
 };
@@ -321,9 +413,11 @@ const ChallengesService = {
   getChallengeList,
   getChallengeListByUser,
   getChallengeListByAdmin,
+  getChallengeListParticipating,
   getChallenge,
   createChallenge,
   updateChallenge,
+  deleteChallengeForce,
   deleteChallenge,
 };
 

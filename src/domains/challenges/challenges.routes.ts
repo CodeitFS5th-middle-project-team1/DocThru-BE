@@ -18,6 +18,12 @@ router.get(
   ChallengesController.getChallengeList
 ); //챌린지 목록 조회
 router.get(
+  '/participating',
+  verifyJWTToken,
+  validateRequestData({ query: ChallengeQueriesSchema }),
+  ChallengesController.getChallengeListParticipating
+); //챌린지 참여중 목록 조회
+router.get(
   '/user',
   verifyJWTToken,
   validateRequestData({ query: ChallengeQueriesSchema }),
@@ -44,12 +50,18 @@ router.patch(
   }),
   ChallengesController.patchChallenge
 ); //챌린지 수정
-router.delete(
-  '/:challengeId',
+router.patch(
+  '/:challengeId/removeForce',
+  verifyJWTToken,
+  validateRequestData({ params: ChallengeParamsSchema }),
+  ChallengesController.deleteChallengeForce
+); //챌린지 관리자 삭제
+router.patch(
+  '/:challengeId/remove',
   verifyJWTToken,
   validateRequestData({ params: ChallengeParamsSchema }),
   ChallengesController.deleteChallenge
-); //챌린지 삭제
+); //챌린지 관리자 삭제
 router.get(
   '/:challengeId',
   verifyJWTToken,
