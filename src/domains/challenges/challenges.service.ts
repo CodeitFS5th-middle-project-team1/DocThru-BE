@@ -18,6 +18,13 @@ const getChallenge = async (id: string): Promise<GetChallengeResponse> => {
     where: {
       id,
     },
+    include: {
+      user: {
+        select: {
+          nickname: true,
+        }
+      }
+    }
   });
   return { challenge };
 };
