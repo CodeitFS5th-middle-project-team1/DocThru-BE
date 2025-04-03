@@ -38,7 +38,7 @@ export interface GetChallengeListByAdminResponse {
 }
 
 export interface GetChallengeListResponse {
-  challengesWithIsMax: {
+  challenges: {
     id: string;
     title: string;
     field: FieldType;
@@ -46,7 +46,8 @@ export interface GetChallengeListResponse {
     currentParticipants: number;
     deadline: Date;
     documentType: DocumentType;
-    isMax: boolean;
+    isParticipantsFull: boolean;
+    isDeadlineFull: boolean;
   }[];
   totalCount: number;
 }
@@ -80,6 +81,16 @@ export interface GetChallengeListByUserArgs {
   approvalStatus: ApprovalStatus | undefined;
   keyword: string | undefined;
   userId: string;
+}
+
+export interface GetChallengeListParticipating {
+  documentType: DocumentType | undefined;
+  fields: FieldType | undefined;
+  keyword: string | undefined;
+  page: string | undefined;
+  limit: string | undefined;
+  userId: string;
+  isExpired: string;
 }
 
 
