@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import TranslationRouter from '../translations/translations.routes';
 import ParticipationRouter from '../participants/participants.routes';
+import ChallengesAdminRouter from '../challenges_admin/challenges.admin.routes';
 import ChallengesController from './challenges.controller';
 import { validateRequestData } from '../../middleware/validateRequestData';
 import {
@@ -43,7 +44,10 @@ router.post(
 router.patch(
   '/:challengeId',
   verifyJWTToken,
-  validateRequestData({ params: ChallengeParamsSchema, body: ChallengeBodySchema }),
+  validateRequestData({
+    params: ChallengeParamsSchema,
+    body: ChallengeBodySchema,
+  }),
   ChallengesController.patchChallenge
 ); //챌린지 수정
 router.patch(
@@ -64,8 +68,8 @@ router.get(
   validateRequestData({ params: ChallengeParamsSchema }),
   ChallengesController.getChallenge
 ); //챌린지 상세 조회
-router.patch('/:challengeId/approve'); //챌린지 승인
-router.patch('/:challengeId/reject'); //챌린지 거절
+
+router.use('/:challengeId/admin', ChallengesAdminRouter);
 router.use('/:challengeId/translations', TranslationRouter);
 router.use('/:challengeId/participants', ParticipationRouter);
 
