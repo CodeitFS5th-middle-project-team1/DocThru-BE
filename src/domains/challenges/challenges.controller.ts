@@ -602,8 +602,6 @@ const getChallengeListParticipating: GetController<
 > = async (req, res, next) => {
   try {
     const {
-      documentType,
-      fields,
       keyword,
       page = '1',
       limit = '10',
@@ -611,8 +609,6 @@ const getChallengeListParticipating: GetController<
     } = req.query;
     const userId = req.user?.id;
     const result = await ChallengesService.getChallengeListParticipating({
-      documentType,
-      fields,
       keyword,
       page,
       limit,

@@ -22,9 +22,9 @@ const getChallenge = async (id: string): Promise<GetChallengeResponse> => {
       user: {
         select: {
           nickname: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
   return { challenge };
 };
@@ -93,10 +93,7 @@ const getChallengeList = async ({
   return { challenges, totalCount };
 };
 
-
 const getChallengeListParticipating = async ({
-  documentType,
-  fields,
   keyword,
   page,
   limit,
@@ -105,21 +102,13 @@ const getChallengeListParticipating = async ({
 }: GetChallengeListParticipating) => {
   const pageNum = Number(page);
   const limitNum = Number(limit);
-  const successBoolean = isExpired === "true";
+  const successBoolean = isExpired === 'true';
 
   const skip = (pageNum - 1) * limitNum;
-  const fieldCondition =
-    Array.isArray(fields) && fields.length > 0
-      ? { in: fields as FieldType[] }
-      : fields
-      ? { equals: fields as FieldType }
-      : undefined;
 
   const [challenges, totalCount] = await Promise.all([
     prisma.challenge.findMany({
       where: {
-        documentType: documentType || undefined,
-        field: fieldCondition || undefined,
         approvalStatus: 'APPROVED',
         ...(keyword && {
           OR: [
@@ -128,7 +117,11 @@ const getChallengeListParticipating = async ({
           ],
         }),
         isDeadlineFull: successBoolean,
-        userId,
+        translations: {
+          some: {
+            userId,
+          }
+        },
       },
       skip,
       take: limitNum,
@@ -147,8 +140,6 @@ const getChallengeListParticipating = async ({
     }),
     prisma.challenge.count({
       where: {
-        documentType: documentType || undefined,
-        field: fieldCondition || undefined,
         approvalStatus: 'APPROVED',
         ...(keyword && {
           OR: [
@@ -156,16 +147,18 @@ const getChallengeListParticipating = async ({
             { description: { contains: keyword, mode: 'insensitive' } },
           ],
         }),
-        ...({ isDeadlineFull: successBoolean }),
-        userId,
+        ...{ isDeadlineFull: successBoolean },
+        translations: {
+          some: {
+            userId,
+          }
+        },
       },
     }),
   ]);
 
   return { challenges, totalCount };
-
 };
-
 
 const getChallengeListByAdmin = async ({
   orderBy,
@@ -180,8 +173,7 @@ const getChallengeListByAdmin = async ({
   const skip = (pageNum - 1) * limitNum;
 
   const order = (() => {
-    const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {
-    };
+    const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {};
 
     switch (orderBy) {
       case Order.applyFirst:
@@ -249,7 +241,6 @@ const getChallengeListByAdmin = async ({
   return { challenges, totalCount };
 };
 
-
 const getChallengeListByUser = async ({
   orderBy,
   page,
@@ -264,8 +255,7 @@ const getChallengeListByUser = async ({
   const skip = (pageNum - 1) * limitNum;
 
   const order = (() => {
-    const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {
-    };
+    const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {};
 
     switch (orderBy) {
       case Order.applyFirst:
@@ -389,7 +379,10 @@ const updateChallenge = async ({
   return challenge;
 };
 
-const deleteChallengeForce = async (id: string, deletedReason:string): Promise<GetChallengeResponse> => {
+const deleteChallengeForce = async (
+  id: string,
+  deletedReason: string
+): Promise<GetChallengeResponse> => {
   const challenge = await prisma.challenge.update({
     where: {
       id,
@@ -397,8 +390,8 @@ const deleteChallengeForce = async (id: string, deletedReason:string): Promise<G
     data: {
       deletedAt: new Date(),
       deletedReason,
-      approvalStatus: "DELETED",
-    }
+      approvalStatus: 'DELETED',
+    },
   });
   return { challenge };
 };
@@ -410,8 +403,8 @@ const deleteChallenge = async (id: string): Promise<GetChallengeResponse> => {
     },
     data: {
       deletedAt: new Date(),
-      approvalStatus: "DELETED",
-    }
+      approvalStatus: 'DELETED',
+    },
   });
   return { challenge };
 };
