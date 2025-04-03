@@ -500,8 +500,8 @@ const getChallengeList: GetController<
  *   get:
  *     tags:
  *       - Challenges
- *     summary: 챌린지 목록 조회
- *     description: 필터 및 정렬 조건을 기반으로 챌린지 목록을 조회합니다.
+ *     summary: 참여중 챌린지 목록 조회
+ *     description: 필터 및 정렬 조건을 기반으로 참여중인 챌린지 목록을 조회합니다.
  *     parameters:
  *       - in: query
  *         name: documentType
@@ -745,6 +745,10 @@ const postChallenge: PostController<
       originURL,
     } = req.body;
     const userId = req.user?.id;
+    if (new Date(deadline) <= new Date()) {
+      next({status:400, message: "마감일자는 현재 날짜 이후부터 가능합니다."});
+      return;
+    }
     const result = await ChallengesService.createChallenge({
       title,
       description,
