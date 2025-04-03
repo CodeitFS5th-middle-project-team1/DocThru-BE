@@ -124,7 +124,7 @@ const getTranslationList: GetController<
  *  /api/challenges/{challengeId}/translations:
  *   post:
  *     summary: 번역 작업물 생성 (제출)
- *     description: 사용자가 완성한 번역 작업물을 제출합니다. 인증된 사용자만 번역물을 제출할 수 있으며, 한 챌린지당 하나의 번역물만 제출 가능합니다. 챌린지 상태(승인됨/마감 여부)를 검증하고 참가자 수를 자동으로 증가시킵니다.
+ *     description: 사용자가 특정 챌린지에 번역물을 제출합니다. 한 챌린지당 하나의 번역물만 제출 가능합니다. 챌린지 상태가 APPROVED 일때만 참여가 가능합니다. 생성 후 챌린지의 현재참여자 수를 1 증가시킵니다.
  *     tags: [Translations]
  *     security:
  *       - bearerAuth: []  # 인증 필요 명시
