@@ -84,8 +84,6 @@ export interface GetChallengeListByUserArgs {
 }
 
 export interface GetChallengeListParticipating {
-  documentType: DocumentType | undefined;
-  fields: FieldType | undefined;
   keyword: string | undefined;
   page: string | undefined;
   limit: string | undefined;
