@@ -70,6 +70,7 @@ router.get(
 ); //챌린지 상세 조회
 
 router.use('/:challengeId/admin', ChallengesAdminRouter);
+router.use('/:challengeId/drafts', draftTranslationRouter); //챌린지 작업물 임시 저장
 router.use('/:challengeId/translations', TranslationRouter);
 router.use('/:challengeId/participants', ParticipationRouter);
 
