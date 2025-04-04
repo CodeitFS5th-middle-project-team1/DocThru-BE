@@ -10,26 +10,45 @@ import { seedFeedbacks } from './seeds/feedback.seed';
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.like.deleteMany({});
-  await prisma.feedback.deleteMany({});
-  await prisma.translation.deleteMany({});
-  await prisma.draftTranslation.deleteMany({});
-  await prisma.challengeParticipant.deleteMany({});
-  await prisma.challenge.deleteMany({});
-  await prisma.user.deleteMany({});
+  try {
+    console.log('🗑️ 기존 데이터 삭제 중...');
+    await prisma.like.deleteMany({});
+    await prisma.feedback.deleteMany({});
+    await prisma.translation.deleteMany({});
+    await prisma.draftTranslation.deleteMany({});
+    await prisma.challengeParticipant.deleteMany({});
+    await prisma.challenge.deleteMany({});
+    await prisma.user.deleteMany({});
+    console.log('✅ 기존 데이터 삭제 완료');
 
-  await seedUsers(prisma);
-  await seedAllChallenges(prisma);
-  await seedChallengeParticipants(prisma);
-  await seedDraftTranslations(prisma);
+    console.log('🌱 사용자 데이터 시드 시작...');
+    await seedUsers(prisma);
 
-  // Translation과 Like를 하나의 트랜잭션으로 처리
-  await prisma.$transaction(async (tx) => {
-    await seedTranslations(tx);
-    await seedLikes(tx);
-  });
+    console.log('🌱 챌린지 데이터 시드 시작...');
+    await seedAllChallenges(prisma);
 
-  await seedFeedbacks(prisma);
+    console.log('🌱 챌린지 참여자 데이터 시드 시작...');
+    await seedChallengeParticipants(prisma);
+
+    console.log('🌱 임시 저장 번역물 데이터 시드 시작...');
+    await seedDraftTranslations(prisma);
+
+    console.log('🌱 번역물 데이터 시드 시작...');
+    await seedTranslations(prisma);
+
+    console.log('🌱 좋아요 데이터 시드 시작...');
+    await seedLikes();
+
+    console.log('🌱 피드백 데이터 시드 시작...');
+    await seedFeedbacks(prisma);
+
+    console.log('🎉 All seeders done!');
+  } catch (error) {
+    console.error('❌ 시드 실패:', error);
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 main()
@@ -37,7 +56,4 @@ main()
     console.error('❌ Seed failed:', e);
     process.exit(1);
   })
-  .finally(async () => {
-    await prisma.$disconnect();
-    console.log('🌱 All seeders done!');
-  });
+  .finally(async () => {});
