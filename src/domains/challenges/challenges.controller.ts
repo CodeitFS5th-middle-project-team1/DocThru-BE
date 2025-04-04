@@ -391,9 +391,11 @@ const getChallengeListByUser: GetController<
  *       - in: query
  *         name: fields
  *         schema:
- *           type: string
+ *           type: array
  *           enum: [NEXTJS, MODERNJS, API, WEB, CAREER]
- *         description: 챌린지 분야로 필터링
+ *         style: form
+ *         explode: true
+ *         description: 챌린지 분야로 필터링 NEXTJS, MODERNJS, API, WEB, CAREER
  *       - in: query
  *         name: keyword
  *         schema:
