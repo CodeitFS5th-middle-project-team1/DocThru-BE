@@ -8,7 +8,18 @@ export const ChallengeParamsSchema = z.object({
 
 export const ChallengeQueriesSchema = z.object({
   documentType: z.nativeEnum(DocumentType, { errorMap: () => ({ message: "잘못된 문서 유형입니다."})}).optional(),
-  fields: z.nativeEnum(FieldType, { errorMap: () => ({ message: "잘못된 카테고리 유형입니다."})}).optional(),
+  fields: z
+  .union([
+    z.nativeEnum(FieldType, {
+      errorMap: () => ({ message: "잘못된 카테고리 유형입니다." }),
+    }),
+    z.array(
+      z.nativeEnum(FieldType, {
+        errorMap: () => ({ message: "잘못된 카테고리 유형입니다." }),
+      })
+    ),
+  ])
+  .optional(),
   approvalStatus: z.nativeEnum(ApprovalStatus, { errorMap: () => ({ message: "잘못된 상태 유형입니다."})}).optional(),
   keyword: z.string({ message: "검색어는 문자열이어야 합니다."}).optional(),
   page: z.string({ message: "페이지는 문자열이어야 합니다."}).optional(),
