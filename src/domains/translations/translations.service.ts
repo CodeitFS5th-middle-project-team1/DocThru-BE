@@ -158,7 +158,7 @@ const createTranslation = async ({
   challengeId: string;
 }): Promise<TranslationResponse> => {
   try {
-    // 챌린지 존재 여부 및 상태 확인
+    // 챌린지 존재 여부 및 승인 상태 확인
     const challenge = await prisma.challenge.findUnique({
       where: {
         id: challengeId,
@@ -170,6 +170,7 @@ const createTranslation = async ({
         isDeadlineFull: true,
         maxParticipants: true,
         currentParticipants: true,
+        approvalStatus: true,
       },
     });
 
@@ -179,7 +180,18 @@ const createTranslation = async ({
         `챌린지 ID ${challengeId}를 찾을 수 없거나 이미 삭제되었습니다.`
       );
     }
-
+    if (challenge.approvalStatus !== 'APPROVED') {
+      throw new CustomError(
+        403,
+        `이 챌린지는 ${
+          challenge.approvalStatus === 'PENDING'
+            ? '아직 승인 대기 중이'
+            : challenge.approvalStatus === 'REJECTED'
+            ? '관리자에 의해 승인이 거절되었으'
+            : '관리자에 의해 삭제되었으'
+        } 므로 번역물을 제출할 수 없습니다.`
+      );
+    }
     // 참가자 수 마감 || 기간 마감 확인
     if (challenge.isParticipantsFull || challenge.isDeadlineFull) {
       throw new CustomError(
@@ -187,6 +199,21 @@ const createTranslation = async ({
         `이 챌린지는 ${
           challenge.isParticipantsFull ? '참가자 수 제한' : '마감 기한'
         }으로 인해 더 이상 번역물을 제출할 수 없습니다.`
+      );
+    }
+    // 사용자가 이미 해당 챌린지에 대한 번역을 생성한적있느지 확인
+    const existingTranslation = await prisma.translation.findFirst({
+      where: {
+        challengeId,
+        userId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+
+    if (existingTranslation) {
+      throw new Error(
+        '이미 이 챌린지에 번역물을 제출하셨습니다. 한 챌린지당 하나의 번역물만 제출할 수 있습니다.'
       );
     }
 
@@ -332,8 +359,10 @@ const updateTranslation = async ({
       };
     }
 
+    //TODO: 챌린지 마감기한 지났는지 확인 - 지났으면 수정 불가
+
     // 권한 확인 함수사용 - 작성자 본인 또는 관리자만 수정 가능
-    //TODO: 반복 사용되므로 함수로 분리하는게 좋을 듯
+
     const isOwner = translation.userId === userId;
     const isAdmin = userRole === UserRole.ADMIN;
     if (!isOwner && !isAdmin) {
@@ -390,6 +419,7 @@ const updateTranslation = async ({
  * @param userRole 요청한 사용자의 역할 (권한 확인용)
  * @returns 삭제 성공 여부
  */
+//TODO: 챌린지 마감기한 지났는지 확인 - 지났으면 삭제 불가
 const deleteTranslation = async ({
   translationId,
   challengeId,
@@ -425,11 +455,9 @@ const deleteTranslation = async ({
 
     // 승인 상태 확인
     if (challenge.approvalStatus === 'DELETED') {
-      throw new CustomError(
-        400,
-        `이미 삭제된 챌린지의 번역물은 조작할 수 없습니다.`
-      );
+      throw new CustomError(400, `이미 삭제된 챌린지의 번역물입니다.`);
     }
+
     const translation = await prisma.translation.findUnique({
       where: {
         id: translationId,
