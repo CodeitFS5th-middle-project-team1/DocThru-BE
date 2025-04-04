@@ -2,6 +2,7 @@ import { Router } from 'express';
 import TranslationRouter from '../translations/translations.routes';
 import ParticipationRouter from '../participants/participants.routes';
 import ChallengesAdminRouter from '../challenges_admin/challenges.admin.routes';
+import draftTranslationRouter from '../drafts/drafts.routes';
 import ChallengesController from './challenges.controller';
 import { validateRequestData } from '../../middleware/validateRequestData';
 import {

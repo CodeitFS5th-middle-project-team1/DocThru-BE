@@ -1,16 +1,21 @@
 import prisma from '../../prismaClient';
 import CustomError from '../../types/error';
-import { DraftTranslationParams, DraftTranslationRequestBody, DraftTranslationResponse } from './drafts.type';
+import {
+  DraftTranslationParams,
+  DraftTranslationRequestBody,
+  DraftTranslationResponse,
+} from './drafts.type';
 
 /**
- * 임시 저장 번역물 생성/업데이트
+ * 임시 저장 번역물 생성/업데이트 (upsert 사용)
  */
 const createOrUpdateDraftTranslation = async ({
   title,
   content,
   userId,
   challengeId,
-}: DraftTranslationRequestBody & DraftTranslationParams): Promise<DraftTranslationResponse> => {{
+}: DraftTranslationRequestBody &
+  DraftTranslationParams): Promise<DraftTranslationResponse> => {
   try {
     const challenge = await prisma.challenge.findUnique({
       where: {
@@ -26,32 +31,26 @@ const createOrUpdateDraftTranslation = async ({
         `챌린지 ID ${challengeId}를 찾을 수 없거나 이미 삭제되었습니다.`
       );
     }
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true },
-    });
-
-    if (!user) {
-      throw new CustomError(404, `사용자 ID ${userId}를 찾을 수 없습니다.`);
+    if (!title && !content) {
+      throw new CustomError(
+        400,
+        '저장할 내용이 없습니다. 제목이나 내용을 입력해주세요.'
+      );
     }
 
     const draftTranslation = await prisma.draftTranslation.upsert({
-      // upsert  & 복합 unique키 이용
       where: {
         userId_challengeId: {
           userId,
           challengeId,
         },
       },
-      // 존재하지 않을 경우 생성
       create: {
         title: title || '',
         content: content || '',
         userId,
         challengeId,
       },
-      // 이미 존재할 경우 업데이트
       update: {
         ...(title !== undefined ? { title } : {}),
         ...(content !== undefined ? { content } : {}),
@@ -66,6 +65,7 @@ const createOrUpdateDraftTranslation = async ({
       challengeId: draftTranslation.challengeId,
       createdAt: draftTranslation.createdAt,
       updatedAt: draftTranslation.updatedAt,
+      message: '작성 내용이 임시저장되었습니다.',
     };
   } catch (error) {
     console.error('임시 저장 번역물 생성/업데이트 중 오류 발생:', {
@@ -84,11 +84,12 @@ const createOrUpdateDraftTranslation = async ({
     );
   }
 };
+
 /**
  * 임시 저장 번역물 조회
  * @param userId 사용자 ID
  * @param challengeId 챌린지 ID
- * @returns 임시 저장된 번역물 정보 또는 null
+ * @returns 임시 저장된 번역물 정보 || null
  */
 const getDraftTranslation = async ({
   userId,
@@ -119,7 +120,7 @@ const getDraftTranslation = async ({
       },
     });
 
-    // 임시 저장이 없는 경우 null 반환
+    // 임시 저장이 없는 경우 null
     if (!draftTranslation) {
       return null;
     }
@@ -134,7 +135,7 @@ const getDraftTranslation = async ({
       updatedAt: draftTranslation.updatedAt,
     };
   } catch (error) {
-    console.error('임시 저장한  번역물 조회 중 오류 발생:', {
+    console.error('임시 저장한 번역물 조회 중 오류 발생:', {
       userId,
       challengeId,
       error,
@@ -150,6 +151,7 @@ const getDraftTranslation = async ({
     );
   }
 };
+
 export default {
   createOrUpdateDraftTranslation,
   getDraftTranslation,

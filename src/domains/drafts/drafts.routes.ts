@@ -1,12 +1,14 @@
-import { Router } from 'express';
+import { RequestHandler, Router } from 'express';
 import { verifyJWTToken } from '../../middleware/verifyJWTToken';
 import { validateRequestData } from '../../middleware/validateRequestData';
 import { TranslationParamsSchema } from '../translations/translations.types';
+import { DraftTranslationRequestBodySchema } from './drafts.type';
+import DraftsController from './drafts.controller';
 const router = Router({ mergeParams: true });
 router.post(
-  '/drafts',
+  '/',
+  verifyJWTToken,
   validateRequestData({
-    // 3. 요청 데이터 검증
     params: TranslationParamsSchema,
     body: DraftTranslationRequestBodySchema,
   }),
@@ -14,10 +16,10 @@ router.post(
 ); // 작업물 임시 저장
 
 router.get(
-  '/drafts',
+  '/',
+  verifyJWTToken,
   validateRequestData({
     params: TranslationParamsSchema,
-    query: DraftTranslationQuerySchema,
   }),
   DraftsController.getDraftTranslation as unknown as RequestHandler
 );

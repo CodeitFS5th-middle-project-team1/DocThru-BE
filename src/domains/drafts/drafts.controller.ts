@@ -1,8 +1,15 @@
-import draftsService from './drafts.service';
-import { DraftTranslationResponse } from './drafts.types';
+import DraftsService from './drafts.service';
+import {
+  ApiResponse,
+  DraftTranslationRequestBody,
+  DraftTranslationRequestParams,
+  DraftTranslationResponse,
+} from './drafts.type';
+import { GetController, PostController } from '../../types/express';
+
 /**
  * @swagger
- * /api/challenges/{challengeId}/draftTranslations:
+ * /api/challenges/{challengeId}/drafts:
  *   post:
  *     summary: 번역물 임시 저장 또는 업데이트
  *     description: 현재 작업 중인 번역물을 임시 저장합니다. 이미 임시 저장된 번역물이 있으면 업데이트합니다.
@@ -39,34 +46,41 @@ import { DraftTranslationResponse } from './drafts.types';
  *             schema:
  *               type: object
  *               properties:
- *                 id:
- *                   type: string
- *                   description: 임시 저장된 번역물 ID
- *                   example: "550e8400-e29b-41d4-a716-446655440000"
- *                 title:
- *                   type: string
- *                   description: 제목
- *                   example: "영어 번역 진행 중"
- *                 content:
- *                   type: string
- *                   description: 내용
- *                   example: "이것은 임시저장된 번역물 내용입니다."
- *                 userId:
- *                   type: string
- *                   description: 사용자 ID
- *                   example: "user-123"
- *                 challengeId:
- *                   type: string
- *                   description: 챌린지 ID
- *                   example: "challenge-456"
- *                 createdAt:
- *                   type: string
- *                   format: date-time
- *                   example: "2023-06-07T10:15:30Z"
- *                 updatedAt:
- *                   type: string
- *                   format: date-time
- *                   example: "2023-06-07T10:20:45Z"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: 임시 저장된 번역물 ID
+ *                       example: "550e8400-e29b-41d4-a716-446655440000"
+ *                     title:
+ *                       type: string
+ *                       description: 제목
+ *                       example: "영어 번역 진행 중"
+ *                     content:
+ *                       type: string
+ *                       description: 내용
+ *                       example: "이것은 임시저장된 번역물 내용입니다."
+ *                     userId:
+ *                       type: string
+ *                       description: 사용자 ID
+ *                       example: "user-123"
+ *                     challengeId:
+ *                       type: string
+ *                       description: 챌린지 ID
+ *                       example: "challenge-456"
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2023-06-07T10:15:30Z"
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2023-06-07T10:20:45Z"
+ *                     message:
+ *                       type: string
+ *                       description: 성공 메시지
+ *                       example: "작성 내용이 임시저장되었습니다."
  *       400:
  *         description: 잘못된 요청
  *         content:
@@ -74,12 +88,9 @@ import { DraftTranslationResponse } from './drafts.types';
  *             schema:
  *               type: object
  *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
+ *                 error:
  *                   type: string
- *                   example: "요청 형식이 올바르지 않습니다"
+ *                   example: "저장할 내용이 없습니다. 제목이나 내용을 입력해주세요."
  *       401:
  *         description: 인증 실패
  *         content:
@@ -87,10 +98,7 @@ import { DraftTranslationResponse } from './drafts.types';
  *             schema:
  *               type: object
  *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
+ *                 error:
  *                   type: string
  *                   example: "인증이 필요합니다."
  *       404:
@@ -114,40 +122,31 @@ import { DraftTranslationResponse } from './drafts.types';
  *                   type: string
  *                   example: "서버 내부 오류가 발생했습니다."
  */
-
-import { GetController, PostController } from '../../types/express';
-import ChallengesService from '../challenges/challenges.service';
-import { TranslationRequestParams } from '../translations/translations.types';
-
 const createOrUpdateDraftTranslation: PostController<
-  TranslationRequestParams,
-  { title?: string; content?: string; userId?: string },
-  DraftTranslationResponse
+  DraftTranslationRequestParams,
+  DraftTranslationRequestBody,
+  ApiResponse<DraftTranslationResponse>
 > = async (req, res, next) => {
   try {
     const { challengeId } = req.params;
-    const { title, content, userId: bodyUserId } = req.body;
-
-    // req.user?.id가 있으면 사용, 없으면 요청 본문의 userId 사용 (개발용)
-    const userId = req.user?.id || bodyUserId;
+    const { title, content } = req.body;
+    const userId = req.user?.id;
 
     if (!userId) {
       res.status(401).json({
-        // return 키워드 제거
-        success: false,
-        message: '인증이 필요합니다.',
+        error: '인증이 필요합니다.',
       });
-      return; // 함수 실행 종료
+      return;
     }
 
-    const result = await draftsService.createOrUpdateDraftTranslation({
+    const result = await DraftsService.createOrUpdateDraftTranslation({
       title,
       content,
       userId,
       challengeId,
     });
 
-    res.status(200).json(result);
+    res.status(200).json({ data: result });
   } catch (error) {
     next(error);
   }
@@ -155,7 +154,7 @@ const createOrUpdateDraftTranslation: PostController<
 
 /**
  * @swagger
- * /api/challenges/{challengeId}/draftTranslations:
+ * /api/challenges/{challengeId}/drafts:
  *   get:
  *     summary: 임시 저장된 번역물 조회
  *     description: 현재 로그인한 사용자의 특정 챌린지에 대한 임시 저장 번역물을 조회합니다.
@@ -177,34 +176,37 @@ const createOrUpdateDraftTranslation: PostController<
  *             schema:
  *               type: object
  *               properties:
- *                 id:
- *                   type: string
- *                   description: 임시 저장된 번역물 ID
- *                   example: "550e8400-e29b-41d4-a716-446655440000"
- *                 title:
- *                   type: string
- *                   description: 제목
- *                   example: "영어 번역 진행 중"
- *                 content:
- *                   type: string
- *                   description: 내용
- *                   example: "이것은 임시저장된 번역물 내용입니다."
- *                 userId:
- *                   type: string
- *                   description: 사용자 ID
- *                   example: "user-123"
- *                 challengeId:
- *                   type: string
- *                   description: 챌린지 ID
- *                   example: "challenge-456"
- *                 createdAt:
- *                   type: string
- *                   format: date-time
- *                   example: "2023-06-07T10:15:30Z"
- *                 updatedAt:
- *                   type: string
- *                   format: date-time
- *                   example: "2023-06-07T10:20:45Z"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: 임시 저장된 번역물 ID
+ *                       example: "550e8400-e29b-41d4-a716-446655440000"
+ *                     title:
+ *                       type: string
+ *                       description: 제목
+ *                       example: "영어 번역 진행 중"
+ *                     content:
+ *                       type: string
+ *                       description: 내용
+ *                       example: "이것은 임시저장된 번역물 내용입니다."
+ *                     userId:
+ *                       type: string
+ *                       description: 사용자 ID
+ *                       example: "user-123"
+ *                     challengeId:
+ *                       type: string
+ *                       description: 챌린지 ID
+ *                       example: "challenge-456"
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2023-06-07T10:15:30Z"
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2023-06-07T10:20:45Z"
  *       204:
  *         description: 임시 저장된 번역물이 없음
  *       401:
@@ -214,10 +216,7 @@ const createOrUpdateDraftTranslation: PostController<
  *             schema:
  *               type: object
  *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
+ *                 error:
  *                   type: string
  *                   example: "인증이 필요합니다."
  *       404:
@@ -241,13 +240,10 @@ const createOrUpdateDraftTranslation: PostController<
  *                   type: string
  *                   example: "서버 내부 오류가 발생했습니다."
  */
-/**
- * 임시 저장 번역물 조회
- */
 const getDraftTranslation: GetController<
-  TranslationRequestParams,
+  DraftTranslationRequestParams,
   {},
-  DraftTranslationResponse | null
+  ApiResponse<DraftTranslationResponse> | null
 > = async (req, res, next) => {
   try {
     const { challengeId } = req.params;
@@ -255,13 +251,12 @@ const getDraftTranslation: GetController<
 
     if (!userId) {
       res.status(401).json({
-        success: false,
-        message: '인증이 필요합니다.',
+        error: '인증이 필요합니다.',
       });
       return;
     }
 
-    const result = await draftsService.getDraftTranslation({
+    const result = await DraftsService.getDraftTranslation({
       userId,
       challengeId,
     });
@@ -271,7 +266,7 @@ const getDraftTranslation: GetController<
       return;
     }
 
-    res.status(200).json(result);
+    res.status(200).json({ data: result });
   } catch (error) {
     next(error);
   }
