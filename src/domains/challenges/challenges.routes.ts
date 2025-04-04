@@ -2,6 +2,7 @@ import { Router } from 'express';
 import TranslationRouter from '../translations/translations.routes';
 import ParticipationRouter from '../participants/participants.routes';
 import ChallengesAdminRouter from '../challenges_admin/challenges.admin.routes';
+import draftTranslationRouter from '../drafts/drafts.routes';
 import ChallengesController from './challenges.controller';
 import { validateRequestData } from '../../middleware/validateRequestData';
 import {
@@ -70,6 +71,7 @@ router.get(
 ); //챌린지 상세 조회
 
 router.use('/:challengeId/admin', ChallengesAdminRouter);
+router.use('/:challengeId/drafts', draftTranslationRouter); //챌린지 작업물 임시 저장
 router.use('/:challengeId/translations', TranslationRouter);
 router.use('/:challengeId/participants', ParticipationRouter);
 

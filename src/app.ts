@@ -10,7 +10,12 @@ dotenv.config();
 
 const app = express();
 app.use(morgan('dev'));
-app.use(cors({ exposedHeaders: ['Authorization'] }));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    exposedHeaders: ['Authorization'],
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
