@@ -187,7 +187,7 @@ const getChallengeListByAdmin = async ({
         break;
       default:
         // 기본값 (idx: 'desc')이 이미 설정되어 있음
-        orderCondition.idx = 'desc';
+        orderCondition.createdAt = 'desc';
         break;
     }
 
@@ -266,7 +266,7 @@ const getChallengeListByUser = async ({
         break;
       default:
         // 기본값 (idx: 'desc')이 이미 설정되어 있음
-        orderCondition.idx = 'desc';
+        orderCondition.createdAt = 'desc';
         break;
     }
 
