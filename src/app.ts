@@ -6,6 +6,7 @@ import { setupSwagger } from './swagger.ts';
 import errorHandler from './middleware/errorHandler.ts';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
+
 dotenv.config();
 
 const app = express();
