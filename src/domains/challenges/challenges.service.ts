@@ -176,11 +176,8 @@ const getChallengeListByAdmin = async ({
     const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {};
 
     switch (orderBy) {
-      case Order.applyFirst:
-        orderCondition.approvalAt = 'desc'; // 승인 최신 순
-        break;
-      case Order.applyLast:
-        orderCondition.approvalAt = 'asc'; // 승인 오래된 순
+      case Order.createdLast:
+        orderCondition.createdAt = 'asc'; // 신청 오래된 순
         break;
       case Order.deadLineFirst:
         orderCondition.deadline = 'desc'; // 마감일 최신 순
@@ -190,7 +187,7 @@ const getChallengeListByAdmin = async ({
         break;
       default:
         // 기본값 (idx: 'desc')이 이미 설정되어 있음
-        orderCondition.idx = 'desc';
+        orderCondition.createdAt = 'desc';
         break;
     }
 
@@ -258,11 +255,8 @@ const getChallengeListByUser = async ({
     const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {};
 
     switch (orderBy) {
-      case Order.applyFirst:
-        orderCondition.approvalAt = 'desc'; // 승인 최신 순
-        break;
-      case Order.applyLast:
-        orderCondition.approvalAt = 'asc'; // 승인 오래된 순
+      case Order.createdLast:
+        orderCondition.createdAt = 'asc'; // 신청 오래된 순
         break;
       case Order.deadLineFirst:
         orderCondition.deadline = 'desc'; // 마감일 최신 순
@@ -272,7 +266,7 @@ const getChallengeListByUser = async ({
         break;
       default:
         // 기본값 (idx: 'desc')이 이미 설정되어 있음
-        orderCondition.idx = 'desc';
+        orderCondition.createdAt = 'desc';
         break;
     }
 
