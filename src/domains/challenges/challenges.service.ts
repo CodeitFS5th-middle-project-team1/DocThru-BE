@@ -120,7 +120,7 @@ const getChallengeListParticipating = async ({
         translations: {
           some: {
             userId,
-          }
+          },
         },
       },
       skip,
@@ -151,7 +151,7 @@ const getChallengeListParticipating = async ({
         translations: {
           some: {
             userId,
-          }
+          },
         },
       },
     }),
@@ -179,11 +179,14 @@ const getChallengeListByAdmin = async ({
       case Order.createdLast:
         orderCondition.createdAt = 'asc'; // 신청 오래된 순
         break;
+      case Order.createdFirst:
+        orderCondition.createdAt = 'desc'; // 신청 최신 순
+        break;
       case Order.deadLineFirst:
-        orderCondition.deadline = 'desc'; // 마감일 최신 순
+        orderCondition.deadline = 'asc'; // 마감일 빠른 순
         break;
       case Order.deadLineLast:
-        orderCondition.deadline = 'asc'; // 마감일 오래된 순
+        orderCondition.deadline = 'desc'; // 마감일 느린 순
         break;
       default:
         // 기본값 (idx: 'desc')이 이미 설정되어 있음
@@ -246,6 +249,7 @@ const getChallengeListByUser = async ({
   keyword,
   userId,
 }: GetChallengeListByUserArgs) => {
+  console.log(userId)
   const pageNum = Number(page);
   const limitNum = Number(limit);
 
@@ -258,11 +262,14 @@ const getChallengeListByUser = async ({
       case Order.createdLast:
         orderCondition.createdAt = 'asc'; // 신청 오래된 순
         break;
+      case Order.createdFirst:
+        orderCondition.createdAt = 'desc'; // 신청 최신 순
+        break;
       case Order.deadLineFirst:
-        orderCondition.deadline = 'desc'; // 마감일 최신 순
+        orderCondition.deadline = 'asc'; // 마감일 빠른 순
         break;
       case Order.deadLineLast:
-        orderCondition.deadline = 'asc'; // 마감일 오래된 순
+        orderCondition.deadline = 'desc'; // 마감일 느린 순
         break;
       default:
         // 기본값 (idx: 'desc')이 이미 설정되어 있음

@@ -93,6 +93,7 @@ export interface GetChallengeListParticipating {
 
 
 export enum Order {
+  createdFirst = 'createdFirst',
   createdLast = 'createdLast',
   deadLineFirst = 'deadLineFirst',
   deadLineLast = 'deadLineLast',
