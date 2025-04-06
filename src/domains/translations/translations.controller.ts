@@ -515,14 +515,7 @@ const updateTranslation: PatchController<
 
     res.status(200).send(updatedTranslation);
   } catch (error) {
-    if (error instanceof CustomError) {
-      res.status(error.statusCode).send({ error: error.message });
-    } else {
-      res.status(500).send({
-        message:
-          error instanceof Error ? error.message : 'An unknown error occurred',
-      });
-    }
+    next(error)
   }
 };
 
@@ -641,15 +634,7 @@ const deleteTranslation: DeleteController<
     });
   } catch (error) {
     // 수정된 코드
-    if (error instanceof CustomError) {
-      res.status(error.statusCode).send({ error: error.message });
-    } else {
-      res.status(500).send({
-        success: false,
-        message:
-          error instanceof Error ? error.message : 'An unknown error occurred',
-      });
-    }
+    next(error)
   }
 };
 

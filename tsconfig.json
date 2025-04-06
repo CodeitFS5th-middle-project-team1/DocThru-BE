@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES6",
     "module": "NodeNext",
-    "strict": false,
+    "strict": true,
     "outDir": "./dist", // 컴파일된 JS 파일이 dist 폴더로 이동
     "allowJs": true,
     "checkJs": false,
