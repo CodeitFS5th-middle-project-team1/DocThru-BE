@@ -161,7 +161,7 @@ const getChallenge: GetController<
  *         name: orderBy
  *         schema:
  *           type: string
- *           enum: [createdLast, deadLineFirst, deadLineLast] # Replace with actual sortable fields
+ *           enum: [createdFirst, createdLast, deadLineFirst, deadLineLast] # Replace with actual sortable fields
  *         description: 챌린지 정렬 기준
  *       - in: query
  *         name: approvalStatus
@@ -269,7 +269,7 @@ const getChallengeListByAdmin: GetController<
  *         name: orderBy
  *         schema:
  *           type: string
- *           enum: [createdLast, deadLineFirst, deadLineLast]
+ *           enum: [createdFirst, createdLast, deadLineFirst, deadLineLast]
  *         description: 챌린지 정렬 기준
  *       - in: query
  *         name: approvalStatus
