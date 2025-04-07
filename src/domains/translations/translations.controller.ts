@@ -567,7 +567,11 @@ const patchTranslation: PatchController<
     });
     res.status(200).send(updatedTranslation);
   } catch (error) {
+<<<<<<< HEAD
     next(error);
+=======
+    next(error)
+>>>>>>> 77442c71c5f968875f36fcce715a88433f08eef2
   }
 };
 
@@ -702,7 +706,12 @@ const deleteTranslation: DeleteController<
       message: '번역물 삭제 성공',
     });
   } catch (error) {
+<<<<<<< HEAD
     next(error);
+=======
+    // 수정된 코드
+    next(error)
+>>>>>>> 77442c71c5f968875f36fcce715a88433f08eef2
   }
 };
 const TranslationsController = {

@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import router from './domains/routes';
-import { setupSwagger } from './swagger.ts';
-import errorHandler from './middleware/errorHandler.ts';
+import { setupSwagger } from './swagger';
+import errorHandler from './middleware/errorHandler';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 

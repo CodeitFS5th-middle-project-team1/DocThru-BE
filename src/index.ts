@@ -1,6 +1,6 @@
 import app from './app';
 import cron from 'node-cron';
-import prisma from './prismaClient.ts';
+import prisma from './prismaClient';
 
 const PORT = process.env.PORT || 3000;
 
