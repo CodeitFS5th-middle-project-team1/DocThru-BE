@@ -1,106 +1,68 @@
 import { PrismaClient } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
 
-// 더 넓은 타입으로 매개변수 정의 (any 타입을 사용하는 것보다 좋은 방법)
-export const seedLikes = async (
-  prisma:
-    | PrismaClient
-    | Omit<
-        PrismaClient,
-        | '$connect'
-        | '$disconnect'
-        | '$on'
-        | '$transaction'
-        | '$use'
-        | '$extends'
-      >
-) => {
-  // 트랜잭션 코드 제거 (상위 레벨에서 트랜잭션이 제공됨)
-  console.log('좋아요 시드 생성 시작...');
+export const seedLikes = async (prisma: PrismaClient) => {
+  console.log('좋아요 시드 데이터 생성 시작...');
 
-  // 번역물 및 사용자 데이터 가져오기
-  const translations = await prisma.translation.findMany();
-  const users = await prisma.user.findMany();
+  // 모든 번역물과 사용자 데이터 조회
+  const translations = await prisma.translation.findMany({
+    select: {
+      id: true,
+      userId: true,
+    },
+  });
+
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+    },
+  });
 
   if (translations.length === 0 || users.length === 0) {
     console.log('⚠️ 번역물 또는 사용자 데이터가 없습니다.');
     return;
   }
 
-  // 기존 좋아요 데이터 삭제
-  console.log('기존 좋아요 데이터 삭제 중...');
-  await prisma.like.deleteMany({});
-  console.log('기존 좋아요 데이터 삭제 완료');
+  // 기존 좋아요 데이터 초기화
+  await prisma.like.deleteMany();
+  await prisma.$executeRaw`UPDATE "translations" SET "likeCount" = 0`;
 
-  // Translation의 likeCount 초기화
-  console.log('번역물 좋아요 수 초기화 중...');
-  await prisma.$executeRaw`UPDATE translations SET "likeCount" = 0`;
-  console.log('번역물 좋아요 수 초기화 완료');
-
-  // 중복 방지용 Set
-  const existingLikes = new Set<string>();
   const likes = [];
-  const translationLikeCounts = new Map<string, number>();
+  const existingLikes = new Set<string>();
 
-  // 번역물별 좋아요 데이터 생성
+  // 각 번역물에 대해 좋아요 생성
   for (const translation of translations) {
-    const translationId = translation.id;
-    const authorId = translation.userId;
+    // 70%의 확률로 좋아요를 받음
+    if (Math.random() > 0.7) continue;
 
-    if (!translationId || !authorId) continue;
+    // 좋아요 수 결정
+    const likeCount = Math.min(
+      Math.floor(Math.random() * 10),
+      Math.floor(users.length * 0.7) // 최대 유저 수의 70%까지만 좋아요 가능
+    );
 
-    // 작성자를 제외한 모든 사용자
-    const possibleUsers = users.filter((u) => u.id !== authorId);
-    if (possibleUsers.length === 0) {
-      translationLikeCounts.set(translationId, 0);
-      continue;
-    }
+    if (likeCount === 0) continue;
 
-    // 0-150개의 랜덤한 좋아요 수 생성
-    const maxPossibleLikes = Math.min(possibleUsers.length, 150);
-    const likeCount = Math.floor(Math.random() * (maxPossibleLikes + 1));
+    // 사용자 배열을 섞어서 랜덤하게 선택
+    const shuffledUsers = [...users]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, likeCount);
 
-    // 사용자 배열 섞기 (Fisher-Yates shuffle)
-    for (let i = possibleUsers.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [possibleUsers[i], possibleUsers[j]] = [
-        possibleUsers[j],
-        possibleUsers[i],
-      ];
-    }
+    for (const user of shuffledUsers) {
+      const key = `${translation.id}_${user.id}`;
 
-    // 좋아요 수만큼 사용자 선택
-    const selectedUsers = possibleUsers.slice(0, likeCount);
-
-    // 이 번역에 대한 좋아요 생성
-    for (const user of selectedUsers) {
-      const userId = user.id;
-      const key = `${translationId}_${userId}`;
-
+      // 중복 좋아요 방지
       if (!existingLikes.has(key)) {
         likes.push({
-          id: uuidv4(),
-          translationId: translationId,
-          userId: userId,
+          translationId: translation.id,
+          userId: user.id,
         });
         existingLikes.add(key);
       }
     }
-
-    // 이 번역의 실제 좋아요 수 기록
-    translationLikeCounts.set(translationId, selectedUsers.length);
   }
 
-  // 좋아요 데이터가 없으면 종료
-  if (likes.length === 0) {
-    console.log('⚠️ 생성된 좋아요 데이터가 없습니다.');
-    return;
-  }
-
-  // 좋아요 데이터를 배치로 나누어 처리
+  // 좋아요 데이터 배치 처리
   const BATCH_SIZE = 1000;
-  console.log(`좋아요 데이터 생성 중 (총 ${likes.length}개)...`);
-
   for (let i = 0; i < likes.length; i += BATCH_SIZE) {
     const batch = likes.slice(i, i + BATCH_SIZE);
     await prisma.like.createMany({
@@ -109,45 +71,47 @@ export const seedLikes = async (
     });
   }
 
-  console.log('좋아요 데이터 생성 완료');
-
-  // Translation의 likeCount 필드 업데이트
-  console.log('번역물 좋아요 수 업데이트 중...');
-
-  // 데이터베이스 쿼리를 사용해 직접 좋아요 수 계산하여 업데이트
+  // 각 번역물의 좋아요 수 업데이트
   for (const translation of translations) {
-    const count = await prisma.like.count({
+    const likeCount = await prisma.like.count({
       where: { translationId: translation.id },
     });
 
     await prisma.translation.update({
       where: { id: translation.id },
-      data: { likeCount: count },
+      data: { likeCount },
     });
   }
 
-  console.log('번역물 좋아요 수 업데이트 완료');
-
-  // 확인을 위한 검증 쿼리
-  console.log('데이터 검증 중...');
+  // 데이터 검증
+  let totalLikes = 0;
+  let translationsWithLikes = 0;
   for (const translation of translations) {
-    const likeCount = await prisma.translation.findUnique({
+    const dbLikeCount = await prisma.translation.findUnique({
       where: { id: translation.id },
       select: { likeCount: true },
     });
 
-    const actualLikes = await prisma.like.count({
+    const actualLikeCount = await prisma.like.count({
       where: { translationId: translation.id },
     });
 
-    if (likeCount?.likeCount !== actualLikes) {
+    if (dbLikeCount?.likeCount !== actualLikeCount) {
       console.warn(
-        `⚠️ 불일치 발견: 번역물 ID ${translation.id}, DB likeCount: ${likeCount?.likeCount}, 실제 좋아요 수: ${actualLikes}`
+        `⚠️ 불일치 발견: 번역물 ID ${translation.id}의 좋아요 수가 일치하지 않습니다.`,
+        `DB: ${dbLikeCount?.likeCount}, 실제: ${actualLikeCount}`
       );
     }
+    if (actualLikeCount > 0) {
+      translationsWithLikes++;
+    }
+    totalLikes += actualLikeCount;
   }
 
   console.log(
-    `✅ 좋아요 시드 완료: ${likes.length}개 생성, ${translations.length}개 번역물 업데이트`
+    `✅ 좋아요 시드 데이터 생성 완료!`,
+    `\n총 ${totalLikes}개의 좋아요가 생성되었습니다.`,
+    `\n${translationsWithLikes}개의 번역물이 좋아요를 받았습니다.`,
+    `\n평균 좋아요 수: ${(totalLikes / translationsWithLikes).toFixed(1)}개`
   );
 };

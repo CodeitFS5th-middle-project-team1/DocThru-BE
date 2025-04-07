@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, ApprovalStatus } from '@prisma/client';
 
 // Participant 객체를 위한 인터페이스 정의
 interface Participant {
@@ -7,37 +7,93 @@ interface Participant {
 }
 
 export const seedChallengeParticipants = async (prisma: PrismaClient) => {
-  // APPROVED 상태인 챌린지만 조회
-  const challenges = await prisma.challenge.findMany({
+  console.log('👥 챌린지 참가자 시드 데이터 생성 중...');
+
+  // 승인된(APPROVED) 챌린지만 가져오기
+  const approvedChallenges = await prisma.challenge.findMany({
     where: {
-      approvalStatus: 'APPROVED',
+      approvalStatus: ApprovalStatus.APPROVED,
+      isParticipantsFull: false,
+    },
+    select: {
+      id: true,
+      maxParticipants: true,
     },
   });
-  const users = await prisma.user.findMany();
 
-  const participants: Participant[] = []; // participants 배열의 타입을 Participant[]로 지정
-
-  for (const user of users) {
-    // 각 사용자별로 참여할 챌린지를 1~3개 랜덤 선택
-    const challengeSamples = [...challenges]
-      .sort(() => 0.5 - Math.random())
-      .slice(0, Math.floor(Math.random() * 3) + 1);
-
-    challengeSamples.forEach((challenge) => {
-      participants.push({
-        userId: user.id,
-        challengeId: challenge.id,
-      });
-    });
-  }
-
-  // 데이터베이스에 참여자 데이터 삽입
-  await prisma.challengeParticipant.createMany({
-    data: participants,
-    skipDuplicates: true,
+  // 일반 유저만 가져오기
+  const users = await prisma.user.findMany({
+    where: {
+      role: 'USER',
+    },
+    select: {
+      id: true,
+    },
   });
 
-  console.log(
-    `✅ ChallengeParticipants 시드 완료 (${participants.length}명 배정됨)`
-  );
+  const participants: Participant[] = [];
+  const challengeParticipants = new Map<string, number>();
+
+  // 각 유저별로 처리
+  for (const user of users) {
+    // 각 유저가 참여할 챌린지 수를 5~20개 사이로 랜덤 결정
+    const numberOfChallenges = Math.floor(Math.random() * 16) + 5;
+
+    // 아직 참여 가능한 챌린지들 필터링
+    const availableChallenges = approvedChallenges.filter((challenge) => {
+      const currentCount = challengeParticipants.get(challenge.id) || 0;
+      return currentCount < challenge.maxParticipants;
+    });
+
+    if (availableChallenges.length === 0) continue;
+
+    // 랜덤하게 챌린지 선택 (최대 20개)
+    const selectedChallenges = availableChallenges
+      .sort(() => Math.random() - 0.5)
+      .slice(0, Math.min(numberOfChallenges, availableChallenges.length));
+
+    // 선택된 챌린지에 유저 참여 처리
+    for (const challenge of selectedChallenges) {
+      const currentCount = challengeParticipants.get(challenge.id) || 0;
+
+      if (currentCount < challenge.maxParticipants) {
+        participants.push({
+          userId: user.id,
+          challengeId: challenge.id,
+        });
+
+        // 해당 챌린지의 참가자 수 증가
+        challengeParticipants.set(challenge.id, currentCount + 1);
+      }
+    }
+  }
+
+  // 트랜잭션으로 참가자 데이터 생성 및 챌린지 상태 업데이트
+  await prisma.$transaction(async (tx) => {
+    // 1. 참가자 데이터 생성
+    await tx.challengeParticipant.createMany({
+      data: participants,
+      skipDuplicates: true,
+    });
+
+    // 2. 각 챌린지의 참가자 수와 상태 업데이트
+    const updatePromises = Array.from(challengeParticipants.entries()).map(
+      ([challengeId, participantCount]) => {
+        return tx.challenge.update({
+          where: { id: challengeId },
+          data: {
+            currentParticipants: participantCount,
+            isParticipantsFull:
+              participantCount >=
+              (approvedChallenges.find((c) => c.id === challengeId)
+                ?.maxParticipants || 0),
+          },
+        });
+      }
+    );
+
+    await Promise.all(updatePromises);
+  });
+
+  console.log(`✅ ${participants.length}개의 챌린지 참가 데이터 생성 완료!`);
 };
