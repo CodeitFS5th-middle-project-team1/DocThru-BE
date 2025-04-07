@@ -49,7 +49,7 @@ router.patch(
     params: TranslationParamsWithIdSchema,
     body: TranslationUpdateBodySchema,
   }),
-  TranslationsController.updateTranslation as unknown as RequestHandler
+  TranslationsController.patchTranslation as unknown as RequestHandler
 );
 // 번역물 삭제
 router.delete(
@@ -57,7 +57,7 @@ router.delete(
   verifyJWTToken,
   validateRequestData({
     params: TranslationParamsWithIdSchema,
-    body: TranslationDeleteBodySchema,
+    // body: TranslationDeleteBodySchema,
   }),
   TranslationsController.deleteTranslation as unknown as RequestHandler
 );
