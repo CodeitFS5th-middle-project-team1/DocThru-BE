@@ -551,10 +551,12 @@ const patchTranslation: PatchController<
 
     const userId = req.user?.id;
     const userRole = req.user?.role;
+
     if (!userId) {
       next(new CustomError(401, '인증이 필요합니다.'));
       return;
     }
+
     const updatedTranslation = await TranslationsService.updateTranslation({
       translationId,
       challengeId,
@@ -565,13 +567,11 @@ const patchTranslation: PatchController<
         content,
       },
     });
+
     res.status(200).send(updatedTranslation);
   } catch (error) {
-<<<<<<< HEAD
+    // 모든 에러를 에러 핸들링 미들웨어로 전달
     next(error);
-=======
-    next(error)
->>>>>>> 77442c71c5f968875f36fcce715a88433f08eef2
   }
 };
 
@@ -681,7 +681,7 @@ const patchTranslation: PatchController<
  */
 const deleteTranslation: DeleteController<
   TranslationParamsWithId,
-  {}, // userId와 userRole은 req.user에서 가져옴
+  {},
   { success: boolean; message?: string }
 > = async (req, res, next) => {
   try {
@@ -706,12 +706,7 @@ const deleteTranslation: DeleteController<
       message: '번역물 삭제 성공',
     });
   } catch (error) {
-<<<<<<< HEAD
     next(error);
-=======
-    // 수정된 코드
-    next(error)
->>>>>>> 77442c71c5f968875f36fcce715a88433f08eef2
   }
 };
 const TranslationsController = {
