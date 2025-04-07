@@ -18,14 +18,15 @@ model Challenge {
   rejectedAt          DateTime?
   approvalStatus      ApprovalStatus @default(PENDING) // 관리자 승인 상태 
   approvalAt          DateTime?
-  isParticipantsFull    Boolean        @default(false)
-  isDeadlineFull        Boolean        @default(false)
+  isParticipantsFull  Boolean        @default(false)
+  isDeadlineFull      Boolean        @default(false)
 
   // Relations
   user                  User                   @relation(fields: [userId], references: [id])
   challengeParticipants ChallengeParticipant[] // 챌린지 참가자
   draftTranslations     DraftTranslation[] // 작업물 임시저장
   translations          Translation[] // 작업물
+  Notification          Notification[]
 
   @@map("challenges")
 }

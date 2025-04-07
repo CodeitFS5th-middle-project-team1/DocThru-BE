@@ -1,15 +1,16 @@
 model Feedback {
-  id             String      @id @default(uuid())
-  idx            Int         @default(autoincrement())
+  id             String         @id @default(uuid())
+  idx            Int            @default(autoincrement())
   translationId  String
-  translation    Translation @relation(fields: [translationId], references: [id], onDelete: Cascade)
+  translation    Translation    @relation(fields: [translationId], references: [id], onDelete: Cascade)
   userId         String
-  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userNickname   String
   userProfileImg String?
   content        String
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  Notification   Notification[]
 
   @@map("feedbacks")
 }

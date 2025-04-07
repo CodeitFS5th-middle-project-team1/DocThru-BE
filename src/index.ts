@@ -29,5 +29,6 @@ cron.schedule('0 0 * * *', async () => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`);
+  console.log('🌍 서버 시작 - JWT_SECRET:', process.env.JWT_SECRET_KEY);
   console.log(`Swagger Docs: http://localhost:${PORT}/api-docs`);
 });

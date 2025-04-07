@@ -1,7 +1,8 @@
 import { Router } from 'express';
+import { getNotifications } from './notifications.controller';
 
 const router = Router();
 
-router.post('/'); // 알림 생성
+router.get('/', getNotifications); // 알림 생성
 
 export default router;

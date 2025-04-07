@@ -155,8 +155,8 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
  *                   example: 비밀번호가 일치하지 않습니다.
  */
 const login = async (req: Request, res: Response, next: NextFunction) => {
+  console.log('🔐 서버 JWT_SECRET:', process.env.JWT_SECRET);
   const { email, password }: LoginBodyDTO = req.body;
-
   const existedUser = await AuthService.checkEmail(email);
 
   if (!existedUser) {
@@ -179,6 +179,12 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   await AuthService.saveRefreshToken(existedUser.email, refreshToken);
 
   res.set('Authorization', `Bearer ${accessToken}`);
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production', // 개발 환경에서 false 허용
+  });
+
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     sameSite: 'none',

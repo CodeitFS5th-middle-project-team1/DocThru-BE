@@ -16,7 +16,7 @@ const createToken = (
     id: user.id,
     role: user.role,
   };
-  const expiresIn = tokenType === 'access' ? '10m' : '1h';
+  const expiresIn = tokenType === 'access' ? '4h' : '1h';
   return jwt.sign(payload, secretKey, { expiresIn });
 };
 

@@ -1,0 +1,22 @@
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  category  String // 'challenge' | 'translation' | 'feedback' | 'admin'
+  type      String // 'created' | 'updated' | 'deleted' | 'approved' ...
+  message   String
+  reason    String? // 관리자 사유
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // 관계 연결 (nullable로 두되, 여러 모델 연결 가능)
+  challengeId   String?
+  translationId String?
+  feedbackId    String?
+
+  user        User         @relation(fields: [userId], references: [id])
+  challenge   Challenge?   @relation(fields: [challengeId], references: [id])
+  translation Translation? @relation(fields: [translationId], references: [id])
+  feedback    Feedback?    @relation(fields: [feedbackId], references: [id])
+
+  @@map("notifications")
+}

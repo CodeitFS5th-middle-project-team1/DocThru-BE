@@ -50,6 +50,12 @@ export const verifyJWTToken = async (
     await AuthService.updateRefreshToken(payloadRefresh.id, newRefreshToken);
 
     res.set('Authorization', `Bearer ${newAccessToken}`);
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false, // 로컬 테스트 시 false로
+    });
+
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       sameSite: 'none',

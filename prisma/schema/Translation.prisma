@@ -13,8 +13,9 @@ model Translation {
   lastModifiedBy String?
 
   // Relations
-  feedbacks Feedback[]
-  likes     Like[]
+  feedbacks    Feedback[]
+  likes        Like[]
+  Notification Notification[]
 
   @@map("translations")
 }

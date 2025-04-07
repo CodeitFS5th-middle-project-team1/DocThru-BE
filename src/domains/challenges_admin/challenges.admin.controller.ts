@@ -5,7 +5,7 @@ import {
 } from './challenges.admin.validation';
 import ChallengesAdminService from './challenges.admin.service';
 import { ChallengeAdminResponse } from './challenges.admin.type';
-
+import { createNotification } from '../notifications/notifications.service';
 /**
  * @swagger
  * /api/challenges/{challengeId}/admin/approve:
@@ -153,7 +153,14 @@ const patchChallengeApprove: PatchController<
   const updateChallenge = await ChallengesAdminService.approveChallenge(
     challengeId
   );
-
+  // 알림 생성
+  await createNotification({
+    userId: updateChallenge.userId,
+    category: 'challenge',
+    type: 'approved',
+    message: `'${updateChallenge.title}' 챌린지가 승인되었어요.`,
+    challengeId: updateChallenge.id,
+  });
   res.status(200).json({ challenge: updateChallenge });
   return;
 };
@@ -319,7 +326,15 @@ const patchChallengeReject: PatchController<
     challengeId,
     rejectedReason
   );
-
+  // 알림 생성
+  await createNotification({
+    userId: updateChallenge.userId,
+    category: 'challenge',
+    type: 'rejected',
+    message: `'${updateChallenge.title}' 챌린지가 거절되었어요.`,
+    reason: rejectedReason,
+    challengeId: updateChallenge.id,
+  });
   res.status(200).json({ challenge: updateChallenge });
   return;
 };

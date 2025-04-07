@@ -20,6 +20,7 @@ model User {
   likes                 Like[]
   feedbacks             Feedback[]
   challenges            Challenge[]
+  Notification          Notification[]
 
   @@map("users")
 }
