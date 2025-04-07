@@ -64,12 +64,6 @@ export const TranslationUpdateBodySchema = z.object({
     .refine((val) => val.length >= 1 && val.length <= 1000, {
       message: '내용은 최소 1자 이상 최대 1000자 이하로 입력해주세요.',
     }),
-  userId: z.string().min(1, { message: '사용자 ID는 필수 항목입니다.' }),
-  userRole: z
-    .nativeEnum(UserRole, {
-      errorMap: () => ({ message: '유효한 UserRole이 아닙니다.' }),
-    })
-    .optional(),
 });
 
 // 번역물 수정 요청 바디 타입

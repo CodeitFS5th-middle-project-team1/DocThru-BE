@@ -249,7 +249,7 @@ const getChallengeListByUser = async ({
   keyword,
   userId,
 }: GetChallengeListByUserArgs) => {
-  console.log(userId)
+  console.log(userId);
   const pageNum = Number(page);
   const limitNum = Number(limit);
 
