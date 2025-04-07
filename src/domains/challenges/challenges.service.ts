@@ -176,11 +176,11 @@ const getChallengeListByAdmin = async ({
     const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {};
 
     switch (orderBy) {
-      case Order.createdLast:
-        orderCondition.createdAt = 'asc'; // 신청 오래된 순
-        break;
       case Order.createdFirst:
-        orderCondition.createdAt = 'desc'; // 신청 최신 순
+        orderCondition.createdAt = 'asc'; // 신청 빠른 순
+        break;
+      case Order.createdLast:
+        orderCondition.createdAt = 'desc'; // 신청 느린 순
         break;
       case Order.deadLineFirst:
         orderCondition.deadline = 'asc'; // 마감일 빠른 순
@@ -259,11 +259,11 @@ const getChallengeListByUser = async ({
     const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {};
 
     switch (orderBy) {
-      case Order.createdLast:
-        orderCondition.createdAt = 'asc'; // 신청 오래된 순
-        break;
       case Order.createdFirst:
-        orderCondition.createdAt = 'desc'; // 신청 최신 순
+        orderCondition.createdAt = 'asc'; // 신청 빠른 순
+        break;
+      case Order.createdLast:
+        orderCondition.createdAt = 'desc'; // 신청 느린 순
         break;
       case Order.deadLineFirst:
         orderCondition.deadline = 'asc'; // 마감일 빠른 순
