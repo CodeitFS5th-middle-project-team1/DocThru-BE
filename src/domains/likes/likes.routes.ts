@@ -1,8 +1,12 @@
-import { Router } from "express";
+import { Router } from 'express';
+import likesController from './likes.controller';
+import { verifyJWTToken } from '../../middleware/verifyJWTToken';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
-router.post("/"); // 작업물 추천하기
-router.delete("/"); // 작업물 추천 해제하기
+router.use(verifyJWTToken);
+
+router.post('/like', likesController.postLike);
+router.delete('/like', likesController.deleteLike);
 
 export default router;

@@ -65,6 +65,5 @@ router.delete(
 router.post('/draftedTranslations'); // 작업물 임시 저장
 router.get('/draftedTranslations'); // 작업물 임시 저장 가져오기
 router.use('/:translationId/feedbacks', FeedbackRouter);
-router.use('/:translationId', LikeRouter);
 
 export default router;
