@@ -595,12 +595,14 @@ const getChallengeList: GetController<
  *                   field: "NEXTJS"
  *                   createdAt: "2025-03-29T12:00:00.000Z"
  *                   updatedAt: "2025-03-30T12:00:00.000Z"
+ *                   translations: [{id: "89648a2b-1fc8-4a81-a91b-2ec1e137061d"}]
  *                 - id: "789e4567-e89b-12d3-a456-426614174001"
  *                   title: "백엔드 번역 챌린지"
  *                   documentType: "OFFICIAL"
  *                   field: "API"
  *                   createdAt: "2025-03-28T12:00:00.000Z"
  *                   updatedAt: "2025-03-29T12:00:00.000Z"
+ *                   translations: [{id: "89648a2b-1fc8-4a81-a91b-2ec1e137061d"}]
  *               totalCount: 2
  *       400:
  *         description: 잘못된 요청 데이터

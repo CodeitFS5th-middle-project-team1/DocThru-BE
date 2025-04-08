@@ -132,7 +132,6 @@ const getChallengeListParticipating = async ({
   const pageNum = Number(page);
   const limitNum = Number(limit);
   const successBoolean = isExpired === 'true';
-
   const skip = (pageNum - 1) * limitNum;
 
   const [challenges, totalCount] = await Promise.all([
@@ -165,6 +164,14 @@ const getChallengeListParticipating = async ({
         documentType: true,
         isParticipantsFull: true,
         isDeadlineFull: true,
+        translations: {
+          where: {
+            userId,
+          },
+          select: {
+            id: true,
+          }
+        }
       },
     }),
     prisma.challenge.count({
