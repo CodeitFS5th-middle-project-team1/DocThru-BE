@@ -1,6 +1,6 @@
 import { ApprovalStatus, DocumentType, FieldType } from '@prisma/client';
 import z from 'zod';
-import { Order } from './challenges.type';
+import { Order, Status } from './challenges.type';
 
 export const ChallengeParamsSchema = z.object({
   challengeId: z.string().uuid({ message: 'id는 uuid 형식이여야 합니다.' }),
@@ -26,6 +26,7 @@ export const ChallengeQueriesSchema = z.object({
   limit: z.string({ message: "페이지 사이즈는 문자열이어야 합니다."}).optional(),
   orderBy: z.nativeEnum(Order,{ errorMap: () => ({ message: "잘못된 정렬 유형입니다."})}).optional(),
   isExpired: z.string({ message: "boolean 타입의 string으로 입력해주세요."}).optional(),
+  status: z.nativeEnum(Status,{ errorMap: () => ({ message: "잘못된 상태 유형입니다."})}).optional(),
 });
 
 export const ChallengeBodySchema = z.object({

@@ -383,6 +383,15 @@ const getChallengeListByUser: GetController<
  *     description: 필터 및 정렬 조건을 기반으로 챌린지 목록을 조회합니다.
  *     parameters:
  *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [running, end]
+ *         description: |
+ *           챌린지 상태 필터링:
+ *           - `running`: 모집 중 (isParticipantsFull = false AND isDeadlineFull = false)
+ *           - `end`: 모집 완료 (isParticipantsFull = true OR isDeadlineFull = true)
+ *       - in: query
  *         name: documentType
  *         schema:
  *           type: string
@@ -482,6 +491,7 @@ const getChallengeList: GetController<
       keyword,
       page = '1',
       limit = '10',
+      status,
     } = req.query;
 
     const result = await ChallengesService.getChallengeList({
@@ -490,6 +500,7 @@ const getChallengeList: GetController<
       keyword,
       page,
       limit,
+      status,
     });
     res.status(200).send(result);
   } catch (err) {

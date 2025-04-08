@@ -35,6 +35,7 @@ const getChallengeList = async ({
   keyword,
   page,
   limit,
+  status,
 }: ChallengeRequestQueries) => {
   const pageNum = Number(page);
   const limitNum = Number(limit);
@@ -53,10 +54,24 @@ const getChallengeList = async ({
         documentType: documentType || undefined,
         field: fieldCondition || undefined,
         approvalStatus: 'APPROVED',
-        ...(keyword && {
+        ...(status === 'running' && {
+          isParticipantsFull: false,
+          isDeadlineFull: false,
+        }),
+        ...(status === 'end' && {
           OR: [
-            { title: { contains: keyword, mode: 'insensitive' } },
-            { description: { contains: keyword, mode: 'insensitive' } },
+            { isParticipantsFull: true },
+            { isDeadlineFull: true },
+          ],
+        }),
+        ...(keyword && {
+          AND: [
+            {
+              OR: [
+                { title: { contains: keyword, mode: 'insensitive' } },
+                { description: { contains: keyword, mode: 'insensitive' } },
+              ],
+            },
           ],
         }),
       },
@@ -80,10 +95,24 @@ const getChallengeList = async ({
         documentType: documentType || undefined,
         field: fieldCondition || undefined,
         approvalStatus: 'APPROVED',
-        ...(keyword && {
+        ...(status === 'running' && {
+          isParticipantsFull: false,
+          isDeadlineFull: false,
+        }),
+        ...(status === 'end' && {
           OR: [
-            { title: { contains: keyword, mode: 'insensitive' } },
-            { description: { contains: keyword, mode: 'insensitive' } },
+            { isParticipantsFull: true },
+            { isDeadlineFull: true },
+          ],
+        }),
+        ...(keyword && {
+          AND: [
+            {
+              OR: [
+                { title: { contains: keyword, mode: 'insensitive' } },
+                { description: { contains: keyword, mode: 'insensitive' } },
+              ],
+            },
           ],
         }),
       },
