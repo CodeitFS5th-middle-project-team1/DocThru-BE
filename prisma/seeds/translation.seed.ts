@@ -1,242 +1,258 @@
 import { PrismaClient } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
 import { subDays } from 'date-fns';
 
-export const seedTranslations = async (
-  prisma:
-    | PrismaClient
-    | Omit<
-        PrismaClient,
-        | '$connect'
-        | '$disconnect'
-        | '$on'
-        | '$transaction'
-        | '$use'
-        | '$extends'
-      >
-) => {
-  const challenges = await prisma.challenge.findMany();
-  const users = await prisma.user.findMany();
-  const titlesAndContents = [
-    {
-      title: 'Vue.js 3.x의 Composition API 소개',
-      content:
-        'Vue.js의 새로운 Composition API를 통해 기능별로 코드를 구성하는 방법에 대해 배울 수 있습니다. 이 API는 반응형 시스템을 더 깔끔하게 관리할 수 있게 해줍니다.',
-    },
-    {
-      title: 'Python에서의 동시성 처리 방법',
-      content:
-        'Python의 asyncio 라이브러리와 multi-threading을 사용하여 I/O와 CPU 바운드 작업을 처리하는 방법을 배웁니다.',
-    },
-    {
-      title: '컨테이너 오케스트레이션 이해: Kubernetes 기초',
-      content:
-        '컨테이너화된 애플리케이션을 관리하는 Kubernetes의 기본 구성 요소와 아키텍처를 탐구합니다.',
-    },
-    {
-      title: '효과적인 RESTful API 디자인 원칙',
-      content:
-        'RESTful API를 설계할 때 고려해야 할 주요 원칙과 최선의 실천 방법을 살펴봅니다.',
-    },
-    {
-      title: '모던 JavaScript: ES2021의 새로운 기능들',
-      content:
-        '최신 JavaScript 표준인 ES2021에서 추가된 기능들과 그 사용법에 대해 설명합니다.',
-    },
-    {
-      title: 'React와 TypeScript를 사용한 프론트엔드 개발',
-      content:
-        'TypeScript를 사용하여 React 애플리케이션을 더 안정적이고 관리하기 쉽게 만드는 방법을 배웁니다.',
-    },
-    {
-      title: 'AWS 클라우드 서비스의 기초',
-      content:
-        'AWS에서 제공하는 다양한 클라우드 서비스와 기본 개념을 소개하며, 각 서비스의 용도와 사용법을 다룹니다.',
-    },
-    {
-      title: '애자일 개발 방법론과 스크럼 기법',
-      content:
-        '소프트웨어 개발에서 애자일과 스크럼 방법론이 어떻게 적용되는지, 그리고 팀과 프로젝트 관리에 미치는 영향에 대해 알아봅니다.',
-    },
-    {
-      title: 'Node.js를 이용한 백엔드 프로그래밍',
-      content:
-        'Node.js의 기본적인 사용법부터 API 개발, 데이터베이스 연동 방법까지 살펴봅니다.',
-    },
-    {
-      title: '블록체인 기술의 이해와 애플리케이션',
-      content:
-        '블록체인 기술이 무엇인지, 그리고 다양한 산업 분야에서 어떻게 활용되고 있는지에 대한 개요를 제공합니다.',
-    },
-    {
-      title: '실시간 웹 애플리케이션 개발을 위한 Socket.IO 소개',
-      content:
-        '이 문서는 실시간 웹 애플리케이션 개발에 널리 사용되는 Socket.IO 라이브러리에 대해 설명하며, 기본적인 사용법과 함께 실제 예제를 다룹니다.',
-    },
-    {
-      title: 'Angular 프레임워크를 사용한 SPA 개발 가이드',
-      content:
-        'Angular를 사용하여 단일 페이지 애플리케이션(SPA)을 개발하는 방법을 자세히 설명하며, 컴포넌트 기반 아키텍처를 중심으로 설명합니다.',
-    },
-    {
-      title: '데이터 과학과 머신러닝 파이프라인 구축',
-      content:
-        '데이터 수집부터 처리, 모델링, 예측에 이르기까지의 전체 머신러닝 파이프라인 구축 과정을 설명합니다.',
-    },
-    {
-      title: 'DevOps 문화 구축을 위한 주요 전략과 도구',
-      content:
-        '효과적인 DevOps 문화를 구축하는 방법과 이를 지원하는 현대의 도구들에 대해 소개합니다.',
-    },
-    {
-      title: '클라우드 네이티브 애플리케이션 설계의 이해',
-      content:
-        '클라우드 네이티브 애플리케이션의 핵심 원리와 이를 설계하는 방법에 대해 자세히 설명합니다.',
-    },
-    {
-      title: '자바스크립트 메모리 관리와 가비지 컬렉션',
-      content:
-        '자바스크립트에서 메모리 관리가 어떻게 이루어지는지, 가비지 컬렉션의 원리와 최적화 방법을 탐구합니다.',
-    },
-    {
-      title: '안드로이드 앱 개발의 최신 트렌드와 기술',
-      content:
-        '안드로이드 애플리케이션 개발에 사용되는 최신 도구와 프레임워크, 그리고 현재 트렌드에 대해 설명합니다.',
-    },
-    {
-      title: 'iOS 앱 개발을 위한 Swift의 고급 기능',
-      content:
-        'Swift 프로그래밍 언어의 고급 기능들을 사용하여 iOS 애플리케이션을 더 효과적으로 개발하는 방법을 배웁니다.',
-    },
-    {
-      title: 'SOLID 원칙을 적용한 객체 지향 설계',
-      content:
-        '객체 지향 프로그래밍의 SOLID 원칙을 적용하는 방법과 이를 통해 얻을 수 있는 설계 개선 사항에 대해 설명합니다.',
-    },
-    {
-      title: '크로스 플랫폼 개발 프레임워크 비교: React Native vs Flutter',
-      content:
-        'React Native와 Flutter, 두 크로스 플랫폼 개발 프레임워크의 장단점을 비교하고 각각의 사용 사례에 대해 설명합니다.',
-    },
-    {
-      title: 'Vue.js 3.x의 Composition API 소개',
-      content:
-        'Vue.js의 새로운 Composition API를 통해 기능별로 코드를 구성하는 방법에 대해 배울 수 있습니다. 이 API는 반응형 시스템을 더 깔끔하게 관리할 수 있게 해줍니다.',
-    },
-    {
-      title: 'Python에서의 동시성 처리 방법',
-      content:
-        'Python의 asyncio 라이브러리와 multi-threading을 사용하여 I/O와 CPU 바운드 작업을 처리하는 방법을 배웁니다.',
-    },
-    {
-      title: '컨테이너 오케스트레이션 이해: Kubernetes 기초',
-      content:
-        '컨테이너화된 애플리케이션을 관리하는 Kubernetes의 기본 구성 요소와 아키텍처를 탐구합니다.',
-    },
-    {
-      title: '효과적인 RESTful API 디자인 원칙',
-      content:
-        'RESTful API를 설계할 때 고려해야 할 주요 원칙과 최선의 실천 방법을 살펴봅니다.',
-    },
-    {
-      title: '모던 JavaScript: ES2021의 새로운 기능들',
-      content:
-        '최신 JavaScript 표준인 ES2021에서 추가된 기능들과 그 사용법에 대해 설명합니다.',
-    },
-    {
-      title: 'React와 TypeScript를 사용한 프론트엔드 개발',
-      content:
-        'TypeScript를 사용하여 React 애플리케이션을 더 안정적이고 관리하기 쉽게 만드는 방법을 배웁니다.',
-    },
-    {
-      title: 'AWS 클라우드 서비스의 기초',
-      content:
-        'AWS에서 제공하는 다양한 클라우드 서비스와 기본 개념을 소개하며, 각 서비스의 용도와 사용법을 다룹니다.',
-    },
-    {
-      title: '애자일 개발 방법론과 스크럼 기법',
-      content:
-        '소프트웨어 개발에서 애자일과 스크럼 방법론이 어떻게 적용되는지, 그리고 팀과 프로젝트 관리에 미치는 영향에 대해 알아봅니다.',
-    },
-    {
-      title: 'Node.js를 이용한 백엔드 프로그래밍',
-      content:
-        'Node.js의 기본적인 사용법부터 API 개발, 데이터베이스 연동 방법까지 살펴봅니다.',
-    },
-    {
-      title: '블록체인 기술의 이해와 애플리케이션',
-      content:
-        '블록체인 기술이 무엇인지, 그리고 다양한 산업 분야에서 어떻게 활용되고 있는지에 대한 개요를 제공합니다.',
-    },
-    {
-      title: '실시간 웹 애플리케이션 개발을 위한 Socket.IO 소개',
-      content:
-        '이 문서는 실시간 웹 애플리케이션 개발에 널리 사용되는 Socket.IO 라이브러리에 대해 설명하며, 기본적인 사용법과 함께 실제 예제를 다룹니다.',
-    },
-    {
-      title: 'Angular 프레임워크를 사용한 SPA 개발 가이드',
-      content:
-        'Angular를 사용하여 단일 페이지 애플리케이션(SPA)을 개발하는 방법을 자세히 설명하며, 컴포넌트 기반 아키텍처를 중심으로 설명합니다.',
-    },
-    {
-      title: '데이터 과학과 머신러닝 파이프라인 구축',
-      content:
-        '데이터 수집부터 처리, 모델링, 예측에 이르기까지의 전체 머신러닝 파이프라인 구축 과정을 설명합니다.',
-    },
-    {
-      title: 'DevOps 문화 구축을 위한 주요 전략과 도구',
-      content:
-        '효과적인 DevOps 문화를 구축하는 방법과 이를 지원하는 현대의 도구들에 대해 소개합니다.',
-    },
-    {
-      title: '클라우드 네이티브 애플리케이션 설계의 이해',
-      content:
-        '클라우드 네이티브 애플리케이션의 핵심 원리와 이를 설계하는 방법에 대해 자세히 설명합니다.',
-    },
-    {
-      title: '자바스크립트 메모리 관리와 가비지 컬렉션',
-      content:
-        '자바스크립트에서 메모리 관리가 어떻게 이루어지는지, 가비지 컬렉션의 원리와 최적화 방법을 탐구합니다.',
-    },
-    {
-      title: '안드로이드 앱 개발의 최신 트렌드와 기술',
-      content:
-        '안드로이드 애플리케이션 개발에 사용되는 최신 도구와 프레임워크, 그리고 현재 트렌드에 대해 설명합니다.',
-    },
-    {
-      title: 'iOS 앱 개발을 위한 Swift의 고급 기능',
-      content:
-        'Swift 프로그래밍 언어의 고급 기능들을 사용하여 iOS 애플리케이션을 더 효과적으로 개발하는 방법을 배웁니다.',
-    },
-    {
-      title: 'SOLID 원칙을 적용한 객체 지향 설계',
-      content:
-        '객체 지향 프로그래밍의 SOLID 원칙을 적용하는 방법과 이를 통해 얻을 수 있는 설계 개선 사항에 대해 설명합니다.',
-    },
-    {
-      title: '크로스 플랫폼 개발 프레임워크 비교: React Native vs Flutter',
-      content:
-        'React Native와 Flutter, 두 크로스 플랫폼 개발 프레임워크의 장단점을 비교하고 각각의 사용 사례에 대해 설명합니다.',
-    },
+// 기술 문서 내용 생성 함수
+const generateTechContent = (title: string, field: string) => {
+  const introductions = [
+    '이 문서에서는 ${field}의 핵심 개념과 실제 구현 방법에 대해 자세히 알아보겠습니다.',
+    '${field}를 효과적으로 활용하기 위한 심층적인 가이드를 제공합니다.',
+    '${field}의 최신 트렌드와 실무 적용 방법을 상세히 설명합니다.',
   ];
-  const translations = titlesAndContents.map((tc, index) => ({
-    id: uuidv4(),
-    challengeId: challenges[index % challenges.length].id,
-    userId: users[index % users.length].id,
-    title: tc.title,
-    content: tc.content,
-    likeCount: 0,
-    createdAt: subDays(new Date(), Math.floor(Math.random() * 30)),
-    updatedAt: new Date(),
-  }));
 
+  const mainContents = {
+    NEXTJS: [
+      `# Next.js의 핵심 기능
+
+## 1. 서버 사이드 렌더링 (SSR)
+Next.js의 가장 큰 특징은 서버 사이드 렌더링을 쉽게 구현할 수 있다는 점입니다. SSR은 초기 페이지 로딩 속도를 개선하고 SEO를 향상시키는 데 매우 효과적입니다.
+
+\`\`\`typescript
+// pages/index.tsx
+export async function getServerSideProps() {
+  const res = await fetch('https://api.example.com/data');
+  const data = await res.json();
+  
+  return {
+    props: { data }
+  };
+}
+\`\`\`
+
+## 2. 정적 사이트 생성 (SSG)
+빌드 시점에 페이지를 생성하여 CDN에서 제공할 수 있습니다. 이는 블로그나 마케팅 페이지에 특히 유용합니다.
+
+## 3. 파일 기반 라우팅
+pages 디렉토리 내의 파일 구조가 곧 라우팅 구조가 되는 직관적인 시스템을 제공합니다.
+
+## 4. API 라우트
+별도의 서버 없이도 API 엔드포인트를 쉽게 생성할 수 있습니다.
+
+## 5. 최적화 기능
+- 자동 이미지 최적화
+- 폰트 최적화
+- 스크립트 최적화
+
+## 실제 프로젝트 적용 예시
+\`\`\`typescript
+// components/Layout.tsx
+import Head from 'next/head';
+import Navigation from './Navigation';
+
+export default function Layout({ children }) {
+  return (
+    <>
+      <Head>
+        <title>My Next.js App</title>
+        <meta name="description" content="Modern web application" />
+      </Head>
+      <Navigation />
+      <main>{children}</main>
+    </>
+  );
+}
+\`\`\``,
+    ],
+    MODERNJS: [
+      `# 모던 자바스크립트의 핵심 기능
+
+## 1. 비동기 프로그래밍
+async/await를 사용한 우아한 비동기 처리:
+
+\`\`\`javascript
+async function fetchUserData() {
+  try {
+    const response = await fetch('https://api.example.com/user');
+    const userData = await response.json();
+    return userData;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+  }
+}
+\`\`\`
+
+## 2. 모듈 시스템
+ES Modules를 사용한 코드 구조화:
+
+\`\`\`javascript
+// utils.js
+export const formatDate = (date) => {
+  return new Intl.DateTimeFormat('ko-KR').format(date);
+};
+
+// main.js
+import { formatDate } from './utils.js';
+\`\`\`
+
+## 3. 새로운 데이터 구조
+Map과 Set을 활용한 데이터 관리:
+
+\`\`\`javascript
+const userRoles = new Map();
+userRoles.set('admin', ['read', 'write', 'delete']);
+userRoles.set('user', ['read']);
+
+const uniqueTags = new Set(['javascript', 'typescript', 'react']);
+\`\`\`
+
+## 4. 프로토타입과 클래스
+클래스 기반 객체 지향 프로그래밍:
+
+\`\`\`javascript
+class UserService {
+  constructor(apiClient) {
+    this.apiClient = apiClient;
+  }
+
+  async getUser(id) {
+    return this.apiClient.get(\`/users/\${id}\`);
+  }
+}
+\`\`\``,
+    ],
+    API: [
+      `# RESTful API 설계 가이드
+
+## 1. API 엔드포인트 설계 원칙
+- 리소스는 명사로 표현
+- HTTP 메서드를 올바르게 사용
+- 계층 구조는 URL에 반영
+
+\`\`\`javascript
+// 좋은 예시
+GET /articles
+POST /articles
+GET /articles/:id
+PUT /articles/:id
+DELETE /articles/:id
+
+// 나쁜 예시
+GET /getArticles
+POST /createArticle
+\`\`\`
+
+## 2. 상태 코드 활용
+적절한 HTTP 상태 코드 사용:
+- 200: 성공
+- 201: 생성됨
+- 400: 잘못된 요청
+- 401: 인증 필요
+- 403: 권한 없음
+- 404: 찾을 수 없음
+- 500: 서버 오류
+
+## 3. 인증과 보안
+JWT를 활용한 인증 구현:
+
+\`\`\`javascript
+const jwt = require('jsonwebtoken');
+
+const generateToken = (user) => {
+  return jwt.sign(
+    { id: user.id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+};
+\`\`\`
+
+## 4. 에러 처리
+일관된 에러 응답 형식:
+
+\`\`\`javascript
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid input data",
+    "details": [
+      {
+        "field": "email",
+        "message": "Invalid email format"
+      }
+    ]
+  }
+}
+\`\`\``,
+    ],
+  };
+
+  const conclusions = [
+    '이러한 기능들을 적절히 활용하면 더 효율적이고 유지보수가 쉬운 애플리케이션을 개발할 수 있습니다.',
+    '위 내용들을 실제 프로젝트에 적용하면서 점진적으로 발전시켜 나가시기 바랍니다.',
+    '이 가이드가 여러분의 개발 여정에 도움이 되길 바랍니다.',
+  ];
+
+  const introduction = introductions[
+    Math.floor(Math.random() * introductions.length)
+  ].replace('${field}', field);
+
+  const mainContent =
+    mainContents[field as keyof typeof mainContents]?.[0] ||
+    '이 문서의 자세한 내용은 현재 준비 중입니다. 곧 업데이트하도록 하겠습니다.';
+
+  const conclusion =
+    conclusions[Math.floor(Math.random() * conclusions.length)];
+
+  return `${introduction}\n\n${mainContent}\n\n${conclusion}`;
+};
+
+export const seedTranslations = async (prisma: PrismaClient) => {
+  console.log('💬 번역 시드 데이터 생성 중...');
+  // 승인된 챌린지와 그 참가자들 조회
+  const challengeParticipants = await prisma.challengeParticipant.findMany({
+    include: {
+      challenge: {
+        select: {
+          id: true,
+          title: true,
+          field: true,
+          currentParticipants: true,
+        },
+      },
+      user: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+
+  const translations = [];
+
+  // 각 챌린지 참가자별로 번역물 생성
+  for (const participant of challengeParticipants) {
+    const { challenge, user } = participant;
+
+    // 랜덤한 생성 날짜 (최근 30일 이내)
+    const createdAt = subDays(new Date(), Math.floor(Math.random() * 30));
+
+    translations.push({
+      challengeId: challenge.id,
+      userId: user.id,
+      title: challenge.title,
+      content: generateTechContent(challenge.title, challenge.field),
+      likeCount: 0,
+      createdAt,
+      updatedAt: createdAt,
+    });
+  }
+
+  // 번역물 데이터 생성
   await prisma.translation.createMany({
     data: translations,
     skipDuplicates: true,
   });
 
-  console.log(`${translations.length}개의 작업물 생성`);
+  console.log(`✅ ${translations.length}개의 번역물 생성 완료!`);
 
-  // 생성된 Translation 객체 반환 (중요!)
   return translations;
 };
