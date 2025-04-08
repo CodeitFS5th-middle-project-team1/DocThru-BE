@@ -98,3 +98,8 @@ export enum Order {
   deadLineFirst = 'deadLineFirst',
   deadLineLast = 'deadLineLast',
 }
+
+export enum Status {
+  running = 'running',
+  end = 'end',
+}
