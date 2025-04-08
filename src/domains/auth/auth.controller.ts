@@ -179,6 +179,11 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   await AuthService.saveRefreshToken(existedUser.email, refreshToken);
 
   res.set('Authorization', `Bearer ${accessToken}`);
+  res.cookie('accessToken', accessToken, {
+    httpOnly: false, // 프론트에서 document.cookie로 접근할 수 있게 하려면 false
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  });
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     sameSite: 'none',
