@@ -68,32 +68,24 @@ export const seedChallengeParticipants = async (prisma: PrismaClient) => {
     }
   }
 
-  // 트랜잭션으로 참가자 데이터 생성 및 챌린지 상태 업데이트
-  await prisma.$transaction(async (tx) => {
-    // 1. 참가자 데이터 생성
-    await tx.challengeParticipant.createMany({
-      data: participants,
-      skipDuplicates: true,
-    });
+  // 1. 참가자 데이터 생성
+await prisma.challengeParticipant.createMany({
+  data: participants,
+  skipDuplicates: true,
+});
 
-    // 2. 각 챌린지의 참가자 수와 상태 업데이트
-    const updatePromises = Array.from(challengeParticipants.entries()).map(
-      ([challengeId, participantCount]) => {
-        return tx.challenge.update({
-          where: { id: challengeId },
-          data: {
-            currentParticipants: participantCount,
-            isParticipantsFull:
-              participantCount >=
-              (approvedChallenges.find((c) => c.id === challengeId)
-                ?.maxParticipants || 0),
-          },
-        });
-      }
-    );
-
-    await Promise.all(updatePromises);
+// 2. 각 챌린지의 참가자 수와 상태 업데이트 (순차 처리)
+for (const [challengeId, participantCount] of challengeParticipants.entries()) {
+  await prisma.challenge.update({
+    where: { id: challengeId },
+    data: {
+      currentParticipants: participantCount,
+      isParticipantsFull:
+        participantCount >=
+        (approvedChallenges.find((c) => c.id === challengeId)?.maxParticipants || 0),
+    },
   });
+}
 
   console.log(`✅ ${participants.length}개의 챌린지 참가 데이터 생성 완료!`);
 };
