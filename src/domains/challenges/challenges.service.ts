@@ -59,10 +59,7 @@ const getChallengeList = async ({
           isDeadlineFull: false,
         }),
         ...(status === 'end' && {
-          OR: [
-            { isParticipantsFull: true },
-            { isDeadlineFull: true },
-          ],
+          OR: [{ isParticipantsFull: true }, { isDeadlineFull: true }],
         }),
         ...(keyword && {
           AND: [
@@ -100,10 +97,7 @@ const getChallengeList = async ({
           isDeadlineFull: false,
         }),
         ...(status === 'end' && {
-          OR: [
-            { isParticipantsFull: true },
-            { isDeadlineFull: true },
-          ],
+          OR: [{ isParticipantsFull: true }, { isDeadlineFull: true }],
         }),
         ...(keyword && {
           AND: [
@@ -170,8 +164,8 @@ const getChallengeListParticipating = async ({
           },
           select: {
             id: true,
-          }
-        }
+          },
+        },
       },
     }),
     prisma.challenge.count({

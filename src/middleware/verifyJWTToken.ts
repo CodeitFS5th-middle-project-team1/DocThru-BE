@@ -8,37 +8,61 @@ export const verifyJWTToken = async (
   next: NextFunction
 ) => {
   try {
+    let accessToken: string | undefined;
+
+    // 헤더에서 토큰 확인
     const authorization = req.headers.authorization;
-    if (!authorization?.startsWith('Bearer ')) {
-      return next({ statusCode: 401, message: 'Bearer 없음.' });
+    if (authorization?.startsWith('Bearer ')) {
+      accessToken = authorization.split(' ')[1];
     }
 
-    const accessToken = authorization.split(' ')[1];
-    const payloadAccess = jwt.verifyToken(accessToken);
+    // 쿠키에서 토큰 확인 (헤더에 없는 경우)
+    if (!accessToken && req.cookies?.accessToken) {
+      accessToken = req.cookies.accessToken;
+    }
 
+    // 토큰이 없는 경우
+    if (!accessToken) {
+      return next({ statusCode: 401, message: '액세스 토큰이 없습니다.' });
+    }
+
+    //액세스 토큰 검증
+    const payloadAccess = jwt.verifyToken(accessToken, 'access');
     if (payloadAccess) {
       req.user = payloadAccess;
       return next();
     }
 
-    const refreshToken = req.cookies.refreshToken;
+    // 액세스 토큰이 만료되면 리프레시 토큰으로 갱신
+    const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) {
-      return next({ statusCode: 401, message: 'refreshToken 없음' });
+      return next({
+        statusCode: 401,
+        message: '리프레시 토큰이 없습니다. 다시 로그인해주세요.',
+      });
     }
 
-    const payloadRefresh = jwt.verifyToken(refreshToken);
+    const payloadRefresh = jwt.verifyToken(refreshToken, 'refresh');
     if (!payloadRefresh) {
-      return next({ statusCode: 401, message: 'refreshToken 만료' });
+      return next({
+        statusCode: 401,
+        message: '리프레시 토큰이 만료되었습니다. 다시 로그인해주세요.',
+      });
     }
 
+    //저장된 리프레시 토큰과 비교
     const savedRefreshToken = await AuthService.getRefreshToken(
       payloadRefresh.id
     );
-    // 굳이 있어야 되나 싶음..
+
     if (savedRefreshToken !== refreshToken) {
-      return next({ statusCode: 401, message: '저장된 refreshToken 불일치' });
+      return next({
+        statusCode: 401,
+        message: '유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요.',
+      });
     }
 
+    // 새 토큰 발급
     const newUserInfo = {
       id: payloadRefresh.id,
       role: payloadRefresh.role,
@@ -49,9 +73,18 @@ export const verifyJWTToken = async (
 
     await AuthService.updateRefreshToken(payloadRefresh.id, newRefreshToken);
 
+    // 헤더에 새 액세스 토큰 설정
     res.set('Authorization', `Bearer ${newAccessToken}`);
+
+    // 쿠키 설정
+    res.cookie('accessToken', newAccessToken, {
+      httpOnly: false, // 프론트엔드에서 접근 가능하게 false
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
+
     res.cookie('refreshToken', newRefreshToken, {
-      httpOnly: true,
+      httpOnly: true, // JS에서 접근 불가
       sameSite: 'none',
       secure: true,
     });
@@ -59,6 +92,7 @@ export const verifyJWTToken = async (
     req.user = newUserInfo;
     next();
   } catch (error) {
-    next({ statusCode: 500, message: '인증 처리 중 오류 발생' });
+    console.error('JWT 검증 오류:', error);
+    next({ statusCode: 500, message: '인증 처리 중 오류가 발생했습니다.' });
   }
 };
