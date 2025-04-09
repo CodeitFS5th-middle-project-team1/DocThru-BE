@@ -125,6 +125,8 @@ import {
  *                 rejectedReason: null
  *                 approvalStatus: "PENDING"
  *                 user: {nickname: "test"}
+ *                 nextChallengeId: {id: "uuid"}
+ *                 prevChallengeId: {id: "uuid"}
  *       404:
  *         description: 요청한 리소스를 찾을 수 없습니다.
  *       500:
@@ -383,6 +385,15 @@ const getChallengeListByUser: GetController<
  *     description: 필터 및 정렬 조건을 기반으로 챌린지 목록을 조회합니다.
  *     parameters:
  *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [running, end]
+ *         description: |
+ *           챌린지 상태 필터링:
+ *           - `running`: 모집 중 (isParticipantsFull = false AND isDeadlineFull = false)
+ *           - `end`: 모집 완료 (isParticipantsFull = true OR isDeadlineFull = true)
+ *       - in: query
  *         name: documentType
  *         schema:
  *           type: string
@@ -482,6 +493,7 @@ const getChallengeList: GetController<
       keyword,
       page = '1',
       limit = '10',
+      status,
     } = req.query;
 
     const result = await ChallengesService.getChallengeList({
@@ -490,6 +502,7 @@ const getChallengeList: GetController<
       keyword,
       page,
       limit,
+      status,
     });
     res.status(200).send(result);
   } catch (err) {
@@ -584,12 +597,14 @@ const getChallengeList: GetController<
  *                   field: "NEXTJS"
  *                   createdAt: "2025-03-29T12:00:00.000Z"
  *                   updatedAt: "2025-03-30T12:00:00.000Z"
+ *                   translations: [{id: "89648a2b-1fc8-4a81-a91b-2ec1e137061d"}]
  *                 - id: "789e4567-e89b-12d3-a456-426614174001"
  *                   title: "백엔드 번역 챌린지"
  *                   documentType: "OFFICIAL"
  *                   field: "API"
  *                   createdAt: "2025-03-28T12:00:00.000Z"
  *                   updatedAt: "2025-03-29T12:00:00.000Z"
+ *                   translations: [{id: "89648a2b-1fc8-4a81-a91b-2ec1e137061d"}]
  *               totalCount: 2
  *       400:
  *         description: 잘못된 요청 데이터

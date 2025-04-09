@@ -8,12 +8,11 @@
     "checkJs": false,
     "noImplicitAny": true,
     "moduleResolution": "NodeNext",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
+    "noEmit": false,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "typeRoots": ["./src/types", "./node_modules/@types"]
+    "typeRoots": ["./src/types", "./node_modules/@types"],
   },
   "include": ["src", "prisma"], // 현재 폴더 전체를 포함
   "exclude": ["node_modules", "dist"],

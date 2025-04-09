@@ -5,6 +5,7 @@ import {
   GetChallengeListByUserArgs,
   GetChallengeListParticipating,
   GetChallengeResponse,
+  GetChallengeResponseWithNextAndPrev,
   Order,
   UpdateChallengeArgs,
 } from './challenges.type';
@@ -13,7 +14,9 @@ import {
   ChallengeRequestQueries,
 } from './challenges.validation';
 
-const getChallenge = async (id: string): Promise<GetChallengeResponse> => {
+const getChallenge = async (
+  id: string
+): Promise<GetChallengeResponseWithNextAndPrev> => {
   const challenge = await prisma.challenge.findUnique({
     where: {
       id,
@@ -26,7 +29,28 @@ const getChallenge = async (id: string): Promise<GetChallengeResponse> => {
       },
     },
   });
-  return { challenge };
+
+  const prevChallengeId = await prisma.challenge.findFirst({
+    where: {
+      createdAt: { lt: challenge?.createdAt },
+    },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+    },
+  });
+
+  const nextChallengeId = await prisma.challenge.findFirst({
+    where: {
+      createdAt: { gt: challenge?.createdAt },
+    },
+    orderBy: { createdAt: 'asc' },
+    select: {
+      id: true,
+    },
+  });
+
+  return { challenge, nextChallengeId, prevChallengeId };
 };
 
 const getChallengeList = async ({
@@ -35,6 +59,7 @@ const getChallengeList = async ({
   keyword,
   page,
   limit,
+  status,
 }: ChallengeRequestQueries) => {
   const pageNum = Number(page);
   const limitNum = Number(limit);
@@ -53,10 +78,21 @@ const getChallengeList = async ({
         documentType: documentType || undefined,
         field: fieldCondition || undefined,
         approvalStatus: 'APPROVED',
+        ...(status === 'running' && {
+          isParticipantsFull: false,
+          isDeadlineFull: false,
+        }),
+        ...(status === 'end' && {
+          OR: [{ isParticipantsFull: true }, { isDeadlineFull: true }],
+        }),
         ...(keyword && {
-          OR: [
-            { title: { contains: keyword, mode: 'insensitive' } },
-            { description: { contains: keyword, mode: 'insensitive' } },
+          AND: [
+            {
+              OR: [
+                { title: { contains: keyword, mode: 'insensitive' } },
+                { description: { contains: keyword, mode: 'insensitive' } },
+              ],
+            },
           ],
         }),
       },
@@ -80,10 +116,21 @@ const getChallengeList = async ({
         documentType: documentType || undefined,
         field: fieldCondition || undefined,
         approvalStatus: 'APPROVED',
+        ...(status === 'running' && {
+          isParticipantsFull: false,
+          isDeadlineFull: false,
+        }),
+        ...(status === 'end' && {
+          OR: [{ isParticipantsFull: true }, { isDeadlineFull: true }],
+        }),
         ...(keyword && {
-          OR: [
-            { title: { contains: keyword, mode: 'insensitive' } },
-            { description: { contains: keyword, mode: 'insensitive' } },
+          AND: [
+            {
+              OR: [
+                { title: { contains: keyword, mode: 'insensitive' } },
+                { description: { contains: keyword, mode: 'insensitive' } },
+              ],
+            },
           ],
         }),
       },
@@ -103,7 +150,6 @@ const getChallengeListParticipating = async ({
   const pageNum = Number(page);
   const limitNum = Number(limit);
   const successBoolean = isExpired === 'true';
-
   const skip = (pageNum - 1) * limitNum;
 
   const [challenges, totalCount] = await Promise.all([
@@ -136,6 +182,14 @@ const getChallengeListParticipating = async ({
         documentType: true,
         isParticipantsFull: true,
         isDeadlineFull: true,
+        translations: {
+          where: {
+            userId,
+          },
+          select: {
+            id: true,
+          },
+        },
       },
     }),
     prisma.challenge.count({
@@ -176,11 +230,11 @@ const getChallengeListByAdmin = async ({
     const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {};
 
     switch (orderBy) {
-      case Order.createdLast:
-        orderCondition.createdAt = 'asc'; // 신청 오래된 순
-        break;
       case Order.createdFirst:
-        orderCondition.createdAt = 'desc'; // 신청 최신 순
+        orderCondition.createdAt = 'asc'; // 신청 빠른 순
+        break;
+      case Order.createdLast:
+        orderCondition.createdAt = 'desc'; // 신청 느린 순
         break;
       case Order.deadLineFirst:
         orderCondition.deadline = 'asc'; // 마감일 최신 순
@@ -249,6 +303,7 @@ const getChallengeListByUser = async ({
   keyword,
   userId,
 }: GetChallengeListByUserArgs) => {
+  console.log(userId);
   const pageNum = Number(page);
   const limitNum = Number(limit);
 
@@ -258,8 +313,11 @@ const getChallengeListByUser = async ({
     const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {};
 
     switch (orderBy) {
+      case Order.createdFirst:
+        orderCondition.createdAt = 'asc'; // 신청 빠른 순
+        break;
       case Order.createdLast:
-        orderCondition.createdAt = 'asc'; // 신청 오래된 순
+        orderCondition.createdAt = 'desc'; // 신청 느린 순
         break;
       case Order.deadLineFirst:
         orderCondition.deadline = 'desc'; // 마감일 최신 순

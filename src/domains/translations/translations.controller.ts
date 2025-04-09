@@ -402,8 +402,10 @@ const getTranslationById: GetController<
  *  /api/challenges/{challengeId}/translations/{translationId}:
  *   patch:
  *     summary: 번역물 수정
- *     description: 번역물의 제목과 내용을 수정합니다. 작성자 본인 또는 관리자만 수정할 수 있습니다.
+ *     description: 번역물의 제목과 내용을 수정합니다. 마감기한이 지나지 않은 경우에만 작성자 본인 또는 관리자가 수정할 수 있습니다.
  *     tags: [Translations]
+ *     security:
+ *       - bearerAuth: []  # JWT 인증 필요 명시
  *     parameters:
  *       - in: path
  *         name: challengeId
@@ -423,8 +425,6 @@ const getTranslationById: GetController<
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - userId
  *             properties:
  *               title:
  *                 type: string
@@ -434,15 +434,6 @@ const getTranslationById: GetController<
  *                 type: string
  *                 description: 수정할 내용
  *                 example: "업데이트된 번역 내용이 여기에 포함됩니다."
- *               userId:
- *                 type: string
- *                 description: 요청한 사용자 ID
- *                 example: "user-123"
- *               userRole:
- *                 type: string
- *                 enum: [USER, ADMIN]
- *                 description: 사용자 역할 (권한 확인)
- *                 example: "USER"
  *     responses:
  *       200:
  *         description: 번역물 수정 성공
@@ -460,53 +451,117 @@ const getTranslationById: GetController<
  *                 content:
  *                   type: string
  *                   description: 수정된 내용
- *                 userId:
- *                   type: string
- *                   description: 작성자 ID
- *                 userNickname:
- *                   type: string
- *                   description: 작성자 닉네임
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: 작성자 ID
+ *                     nickname:
+ *                       type: string
+ *                       description: 작성자 닉네임
  *                 challengeId:
  *                   type: string
  *                   description: 챌린지 ID
  *                 likeCount:
  *                   type: integer
  *                   description: 좋아요 수
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: 생성 일시
  *                 updatedAt:
  *                   type: string
  *                   format: date-time
  *                   description: 수정 일시
  *       400:
  *         description: 잘못된 요청
- *       403:
- *         description: 권한 없음
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 400
  *                 message:
  *                   type: string
- *                   example: "번역물 수정 권한이 없습니다."
+ *                   example: "수정할 내용을 입력해주세요."
+ *       401:
+ *         description: 인증 필요
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 401
+ *                 message:
+ *                   type: string
+ *                   example: "인증이 필요합니다."
+ *       403:
+ *         description: 권한 없음 또는 마감기한 초과
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 403
+ *                 message:
+ *                   type: string
+ *                   example: "챌린지 마감기한이 지나 수정할 수 없습니다."
  *       404:
  *         description: 번역물 또는 챌린지를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 404
+ *                 message:
+ *                   type: string
+ *                   example: "번역물 ID를 찾을 수 없습니다."
  *       500:
  *         description: 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 500
+ *                 message:
+ *                   type: string
+ *                   example: "서버 내부 오류가 발생했습니다."
  */
-const updateTranslation: PatchController<
+const patchTranslation: PatchController<
   TranslationParamsWithId,
   TranslationUpdateBody,
   TranslationResponse
 > = async (req, res, next) => {
   try {
     const { challengeId, translationId } = req.params;
-    const { title, content, userId, userRole } = req.body;
+    const { title, content } = req.body;
+
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
+
+    if (!userId) {
+      next(new CustomError(401, '인증이 필요합니다.'));
+      return;
+    }
 
     const updatedTranslation = await TranslationsService.updateTranslation({
       translationId,
       challengeId,
       userId,
-      userRole,
+      userRole: userRole as UserRole,
       updateData: {
         title,
         content,
@@ -515,14 +570,8 @@ const updateTranslation: PatchController<
 
     res.status(200).send(updatedTranslation);
   } catch (error) {
-    if (error instanceof CustomError) {
-      res.status(error.statusCode).send({ error: error.message });
-    } else {
-      res.status(500).send({
-        message:
-          error instanceof Error ? error.message : 'An unknown error occurred',
-      });
-    }
+    // 모든 에러를 에러 핸들링 미들웨어로 전달
+    next(error);
   }
 };
 
@@ -531,8 +580,10 @@ const updateTranslation: PatchController<
  *  /api/challenges/{challengeId}/translations/{translationId}:
  *   delete:
  *     summary: 번역물 삭제
- *     description: 번역물을 삭제하고 챌린지의 참가자 수를 자동으로 감소시킵니다. 작성자 본인 또는 관리자만 삭제할 수 있습니다.
+ *     description: 번역물을 삭제하고 챌린지의 참가자 수를 자동으로 감소시킵니다. 마감기한이 지나지 않은 경우에만 작성자 본인 또는 관리자가 삭제할 수 있습니다.
  *     tags: [Translations]
+ *     security:
+ *       - bearerAuth: []  # JWT 인증 필요 명시
  *     parameters:
  *       - in: path
  *         name: challengeId
@@ -546,24 +597,6 @@ const updateTranslation: PatchController<
  *         schema:
  *           type: string
  *         description: 삭제할 번역물 ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - userId
- *             properties:
- *               userId:
- *                 type: string
- *                 description: 요청한 사용자 ID
- *                 example: "user-123"
- *               userRole:
- *                 type: string
- *                 enum: [USER, ADMIN]
- *                 description: 사용자 역할 (권한 확인)
- *                 example: "USER"
  *     responses:
  *       200:
  *         description: 번역물 삭제 성공
@@ -585,19 +618,40 @@ const updateTranslation: PatchController<
  *             schema:
  *               type: object
  *               properties:
- *                 error:
+ *                 code:
+ *                   type: integer
+ *                   example: 400
+ *                 message:
  *                   type: string
- *                   example: "이미 삭제된 챌린지의 번역물은 조작할 수 없습니다."
- *       403:
- *         description: 권한 없음
+ *                   example: "이미 삭제된 챌린지의 번역물입니다."
+ *       401:
+ *         description: 인증 필요
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 error:
+ *                 code:
+ *                   type: integer
+ *                   example: 401
+ *                 message:
  *                   type: string
- *                   example: "이 번역물에 대한 삭제 권한이 없습니다."
+ *                   example: "인증이 필요합니다."
+ *       403:
+ *         description: 권한 없음 또는 마감기한 초과
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 403
+ *                 message:
+ *                   type: string
+ *                   oneOf:
+ *                     - "이 번역물에 대한 삭제 권한이 없습니다."
+ *                     - "챌린지 마감기한이 지나 삭제할 수 없습니다."
  *       404:
  *         description: 번역물 또는 챌린지를 찾을 수 없음
  *         content:
@@ -605,9 +659,12 @@ const updateTranslation: PatchController<
  *             schema:
  *               type: object
  *               properties:
- *                 error:
+ *                 code:
+ *                   type: integer
+ *                   example: 404
+ *                 message:
  *                   type: string
- *                   example: "번역물 ID abc123을 찾을 수 없거나 이미 삭제되었습니다."
+ *                   example: "번역물 ID를 찾을 수 없거나 이미 삭제되었습니다."
  *       500:
  *         description: 서버 오류
  *         content:
@@ -615,24 +672,33 @@ const updateTranslation: PatchController<
  *             schema:
  *               type: object
  *               properties:
- *                 error:
+ *                 code:
+ *                   type: integer
+ *                   example: 500
+ *                 message:
  *                   type: string
  *                   example: "서버 내부 오류가 발생했습니다."
  */
 const deleteTranslation: DeleteController<
   TranslationParamsWithId,
-  { userId: string; userRole?: UserRole },
+  {},
   { success: boolean; message?: string }
 > = async (req, res, next) => {
   try {
     const { challengeId, translationId } = req.params;
-    const { userId, userRole } = req.body;
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
+
+    if (!userId) {
+      next(new CustomError(401, '인증이 필요합니다.'));
+      return;
+    }
 
     await TranslationsService.deleteTranslation({
       translationId,
       challengeId,
       userId,
-      userRole,
+      userRole: userRole as UserRole,
     });
 
     res.status(200).json({
@@ -640,24 +706,14 @@ const deleteTranslation: DeleteController<
       message: '번역물 삭제 성공',
     });
   } catch (error) {
-    // 수정된 코드
-    if (error instanceof CustomError) {
-      res.status(error.statusCode).send({ error: error.message });
-    } else {
-      res.status(500).send({
-        success: false,
-        message:
-          error instanceof Error ? error.message : 'An unknown error occurred',
-      });
-    }
+    next(error);
   }
 };
-
 const TranslationsController = {
   postTranslation,
   getTranslationList,
   getTranslationById,
-  updateTranslation,
+  patchTranslation,
   deleteTranslation,
 };
 

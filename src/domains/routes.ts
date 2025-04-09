@@ -19,5 +19,6 @@ router.use('/notifications', NotificationRouter);
 router.use('/likes', LikeRouter);
 //router.use('/translations', TranslationRouter);
 router.use('/users', UserRouter);
+router.use('/translations/:translationId', LikeRouter);
 
 export default router;

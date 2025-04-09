@@ -317,24 +317,25 @@ const updateTranslation = async ({
   };
 }): Promise<TranslationResponse> => {
   try {
-    // Challenge의 유효성 검증
+    // 챌린지 유효성 및 마감기한 확인
     const challenge = await prisma.challenge.findUnique({
       where: {
         id: challengeId,
         deletedAt: null,
       },
-      select: { id: true },
+      select: { isDeadlineFull: true },
     });
 
     if (!challenge) {
-      throw {
-        statusCode: 404,
-        message: `챌린지 ID ${challengeId}를 찾을 수 없거나 이미 삭제되었습니다.`,
-        errorContext: 'challengeLookup',
-      };
+      throw new CustomError(404, '존재하지 않거나 이미 삭제된 챌린지입니다.');
     }
 
-    // Translation의 유효성 검증 및 권한 확인
+    // 마감기한이 지났으면 누구도 수정 불가
+    if (challenge.isDeadlineFull) {
+      throw new CustomError(403, '챌린지 마감기한이 지나 수정할 수 없습니다.');
+    }
+
+    // 번역 유효성 검사
     const translation = await prisma.translation.findUnique({
       where: {
         id: translationId,
@@ -342,31 +343,28 @@ const updateTranslation = async ({
         deletedAt: null,
       },
       include: {
-        user: {
-          select: {
-            id: true, // userId도 조회하여 권한 확인에 사용
-            nickname: true,
-          },
-        },
+        user: { select: { id: true, nickname: true } },
       },
     });
 
     if (!translation) {
-      throw {
-        statusCode: 404,
-        message: `번역물 ID ${translationId}를 찾을 수 없습니다.`,
-        errorContext: 'translationLookup',
-      };
+      throw new CustomError(
+        404,
+        `번역물 ID ${translationId}를 찾을 수 없습니다.`
+      );
     }
 
-    //TODO: 챌린지 마감기한 지났는지 확인 - 지났으면 수정 불가
-
-    // 권한 확인 함수사용 - 작성자 본인 또는 관리자만 수정 가능
-
+    // 작성자 또는 관리자만 수정 가능 (마감기한이 지나지 않은 경우)
     const isOwner = translation.userId === userId;
     const isAdmin = userRole === UserRole.ADMIN;
+
     if (!isOwner && !isAdmin) {
       throw new CustomError(403, '이 번역물에 대한 수정 권한이 없습니다.');
+    }
+
+    // 수정할 데이터가 없는 경우 (제목이나 내용 중 하나는 입력되어야함)
+    if (!updateData.title && !updateData.content) {
+      throw new CustomError(400, '수정할 내용을 입력해주세요.');
     }
 
     const updatedTranslation = await prisma.translation.update({
@@ -386,7 +384,7 @@ const updateTranslation = async ({
       title: updatedTranslation.title,
       content: updatedTranslation.content,
       user: {
-        id: userId,
+        id: translation.user.id,
         nickname: updatedTranslation.user?.nickname || null,
       },
       challengeId: updatedTranslation.challengeId,
@@ -395,22 +393,24 @@ const updateTranslation = async ({
       updatedAt: updatedTranslation.updatedAt,
     };
   } catch (error) {
-    // console.error('번역물 수정 중 오류 발생:', {
-    //   challengeId,
-    //   translationId,
-    //   error,
-    // });
-
-    if (error instanceof CustomError && error.statusCode) {
-      throw error;
+    if (!(error instanceof CustomError)) {
+      console.error('번역물 수정 중 오류 발생:', {
+        translationId,
+        challengeId,
+        error,
+      });
+      throw new CustomError(
+        500,
+        error instanceof Error
+          ? error.message
+          : '서버 내부 오류가 발생했습니다.'
+      );
     }
 
-    throw {
-      statusCode: 500,
-      message: '서버 내부 오류가 발생했습니다.',
-    };
+    throw error;
   }
 };
+
 /**
  * 번역물을 삭제합니다. 작성자 본인 또는 관리자만 삭제할 수 있습니다.
  * @param translationId 삭제할 번역물 ID
@@ -419,7 +419,6 @@ const updateTranslation = async ({
  * @param userRole 요청한 사용자의 역할 (권한 확인용)
  * @returns 삭제 성공 여부
  */
-//TODO: 챌린지 마감기한 지났는지 확인 - 지났으면 삭제 불가
 const deleteTranslation = async ({
   translationId,
   challengeId,
@@ -432,7 +431,6 @@ const deleteTranslation = async ({
   userRole?: UserRole;
 }): Promise<{ success: boolean }> => {
   try {
-    // 챌린지 정보 확인
     const challenge = await prisma.challenge.findUnique({
       where: {
         id: challengeId,
@@ -453,9 +451,13 @@ const deleteTranslation = async ({
       );
     }
 
-    // 승인 상태 확인
     if (challenge.approvalStatus === 'DELETED') {
       throw new CustomError(400, `이미 삭제된 챌린지의 번역물입니다.`);
+    }
+
+    // 마감기한이 지났으면 누구도 삭제 불가
+    if (challenge.isDeadlineFull) {
+      throw new CustomError(403, '챌린지 마감기한이 지나 삭제할 수 없습니다.');
     }
 
     const translation = await prisma.translation.findUnique({
@@ -481,15 +483,7 @@ const deleteTranslation = async ({
       );
     }
 
-    //  권한 확인
-    console.log('권한 검사 정보:', {
-      translationUserId: translation.userId,
-      requestUserId: userId,
-      userRole,
-      isMatch: translation.userId === userId,
-      isAdmin: userRole === UserRole.ADMIN,
-    });
-
+    // 권한 확인 - 작성자 또는 관리자만 삭제 가능
     const isOwner = translation.userId === userId;
     const isAdmin = userRole === UserRole.ADMIN;
 
@@ -505,12 +499,13 @@ const deleteTranslation = async ({
         data: { deletedAt: new Date() },
       });
 
-      // 마감 기한이 지나지 않은 경우에만 참가자 수 관리
+      // 참가자 수 관리
+      // 마감 기한이 지나지 않은 경우, 참가자수 - 1
+
       if (!challenge.isDeadlineFull) {
         if (challenge.currentParticipants > 0) {
           const newParticipantCount = challenge.currentParticipants - 1;
 
-          // 챌린지 정보 업데이트
           await prismaClient.challenge.update({
             where: { id: challengeId },
             data: {
@@ -518,14 +513,6 @@ const deleteTranslation = async ({
               isParticipantsFull: false, // 번역물 삭제 후에는 항상 false
             },
           });
-
-          // console.log(
-          //   `챌린지 ID ${challengeId}의 참가자 수 업데이트: ${
-          //     challenge.currentParticipants
-          //   } -> ${newParticipantCount}, 상태: ${
-          //     challenge.isParticipantsFull ? '가득참' : '여유있음'
-          //   } -> 여유있음`
-          // );
         }
       }
     });

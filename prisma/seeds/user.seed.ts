@@ -1,251 +1,42 @@
 import { PrismaClient, UserRole, UserRank } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
-export const seedUsers = async (prisma: PrismaClient) => {
+const generateTestUser = async (index: number) => {
+  const nickname = `test${index}`;
+  const email = `${nickname}@test.com`;
+  const password = await bcrypt.hash('password', 10);
+  const role = index === 0 ? UserRole.ADMIN : UserRole.USER;
+  const rank = UserRank.NORMAL;
+
+  return {
+    email,
+    nickname,
+    password,
+    role,
+    rank,
+  };
+};
+
+export const createTestUsers = async (prisma: PrismaClient, count: number) => {
+  const users = await Promise.all(
+    Array(count)
+      .fill(null)
+      .map((_, index) => generateTestUser(index))
+  );
+
   await prisma.user.createMany({
-    data: [
-      {
-        id: 'user-1',
-        email: 'alice@example.com',
-        nickname: '총명한판다',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-2',
-        email: 'bob@example.com',
-        nickname: '코딩하는너굴',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-3',
-        email: 'charlie@example.com',
-        nickname: '개발자뚱이',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.EXPERT,
-      },
-      {
-        id: 'user-4',
-        email: 'dana@example.com',
-        nickname: '리액트냥이',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-5',
-        email: 'edward@example.com',
-        nickname: '프론트곰돌이',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.EXPERT,
-      },
-      {
-        id: 'user-6',
-        email: 'frank@example.com',
-        nickname: '백엔드돌고래',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-7',
-        email: 'grace@example.com',
-        nickname: 'JS스폰지밥',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-8',
-        email: 'harry@example.com',
-        nickname: '타입짱냥이',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.EXPERT,
-      },
-      {
-        id: 'user-9',
-        email: 'isla@example.com',
-        nickname: '태일윈드너구리',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-10',
-        email: 'jack@example.com',
-        nickname: '깃허브정령',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-11',
-        email: 'kate@example.com',
-        nickname: '미들웨어쫀득이',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.EXPERT,
-      },
-      {
-        id: 'user-12',
-        email: 'leo@example.com',
-        nickname: 'REST정복자',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-13',
-        email: 'mina@example.com',
-        nickname: '리눅스사슴',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-14',
-        email: 'nate@example.com',
-        nickname: 'DB마스터호랑이',
-        password: 'hashed-password',
-        role: UserRole.ADMIN,
-        rank: UserRank.EXPERT,
-      },
-      {
-        id: 'user-15',
-        email: 'olivia@example.com',
-        nickname: '소켓챗봇여왕',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-16',
-        email: 'gimeunyeong@heogang.kr',
-        nickname: '오픈소스사자',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-17',
-        email: 'gyeongjai@gmail.com',
-        nickname: '백준곰탱이',
-        password: 'hashed-password',
-        role: UserRole.ADMIN,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-18',
-        email: 'ogsun73@live.com',
-        nickname: '피그마펭귄',
-        password: 'hashed-password',
-        role: UserRole.ADMIN,
-        rank: UserRank.EXPERT,
-      },
-      {
-        id: 'user-19',
-        email: 'bagjeonghyi@jusighoesa.org',
-        nickname: '노션햄스터',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.EXPERT,
-      },
-      {
-        id: 'user-20',
-        email: 'junhyeoggweon@yuhanhoesa.net',
-        nickname: 'AI고슴도치',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-21',
-        email: 'heonminchul@gmail.com',
-        nickname: '모던JS너구리',
-        password: 'hashed-password',
-        role: UserRole.ADMIN,
-        rank: UserRank.EXPERT,
-      },
-      {
-        id: 'user-22',
-        email: 'simbeomsu@naver.com',
-        nickname: '비동기하마',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-23',
-        email: 'jaeyonglee@daum.net',
-        nickname: '코드여우',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.EXPERT,
-      },
-      {
-        id: 'user-24',
-        email: 'namjuneui@techhub.org',
-        nickname: 'API푸들',
-        password: 'hashed-password',
-        role: UserRole.ADMIN,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-25',
-        email: 'yunhyejin@codeinc.kr',
-        nickname: 'DB표범',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.EXPERT,
-      },
-      {
-        id: 'user-26',
-        email: 'kimjihun@devmail.com',
-        nickname: '테스트너굴',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-27',
-        email: 'yoonara@devcompany.org',
-        nickname: '파이썬도마뱀',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.EXPERT,
-      },
-      {
-        id: 'user-28',
-        email: 'seoheewon@fastmail.net',
-        nickname: '캐시타조',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-      {
-        id: 'user-29',
-        email: 'kimjiae@cloudbase.io',
-        nickname: '컴파일악어',
-        password: 'hashed-password',
-        role: UserRole.ADMIN,
-        rank: UserRank.EXPERT,
-      },
-      {
-        id: 'user-30',
-        email: 'parkdongmin@devbird.kr',
-        nickname: '시맨틱펭귄',
-        password: 'hashed-password',
-        role: UserRole.USER,
-        rank: UserRank.NORMAL,
-      },
-    ],
+    data: users,
     skipDuplicates: true,
   });
+};
 
-  console.log('✅ Users 생성 완료!');
+export const seedUsers = async (prisma: PrismaClient) => {
+  const seedCount = 20;
+
+  console.log('👤 사용자 시드 데이터 생성 중...');
+
+  // 테스트 유저 20명 생성
+  await createTestUsers(prisma, seedCount);
+
+  console.log(`✅ 테스트 유저 ${seedCount}명 생성 완료`);
 };

@@ -2,128 +2,138 @@ import { PrismaClient } from '@prisma/client';
 import { subDays } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 
+type ChallengeWithParticipants = {
+  id: string;
+  title: string;
+  challengeParticipants: {
+    userId: string;
+  }[];
+};
+
 export const seedDraftTranslations = async (prisma: PrismaClient) => {
-  // APPROVED 상태인 챌린지만 조회
+  console.log('임시 저장 시드 데이터 생성 시작...');
+
+  // APPROVED 상태인 챌린지와 참가자 정보 조회
   const challenges = await prisma.challenge.findMany({
     where: {
       approvalStatus: 'APPROVED',
     },
+    select: {
+      id: true,
+      title: true,
+      challengeParticipants: {
+        select: {
+          userId: true,
+        },
+      },
+    },
   });
-  const users = await prisma.user.findMany();
-  const drafts = [
+
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+    },
+  });
+
+  if (challenges.length === 0 || users.length === 0) {
+    console.log('⚠️ 챌린지 또는 사용자 데이터가 없습니다.');
+    return;
+  }
+
+  // 기존 임시 저장 데이터 초기화
+  await prisma.draftTranslation.deleteMany();
+
+  const drafts = [];
+  const existingDrafts = new Set<string>(); // 중복 방지용 (userId_challengeId)
+
+  // 임시 저장 내용 템플릿
+  const draftTemplates = [
     {
-      title: 'Next.js 라우팅 초안',
+      title: '초안 - API 문서 번역',
       content:
-        'This section describes the file-based routing mechanism...\n(추가 번역 예정)',
+        '# API 개요\n\n이 문서는 API의 기본 사용법을 설명합니다...\n\n## 인증\n\n인증 방식은 다음과 같습니다...\n\n(추가 번역 예정)',
     },
     {
-      title: 'OpenAI API 소개 부분 임시 번역',
-      content: 'OpenAI provides access to powerful models...\n아직 정리 안 됨.',
-    },
-    {
-      title: '이력서 가이드 - 개요 초안',
-      content: 'Your resume is a marketing tool...\n자연스럽게 다듬을 예정.',
-    },
-    {
-      title: 'Event Loop 개념 정리 중',
+      title: '초안 - 기술 가이드',
       content:
-        'The call stack, message queue, and event loop...\n예제 추가 필요.',
+        '# 시작하기\n\n이 가이드는 초보자를 위한 기본 설정을 다룹니다...\n\n## 설치\n\n다음 단계를 따라 설치를 진행하세요...\n\n(작성 중)',
     },
     {
-      title: '웹 접근성 기초 번역 초안',
-      content: 'Accessibility is essential for developers...\n후반 작업 남음.',
-    },
-    {
-      title: 'RESTful API 디자인 초안',
+      title: '초안 - 개발자 문서',
       content:
-        'A RESTful API adheres to six architectural constraints...\n용어 정리 필요.',
-    },
-    {
-      title: 'OpenAI 챕터 2 초안',
-      content: 'Fine-tuning models allows you to...\n부분 삭제 예정.',
-    },
-    {
-      title: 'Git 워크플로우 초안',
-      content: 'Git flow is a branching model for Git...\n개요 위주 초안',
-    },
-    {
-      title: 'GraphQL vs REST 비교 번역 초안',
-      content:
-        'GraphQL provides a complete and understandable description...\n비교 표 미작성',
-    },
-    {
-      title: 'AI 윤리 가이드 초안',
-      content:
-        'AI Ethics is about responsible AI development...\n번역 용어 미확정',
-    },
-    {
-      title: '웹 보안 원칙 초안',
-      content:
-        'Security principles include input validation, authentication...\n정리 필요',
-    },
-    {
-      title: 'React 상태 관리 예시 초안',
-      content: 'State can be managed locally or globally...\nRedux 부분은 미완',
-    },
-    {
-      title: 'CSS-in-JS 개념 초안',
-      content: 'CSS-in-JS enables styling within JavaScript...\n예제 추가 예정',
-    },
-    {
-      title: 'JWT 인증 흐름 초안',
-      content:
-        'JSON Web Token (JWT) is a compact and self-contained...\n서명 방식 검토 필요',
-    },
-    {
-      title: 'Node.js 스트림 초안',
-      content:
-        'Streams are objects that let you read data...\nPipe 예시는 미작성',
-    },
-    {
-      title: 'API 문서화 툴 초안',
-      content: 'Tools like Swagger and Postman...\n비교표 번역 누락됨',
-    },
-    {
-      title: '웹 성능 최적화 체크리스트 초안',
-      content: 'Performance matters. Here’s how you can improve it...\n미완성',
-    },
-    {
-      title: '기술 면접 팁 정리 초안',
-      content: 'Be prepared to explain your past projects...\n예시 추가 필요',
-    },
-    {
-      title: 'OAuth 흐름 번역 초안',
-      content:
-        'OAuth is an open-standard authorization protocol...\n상세 단계 미작성',
-    },
-    {
-      title: 'PWA 가이드 초안',
-      content:
-        'Progressive Web Apps use modern web capabilities...\n용어 통일 필요',
+        '# 개발자 가이드\n\n이 문서는 개발자를 위한 상세 구현 방법을 설명합니다...\n\n## 구조\n\n프로젝트 구조는 다음과 같습니다...\n\n(검토 필요)',
     },
   ];
 
-  const draftData = drafts.map((draft) => {
-    const challenge = challenges[Math.floor(Math.random() * challenges.length)];
-    const user = users[Math.floor(Math.random() * users.length)];
+  // 각 챌린지에 대해 임시 저장 생성
+  for (const challenge of challenges as ChallengeWithParticipants[]) {
+    // 이미 참여한 유저 ID 목록
+    const participantUserIds = new Set(
+      challenge.challengeParticipants.map((p) => p.userId)
+    );
 
-    return {
-      id: uuidv4(),
-      challengeId: challenge.id,
-      userId: user.id,
-      title: draft.title,
-      content: draft.content,
-      createdAt: subDays(new Date(), Math.floor(Math.random() * 7)),
-      updatedAt: new Date(),
-    };
-  });
+    // 참여하지 않은 유저만 필터링
+    const availableUsers = users.filter(
+      (user) => !participantUserIds.has(user.id)
+    );
 
-  await prisma.draftTranslation.createMany({
-    data: draftData,
-    skipDuplicates: true,
+    if (availableUsers.length === 0) continue;
+
+    // 30%의 확률로 임시 저장 생성
+    if (Math.random() > 0.3) continue;
+
+    // 1-3명의 랜덤한 유저 선택
+    const userCount = Math.floor(Math.random() * 3) + 1;
+    const selectedUsers = [...availableUsers]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, Math.min(userCount, availableUsers.length));
+
+    for (const user of selectedUsers) {
+      const key = `${user.id}_${challenge.id}`;
+
+      // 중복 임시 저장 방지
+      if (!existingDrafts.has(key)) {
+        const template =
+          draftTemplates[Math.floor(Math.random() * draftTemplates.length)];
+
+        drafts.push({
+          id: uuidv4(),
+          challengeId: challenge.id,
+          userId: user.id,
+          title: `${template.title} - ${challenge.title}`,
+          content: template.content,
+          createdAt: subDays(new Date(), Math.floor(Math.random() * 7)), // 최근 7일 내
+          updatedAt: new Date(),
+        });
+        existingDrafts.add(key);
+      }
+    }
+  }
+
+  // 임시 저장 데이터 배치 처리
+  const BATCH_SIZE = 1000;
+  for (let i = 0; i < drafts.length; i += BATCH_SIZE) {
+    const batch = drafts.slice(i, i + BATCH_SIZE);
+    await prisma.draftTranslation.createMany({
+      data: batch,
+      skipDuplicates: true,
+    });
+  }
+
+  // 데이터 검증 및 통계
+  const totalDrafts = await prisma.draftTranslation.count();
+  const challengesWithDrafts = await prisma.challenge.count({
+    where: {
+      draftTranslations: {
+        some: {},
+      },
+    },
   });
 
   console.log(
-    `✅ DraftTranslations 시드 완료 (총 ${draftData.length}개 생성됨)`
+    `✅ 임시 저장 시드 데이터 생성 완료!`,
+    `\n총 ${totalDrafts}개의 임시 저장이 생성되었습니다.`,
+    `\n${challengesWithDrafts}개의 챌린지에 임시 저장이 있습니다.`,
+    `\n평균 임시 저장 수: ${(totalDrafts / challengesWithDrafts).toFixed(1)}개`
   );
 };

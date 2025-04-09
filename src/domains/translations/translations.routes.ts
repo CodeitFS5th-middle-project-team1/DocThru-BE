@@ -49,7 +49,7 @@ router.patch(
     params: TranslationParamsWithIdSchema,
     body: TranslationUpdateBodySchema,
   }),
-  TranslationsController.updateTranslation as unknown as RequestHandler
+  TranslationsController.patchTranslation as unknown as RequestHandler
 );
 // 번역물 삭제
 router.delete(
@@ -57,7 +57,7 @@ router.delete(
   verifyJWTToken,
   validateRequestData({
     params: TranslationParamsWithIdSchema,
-    body: TranslationDeleteBodySchema,
+    // body: TranslationDeleteBodySchema,
   }),
   TranslationsController.deleteTranslation as unknown as RequestHandler
 );
@@ -65,6 +65,5 @@ router.delete(
 router.post('/draftedTranslations'); // 작업물 임시 저장
 router.get('/draftedTranslations'); // 작업물 임시 저장 가져오기
 router.use('/:translationId/feedbacks', FeedbackRouter);
-router.use('/:translationId', LikeRouter);
 
 export default router;
