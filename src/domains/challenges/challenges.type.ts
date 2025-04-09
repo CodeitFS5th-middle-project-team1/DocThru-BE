@@ -1,4 +1,9 @@
-import { ApprovalStatus, Challenge, DocumentType, FieldType } from '@prisma/client';
+import {
+  ApprovalStatus,
+  Challenge,
+  DocumentType,
+  FieldType,
+} from '@prisma/client';
 
 export interface GetChallengeParam {
   challengeId: string;
@@ -22,6 +27,12 @@ export interface GetChallengeResponse {
   challenge: Challenge | null;
 }
 
+export interface GetChallengeResponseWithNextAndPrev {
+  challenge: Challenge | null;
+  prevChallengeId: { id: string } | null;
+  nextChallengeId: { id: string } | null;
+}
+
 export interface GetChallengeListByAdminResponse {
   challenges: {
     id: string;
@@ -33,7 +44,7 @@ export interface GetChallengeListByAdminResponse {
     createdAt: Date;
     documentType: DocumentType;
     approvalStatus: ApprovalStatus;
-  }[],
+  }[];
   totalCount: number;
 }
 
@@ -90,7 +101,6 @@ export interface GetChallengeListParticipating {
   userId: string;
   isExpired: string;
 }
-
 
 export enum Order {
   createdFirst = 'createdFirst',
