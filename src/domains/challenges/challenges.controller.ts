@@ -125,6 +125,8 @@ import {
  *                 rejectedReason: null
  *                 approvalStatus: "PENDING"
  *                 user: {nickname: "test"}
+ *                 nextChallengeId: {id: "uuid"}
+ *                 prevChallengeId: {id: "uuid"}
  *       404:
  *         description: 요청한 리소스를 찾을 수 없습니다.
  *       500:

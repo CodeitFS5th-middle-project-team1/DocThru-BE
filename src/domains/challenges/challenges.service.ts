@@ -5,6 +5,7 @@ import {
   GetChallengeListByUserArgs,
   GetChallengeListParticipating,
   GetChallengeResponse,
+  GetChallengeResponseWithNextAndPrev,
   Order,
   UpdateChallengeArgs,
 } from './challenges.type';
@@ -13,7 +14,7 @@ import {
   ChallengeRequestQueries,
 } from './challenges.validation';
 
-const getChallenge = async (id: string): Promise<GetChallengeResponse> => {
+const getChallenge = async (id: string): Promise<GetChallengeResponseWithNextAndPrev> => {
   const challenge = await prisma.challenge.findUnique({
     where: {
       id,
@@ -26,7 +27,28 @@ const getChallenge = async (id: string): Promise<GetChallengeResponse> => {
       },
     },
   });
-  return { challenge };
+
+  const prevChallengeId = await prisma.challenge.findFirst({
+    where: {
+      createdAt: { lt: challenge?.createdAt},
+    },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+    }
+  })
+
+  const nextChallengeId = await prisma.challenge.findFirst({
+    where: {
+      createdAt: { gt: challenge?.createdAt },
+    },
+    orderBy: { createdAt: 'asc'},
+    select: {
+      id: true,
+    }
+  })
+
+  return { challenge, nextChallengeId, prevChallengeId };
 };
 
 const getChallengeList = async ({
