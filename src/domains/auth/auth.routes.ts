@@ -25,7 +25,7 @@ router.post(
   authController.login
 ); // 로그인
 
-router.post('/logout'); //로그아웃
+router.post('/logout', authController.logout); //로그아웃
 
 // TODO: 테스트 용 api, 삭제 예정
 router.post(

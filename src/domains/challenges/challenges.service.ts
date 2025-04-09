@@ -35,7 +35,6 @@ const getChallengeList = async ({
   keyword,
   page,
   limit,
-  status,
 }: ChallengeRequestQueries) => {
   const pageNum = Number(page);
   const limitNum = Number(limit);
@@ -54,24 +53,10 @@ const getChallengeList = async ({
         documentType: documentType || undefined,
         field: fieldCondition || undefined,
         approvalStatus: 'APPROVED',
-        ...(status === 'running' && {
-          isParticipantsFull: false,
-          isDeadlineFull: false,
-        }),
-        ...(status === 'end' && {
-          OR: [
-            { isParticipantsFull: true },
-            { isDeadlineFull: true },
-          ],
-        }),
         ...(keyword && {
-          AND: [
-            {
-              OR: [
-                { title: { contains: keyword, mode: 'insensitive' } },
-                { description: { contains: keyword, mode: 'insensitive' } },
-              ],
-            },
+          OR: [
+            { title: { contains: keyword, mode: 'insensitive' } },
+            { description: { contains: keyword, mode: 'insensitive' } },
           ],
         }),
       },
@@ -95,24 +80,10 @@ const getChallengeList = async ({
         documentType: documentType || undefined,
         field: fieldCondition || undefined,
         approvalStatus: 'APPROVED',
-        ...(status === 'running' && {
-          isParticipantsFull: false,
-          isDeadlineFull: false,
-        }),
-        ...(status === 'end' && {
-          OR: [
-            { isParticipantsFull: true },
-            { isDeadlineFull: true },
-          ],
-        }),
         ...(keyword && {
-          AND: [
-            {
-              OR: [
-                { title: { contains: keyword, mode: 'insensitive' } },
-                { description: { contains: keyword, mode: 'insensitive' } },
-              ],
-            },
+          OR: [
+            { title: { contains: keyword, mode: 'insensitive' } },
+            { description: { contains: keyword, mode: 'insensitive' } },
           ],
         }),
       },
@@ -132,6 +103,7 @@ const getChallengeListParticipating = async ({
   const pageNum = Number(page);
   const limitNum = Number(limit);
   const successBoolean = isExpired === 'true';
+
   const skip = (pageNum - 1) * limitNum;
 
   const [challenges, totalCount] = await Promise.all([
@@ -164,14 +136,6 @@ const getChallengeListParticipating = async ({
         documentType: true,
         isParticipantsFull: true,
         isDeadlineFull: true,
-        translations: {
-          where: {
-            userId,
-          },
-          select: {
-            id: true,
-          }
-        }
       },
     }),
     prisma.challenge.count({
@@ -212,11 +176,11 @@ const getChallengeListByAdmin = async ({
     const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {};
 
     switch (orderBy) {
-      case Order.createdFirst:
-        orderCondition.createdAt = 'asc'; // 신청 빠른 순
-        break;
       case Order.createdLast:
-        orderCondition.createdAt = 'desc'; // 신청 느린 순
+        orderCondition.createdAt = 'asc'; // 신청 오래된 순
+        break;
+      case Order.createdFirst:
+        orderCondition.createdAt = 'desc'; // 신청 최신 순
         break;
       case Order.deadLineFirst:
         orderCondition.deadline = 'asc'; // 마감일 빠른 순
@@ -295,11 +259,11 @@ const getChallengeListByUser = async ({
     const orderCondition: Prisma.ChallengeOrderByWithRelationInput = {};
 
     switch (orderBy) {
-      case Order.createdFirst:
-        orderCondition.createdAt = 'asc'; // 신청 빠른 순
-        break;
       case Order.createdLast:
-        orderCondition.createdAt = 'desc'; // 신청 느린 순
+        orderCondition.createdAt = 'asc'; // 신청 오래된 순
+        break;
+      case Order.createdFirst:
+        orderCondition.createdAt = 'desc'; // 신청 최신 순
         break;
       case Order.deadLineFirst:
         orderCondition.deadline = 'asc'; // 마감일 빠른 순
