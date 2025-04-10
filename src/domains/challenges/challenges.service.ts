@@ -32,9 +32,13 @@ const getChallenge = async (
 
   const prevChallengeId = await prisma.challenge.findFirst({
     where: {
-      createdAt: { lt: challenge?.createdAt },
+
+   
+
+      idx: { lt: challenge?.idx},
+
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { idx: 'desc' },
     select: {
       id: true,
     },
@@ -42,9 +46,12 @@ const getChallenge = async (
 
   const nextChallengeId = await prisma.challenge.findFirst({
     where: {
-      createdAt: { gt: challenge?.createdAt },
+      idx: { gt: challenge?.idx },
     },
-    orderBy: { createdAt: 'asc' },
+
+
+    orderBy: { idx: 'asc'},
+
     select: {
       id: true,
     },
@@ -434,23 +441,6 @@ const updateChallenge = async ({
   return challenge;
 };
 
-const deleteChallengeForce = async (
-  id: string,
-  deletedReason: string
-): Promise<GetChallengeResponse> => {
-  const challenge = await prisma.challenge.update({
-    where: {
-      id,
-    },
-    data: {
-      deletedAt: new Date(),
-      deletedReason,
-      approvalStatus: 'DELETED',
-    },
-  });
-  return { challenge };
-};
-
 const deleteChallenge = async (id: string): Promise<GetChallengeResponse> => {
   const challenge = await prisma.challenge.update({
     where: {
@@ -472,7 +462,6 @@ const ChallengesService = {
   getChallenge,
   createChallenge,
   updateChallenge,
-  deleteChallengeForce,
   deleteChallenge,
 };
 
