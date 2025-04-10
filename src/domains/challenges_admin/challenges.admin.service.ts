@@ -1,4 +1,5 @@
 import prisma from '../../prismaClient';
+import { GetChallengeResponse } from '../challenges/challenges.type';
 
 const checkChallenge = async (id: string) => {
   const challenge = await prisma.challenge.findUnique({
@@ -33,8 +34,28 @@ const rejectChallenge = async (id: string, rejectedReason: string) => {
   });
   return updateChallenge;
 };
+
+
+const deleteChallengeForce = async (
+  id: string,
+  deletedReason: string
+): Promise<GetChallengeResponse> => {
+  const challenge = await prisma.challenge.update({
+    where: {
+      id,
+    },
+    data: {
+      deletedAt: new Date(),
+      deletedReason,
+      approvalStatus: 'DELETED',
+    },
+  });
+  return { challenge };
+};
+
 export default {
   checkChallenge,
   approveChallenge,
   rejectChallenge,
+  deleteChallengeForce,
 };

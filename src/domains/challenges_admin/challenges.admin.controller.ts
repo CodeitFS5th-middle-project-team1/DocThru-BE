@@ -1,10 +1,14 @@
-import { PatchController } from '../../types/express';
+import { DeleteController, PatchController } from '../../types/express';
 import {
   ChallengeAdminParams,
   ChallengeAdminRejectBody,
 } from './challenges.admin.validation';
 import ChallengesAdminService from './challenges.admin.service';
 import { ChallengeAdminResponse } from './challenges.admin.type';
+import { ChallengeRequestParams } from '../challenges/challenges.validation';
+import { DeleteChallengeResponse } from '../challenges/challenges.type';
+import ChallengesService from '../challenges/challenges.service';
+import challengesAdminService from './challenges.admin.service';
 
 /**
  * @swagger
@@ -324,7 +328,104 @@ const patchChallengeReject: PatchController<
   return;
 };
 
+
+/**
+ * @swagger
+ * /api/challenges/{challengeId}/admin/removeForce:
+ *   patch:
+ *     tags:
+ *       - Challenges
+ *     summary: 관리자 전용 챌린지 삭제
+ *     description: 챌린지 ID를 이용해 기존 챌린지를 삭제합니다.
+ *     parameters:
+ *       - in: path
+ *         name: challengeId
+ *         required: true
+ *         description: 삭제할 챌린지의 ID
+ *         schema:
+ *           type: string
+ *           example: "123e4567-e89b-12d3-a456-426614174000"
+ *     responses:
+ *       200:
+ *         description: 챌린지가 성공적으로 삭제되었습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   description: 응답 코드
+ *                   example: 200
+ *       401:
+ *         description: 로그인 정보 없음
+ *       403:
+ *         description: 권한 없음
+ *       404:
+ *         description: 삭제할 챌린지를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   description: 응답 코드
+ *                   example: 404
+ *                 message:
+ *                   type: string
+ *                   description: 에러 메시지
+ *                   example: "챌린지를 찾을 수 없습니다."
+ *       500:
+ *         description: 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   description: 응답 코드
+ *                   example: 500
+ *                 message:
+ *                   type: string
+ *                   description: 에러 메시지
+ *                   example: "서버 오류가 발생했습니다."
+ */
+const deleteChallengeForce: DeleteController<
+  ChallengeRequestParams,
+  never,
+  DeleteChallengeResponse
+> = async (req, res, next) => {
+  try {
+    const id = req.params.challengeId;
+    const existChallenge = await ChallengesService.getChallenge(id);
+    const authRole = req.user?.role;
+    const deletedReason = req.body.deletedReason;
+    if (!existChallenge.challenge) {
+      next({ status: 404 });
+      return;
+    }
+    if (authRole !== 'ADMIN') {
+      next({ status: 403 });
+      return;
+    }
+    const result = await ChallengesAdminService.deleteChallengeForce(
+      id,
+      deletedReason
+    );
+    if (!result) {
+      next({ statusCode: 404 });
+      return;
+    }
+    res.status(200).send({ code: 200 });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   patchChallengeApprove,
   patchChallengeReject,
+  deleteChallengeForce,
 };

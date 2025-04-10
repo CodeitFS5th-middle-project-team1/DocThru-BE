@@ -6,10 +6,15 @@ import {
   ChallengeAdminParamsSchema,
   ChallengeAdminRejectBodySchema,
 } from './challenges.admin.validation';
+import { ChallengeParamsSchema } from '../challenges/challenges.validation';
 const router = Router({ mergeParams: true });
 
 router.use(verifyJWTToken);
-
+router.patch(
+  '/removeForce',
+  validateRequestData({ params: ChallengeParamsSchema }),
+  ChallengesAdminController.deleteChallengeForce
+); //챌린지 관리자 삭제
 router.patch(
   '/approve',
   validateRequestData({ params: ChallengeAdminParamsSchema }),
