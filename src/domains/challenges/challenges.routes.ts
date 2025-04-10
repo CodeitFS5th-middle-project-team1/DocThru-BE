@@ -51,18 +51,13 @@ router.patch(
   }),
   ChallengesController.patchChallenge
 ); //챌린지 수정
-router.patch(
-  '/:challengeId/removeForce',
-  verifyJWTToken,
-  validateRequestData({ params: ChallengeParamsSchema }),
-  ChallengesController.deleteChallengeForce
-); //챌린지 관리자 삭제
+
 router.patch(
   '/:challengeId/remove',
   verifyJWTToken,
   validateRequestData({ params: ChallengeParamsSchema }),
   ChallengesController.deleteChallenge
-); //챌린지 관리자 삭제
+); //챌린지 삭제
 router.get(
   '/:challengeId',
   verifyJWTToken,

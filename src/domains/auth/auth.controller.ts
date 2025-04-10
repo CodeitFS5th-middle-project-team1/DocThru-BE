@@ -181,8 +181,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
   res.cookie('accessToken', accessToken, {
     httpOnly: false, // 프론트에서 document.cookie로 접근할 수 있게 false
-    sameSite: 'none',
-    secure: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
   });
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
