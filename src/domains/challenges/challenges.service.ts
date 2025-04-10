@@ -30,9 +30,9 @@ const getChallenge = async (id: string): Promise<GetChallengeResponseWithNextAnd
 
   const prevChallengeId = await prisma.challenge.findFirst({
     where: {
-      createdAt: { lt: challenge?.createdAt},
+      idx: { lt: challenge?.idx},
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { idx: 'desc' },
     select: {
       id: true,
     }
@@ -40,9 +40,9 @@ const getChallenge = async (id: string): Promise<GetChallengeResponseWithNextAnd
 
   const nextChallengeId = await prisma.challenge.findFirst({
     where: {
-      createdAt: { gt: challenge?.createdAt },
+      idx: { gt: challenge?.idx },
     },
-    orderBy: { createdAt: 'asc'},
+    orderBy: { idx: 'asc'},
     select: {
       id: true,
     }
