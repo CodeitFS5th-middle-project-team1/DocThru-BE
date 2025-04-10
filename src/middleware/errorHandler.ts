@@ -16,7 +16,7 @@ const errorHandler: ErrorRequestHandler = (
   if (statusCode === 400) {
     res.status(statusCode).json({
       code: statusCode,
-      message: message || '잘못된 요청입니다. 요청이 올바른 형식이 아닙니다.',
+      message: message || '잘못된 요청입니다.\n요청이 올바른 형식이 아닙니다.',
     });
     return;
   }
@@ -24,7 +24,7 @@ const errorHandler: ErrorRequestHandler = (
   if (statusCode === 401) {
     res.status(statusCode).json({
       code: statusCode,
-      message: message || '인증이 필요합니다. 유효한 인증 정보가 없습니다.',
+      message: message || '인증이 필요합니다.\n유효한 인증 정보가 없습니다.',
     });
     return;
   }
@@ -33,7 +33,7 @@ const errorHandler: ErrorRequestHandler = (
     res.status(statusCode).json({
       code: statusCode,
       message:
-        message || '요청이 서버에 의해 거부되었습니다. 접근 권한이 없습니다.',
+        message || '요청이 서버에 의해 거부되었습니다.\n접근 권한이 없습니다.',
     });
     return;
   }
@@ -41,7 +41,7 @@ const errorHandler: ErrorRequestHandler = (
   if (statusCode === 404) {
     res.status(statusCode).json({
       code: statusCode,
-      message: message || '요청한 리소스를 찾을 수 없습니다.',
+      message: message || '요청한 리소스를\n찾을 수 없습니다.',
     });
     return;
   }
