@@ -26,7 +26,6 @@ model Challenge {
   challengeParticipants ChallengeParticipant[] // 챌린지 참가자
   draftTranslations     DraftTranslation[] // 작업물 임시저장
   translations          Translation[] // 작업물
-  Notification          Notification[]
 
   @@map("challenges")
 }

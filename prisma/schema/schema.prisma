@@ -17,5 +17,5 @@ datasource db {
 generator erd {
   provider = "prisma-erd-generator"
   theme    = "dark"
-  output   = "../ERD + Notification.svg"
+  output   = "../ERD.svg"
 }

@@ -131,6 +131,7 @@ import { createNotification } from '../notifications/notifications.service';
  *                   type: string
  *                   example: "챌린지를 찾을 수 없습니다."
  */
+
 const patchChallengeApprove: PatchController<
   ChallengeAdminParams,
   never,
@@ -150,19 +151,24 @@ const patchChallengeApprove: PatchController<
     return next({ statusCode: 404, message: '챌린지를 찾을 수 없습니다.' });
   }
 
-  const updateChallenge = await ChallengesAdminService.approveChallenge(
-    challengeId
-  );
-  // 알림 생성
-  await createNotification({
-    userId: updateChallenge.userId,
-    category: 'challenge',
-    type: 'approved',
-    message: `'${updateChallenge.title}' 챌린지가 승인되었어요.`,
-    challengeId: updateChallenge.id,
-  });
-  res.status(200).json({ challenge: updateChallenge });
-  return;
+  try {
+    const updateChallenge = await ChallengesAdminService.approveChallenge(
+      challengeId
+    );
+
+    await createNotification({
+      userId: challenge.userId,
+      category: 'challenge',
+      type: 'approved',
+      message: `🎉 '${challenge.title}' 챌린지가 승인되었어요.`,
+      challengeId: challenge.id,
+    });
+
+    res.status(200).json({ challenge: updateChallenge });
+  } catch (err) {
+    console.error('알림 생성 실패:', err);
+    next(err);
+  }
 };
 
 /**

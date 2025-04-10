@@ -237,14 +237,14 @@ const getChallengeListByAdmin = async ({
         orderCondition.createdAt = 'desc'; // 신청 느린 순
         break;
       case Order.deadLineFirst:
-        orderCondition.deadline = 'asc'; // 마감일 최신 순
+        orderCondition.deadline = 'asc'; // 마감일 빠른 순
         break;
       case Order.deadLineLast:
-        orderCondition.deadline = 'desc'; // 마감일 오래된 순
+        orderCondition.deadline = 'desc'; // 마감일 느린 순
         break;
       default:
         // 기본값 (idx: 'desc')이 이미 설정되어 있음
-        orderCondition.createdAt = 'asc';
+        orderCondition.createdAt = 'desc';
         break;
     }
 
@@ -320,10 +320,10 @@ const getChallengeListByUser = async ({
         orderCondition.createdAt = 'desc'; // 신청 느린 순
         break;
       case Order.deadLineFirst:
-        orderCondition.deadline = 'desc'; // 마감일 최신 순
+        orderCondition.deadline = 'asc'; // 마감일 빠른 순
         break;
       case Order.deadLineLast:
-        orderCondition.deadline = 'asc'; // 마감일 오래된 순
+        orderCondition.deadline = 'desc'; // 마감일 느린 순
         break;
       default:
         // 기본값 (idx: 'desc')이 이미 설정되어 있음

@@ -10,11 +10,9 @@ interface CreateNotificationInput {
   translationId?: string;
   feedbackId?: string;
 }
-//알림 생성
+
 export async function createNotification(input: CreateNotificationInput) {
-  return prisma.notification.create({
-    data: {
-      ...input,
-    },
+  return await prisma.notification.create({
+    data: input,
   });
 }

@@ -1,5 +1,6 @@
 import prisma from '../../prismaClient';
 import { Request, Response } from 'express';
+import { createNotification } from './notifications.service';
 // 알림 조회
 export const getNotifications = async (req: Request, res: Response) => {
   const userId = req.query.userId as string;
@@ -8,14 +9,25 @@ export const getNotifications = async (req: Request, res: Response) => {
   const notifications = await prisma.notification.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
-    include: {
-      challenge: true,
-      translation: true,
-      feedback: true,
-    },
   });
 
   return res.json(notifications);
+};
+
+//알림 생성
+export const createNotificationHandler = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const notification = await createNotification(req.body);
+    return res.status(201).json(notification);
+  } catch (error) {
+    console.error('알림 생성 실패:', error);
+    return res
+      .status(500)
+      .json({ message: '알림 생성 중 오류가 발생했습니다.' });
+  }
 };
 
 // 알림 읽음 처리
