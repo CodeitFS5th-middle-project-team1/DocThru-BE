@@ -6,7 +6,10 @@ import {
   ChallengeAdminParamsSchema,
   ChallengeAdminRejectBodySchema,
 } from './challenges.admin.validation';
-import { ChallengeParamsSchema } from '../challenges/challenges.validation';
+import {
+  ChallengeBodySchema,
+  ChallengeParamsSchema,
+} from '../challenges/challenges.validation';
 const router = Router({ mergeParams: true });
 
 router.use(verifyJWTToken);
@@ -28,6 +31,13 @@ router.patch(
   }),
   ChallengesAdminController.patchChallengeReject
 ); //챌린지 거절
-router.patch('/remove'); //챌린지 삭제
+router.patch(
+  '/modify',
+  validateRequestData({
+    params: ChallengeParamsSchema,
+    body: ChallengeBodySchema,
+  }),
+  ChallengesAdminController.patchChallengeForce
+);
 
 export default router;
