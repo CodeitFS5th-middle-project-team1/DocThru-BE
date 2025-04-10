@@ -3,7 +3,9 @@ import {
   ChallengeAdminParams,
   ChallengeAdminRejectBody,
 } from './challenges.admin.validation';
-import ChallengesAdminService from './challenges.admin.service';
+import ChallengesAdminService, {
+  getTranslatorUserIdsByChallengeId,
+} from './challenges.admin.service';
 import { ChallengeAdminResponse } from './challenges.admin.type';
 
 import { createNotification } from '../notifications/notifications.service';
@@ -18,7 +20,7 @@ import {
 } from '../challenges/challenges.type';
 import ChallengesService from '../challenges/challenges.service';
 import challengesAdminService from './challenges.admin.service';
-
+import { notifyUser } from '../notifications/notifications.utils';
 
 /**
  * @swagger
@@ -169,8 +171,8 @@ const patchChallengeApprove: PatchController<
     const updateChallenge = await ChallengesAdminService.approveChallenge(
       challengeId
     );
-
-    await createNotification({
+    //챌린지 승인 알림
+    await notifyUser({
       userId: challenge.userId,
       category: 'challenge',
       type: 'approved',
@@ -346,13 +348,12 @@ const patchChallengeReject: PatchController<
     challengeId,
     rejectedReason
   );
-  // 알림 생성
-  await createNotification({
+  //챌린지 거절 알림
+  await notifyUser({
     userId: updateChallenge.userId,
     category: 'challenge',
     type: 'rejected',
-    message: `'${updateChallenge.title}' 챌린지가 거절되었어요.`,
-    reason: rejectedReason,
+    message: `😢 '${updateChallenge.title}' 챌린지가 반려되었어요. 사유: ${rejectedReason}`,
     challengeId: updateChallenge.id,
   });
   res.status(200).json({ challenge: updateChallenge });
@@ -448,6 +449,14 @@ const deleteChallengeForce: DeleteController<
       next({ statusCode: 404 });
       return;
     }
+    //챌린지 삭제 알림
+    await notifyUser({
+      userId: existChallenge.challenge.userId,
+      category: 'challenge',
+      type: 'deleted',
+      message: `⛔ '${existChallenge.challenge.title}' 챌린지가 삭제되었어요. 사유: ${deletedReason}`,
+      challengeId: existChallenge.challenge.id,
+    });
     res.status(200).send({ code: 200 });
   } catch (err) {
     next(err);
@@ -578,15 +587,19 @@ const patchChallengeForce: PatchController<
   try {
     const id = req.params.challengeId;
     const authRole = req.user?.role;
+
     if (authRole !== 'ADMIN') {
-      next({ status: 403 });
-      return;
+      return next({ status: 403 });
     }
+
+    // 제목 비교
     const existChallenge = await ChallengesService.getChallenge(id);
     if (!existChallenge.challenge) {
-      next({ status: 404 });
-      return;
+      return next({ status: 404 });
     }
+
+    const oldTitle = existChallenge.challenge.title;
+
     const {
       title,
       description,
@@ -596,7 +609,9 @@ const patchChallengeForce: PatchController<
       deadline,
       originURL,
     } = req.body;
-    const result = await ChallengesAdminService.updateChallengeForce({
+
+    // 챌린지 수정
+    const updatedChallenge = await ChallengesAdminService.updateChallengeForce({
       id,
       title,
       description,
@@ -606,7 +621,25 @@ const patchChallengeForce: PatchController<
       deadline,
       originURL,
     });
-    res.status(200).send({ challenge: result, code: 200 });
+
+    // 관리자에 의해 제목 변경된 경우 알림
+    if (oldTitle !== title) {
+      const translatorIds = await getTranslatorUserIdsByChallengeId(id);
+
+      await Promise.all(
+        translatorIds.map((userId) =>
+          notifyUser({
+            userId,
+            category: 'challenge',
+            type: 'updated',
+            message: `📌 '${oldTitle}' 챌린지의 이름이 '${title}'(으)로 수정되었어요.`,
+            challengeId: id,
+          })
+        )
+      );
+    }
+
+    res.status(200).send({ challenge: updatedChallenge, code: 200 });
   } catch (err) {
     next(err);
   }
