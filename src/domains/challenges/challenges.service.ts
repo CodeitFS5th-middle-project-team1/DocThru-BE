@@ -14,7 +14,9 @@ import {
   ChallengeRequestQueries,
 } from './challenges.validation';
 
-const getChallenge = async (id: string): Promise<GetChallengeResponseWithNextAndPrev> => {
+const getChallenge = async (
+  id: string
+): Promise<GetChallengeResponseWithNextAndPrev> => {
   const challenge = await prisma.challenge.findUnique({
     where: {
       id,
@@ -30,23 +32,30 @@ const getChallenge = async (id: string): Promise<GetChallengeResponseWithNextAnd
 
   const prevChallengeId = await prisma.challenge.findFirst({
     where: {
+
+   
+
       idx: { lt: challenge?.idx},
+
     },
     orderBy: { idx: 'desc' },
     select: {
       id: true,
-    }
-  })
+    },
+  });
 
   const nextChallengeId = await prisma.challenge.findFirst({
     where: {
       idx: { gt: challenge?.idx },
     },
+
+
     orderBy: { idx: 'asc'},
+
     select: {
       id: true,
-    }
-  })
+    },
+  });
 
   return { challenge, nextChallengeId, prevChallengeId };
 };

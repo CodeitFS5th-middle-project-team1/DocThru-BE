@@ -15,7 +15,9 @@ router.get('/', (req, res) => {
 router.use('/auth', AuthRouter);
 router.use('/challenges', ChallengeRouter);
 router.use('/translations/:translationId/feedbacks', FeedbackRouter);
-router.use('/notification', NotificationRouter);
+router.use('/notifications', NotificationRouter);
+router.use('/likes', LikeRouter);
+//router.use('/translations', TranslationRouter);
 router.use('/users', UserRouter);
 router.use('/translations/:translationId', LikeRouter);
 

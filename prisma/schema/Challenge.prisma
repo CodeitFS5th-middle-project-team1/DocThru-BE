@@ -18,8 +18,8 @@ model Challenge {
   rejectedAt          DateTime?
   approvalStatus      ApprovalStatus @default(PENDING) // 관리자 승인 상태 
   approvalAt          DateTime?
-  isParticipantsFull    Boolean        @default(false)
-  isDeadlineFull        Boolean        @default(false)
+  isParticipantsFull  Boolean        @default(false)
+  isDeadlineFull      Boolean        @default(false)
 
   // Relations
   user                  User                   @relation(fields: [userId], references: [id])

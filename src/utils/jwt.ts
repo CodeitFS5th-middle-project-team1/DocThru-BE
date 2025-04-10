@@ -23,14 +23,14 @@ const createToken = (
       ? process.env.JWT_ACCESS_SECRET || 'access-secret'
       : process.env.JWT_REFRESH_SECRET || 'refresh-secret';
 
-  console.log(
-    '🧪 JWT_ACCESS_SECRET from process.env:',
-    process.env.JWT_ACCESS_SECRET
-  );
-  console.log(
-    '🧪 JWT_REFRESH_SECRET from process.env:',
-    process.env.JWT_REFRESH_SECRET
-  );
+  // console.log(
+  //   '🧪 JWT_ACCESS_SECRET from process.env:',
+  //   process.env.JWT_ACCESS_SECRET
+  // );
+  // console.log(
+  //   '🧪 JWT_REFRESH_SECRET from process.env:',
+  //   process.env.JWT_REFRESH_SECRET
+  // );
 
   return jwt.sign(payload, secret, { expiresIn });
 };
@@ -44,9 +44,9 @@ const verifyToken = (
       tokenType === 'access'
         ? process.env.JWT_ACCESS_SECRET || 'access-secret'
         : process.env.JWT_REFRESH_SECRET || 'refresh-secret';
-    console.log('🔍 token:', token);
-    console.log('🔍 tokenType:', tokenType);
-    console.log('🔍 secret:', secret);
+    // console.log('🔍 token:', token);
+    // console.log('🔍 tokenType:', tokenType);
+    // console.log('🔍 secret:', secret);
 
     const payload = jwt.verify(token, secret) as CustomJwtPayload;
 

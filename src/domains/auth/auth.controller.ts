@@ -156,7 +156,6 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
  */
 const login = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password }: LoginBodyDTO = req.body;
-
   const existedUser = await AuthService.checkEmail(email);
 
   if (!existedUser) {
@@ -179,10 +178,11 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   await AuthService.saveRefreshToken(existedUser.email, refreshToken); //  refreshToken DB에 저장 -> 로그아웃 시 삭제 필요
 
   res.set('Authorization', `Bearer ${accessToken}`);
+
   res.cookie('accessToken', accessToken, {
     httpOnly: false, // 프론트에서 document.cookie로 접근할 수 있게 false
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'none',
+    secure: true,
   });
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,

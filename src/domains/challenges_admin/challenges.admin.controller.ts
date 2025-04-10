@@ -5,6 +5,9 @@ import {
 } from './challenges.admin.validation';
 import ChallengesAdminService from './challenges.admin.service';
 import { ChallengeAdminResponse } from './challenges.admin.type';
+
+import { createNotification } from '../notifications/notifications.service';
+
 import {
   ChallengeRequestBody,
   ChallengeRequestParams,
@@ -15,6 +18,7 @@ import {
 } from '../challenges/challenges.type';
 import ChallengesService from '../challenges/challenges.service';
 import challengesAdminService from './challenges.admin.service';
+
 
 /**
  * @swagger
@@ -141,6 +145,7 @@ import challengesAdminService from './challenges.admin.service';
  *                   type: string
  *                   example: "챌린지를 찾을 수 없습니다."
  */
+
 const patchChallengeApprove: PatchController<
   ChallengeAdminParams,
   never,
@@ -160,12 +165,24 @@ const patchChallengeApprove: PatchController<
     return next({ statusCode: 404, message: '챌린지를 찾을 수 없습니다.' });
   }
 
-  const updateChallenge = await ChallengesAdminService.approveChallenge(
-    challengeId
-  );
+  try {
+    const updateChallenge = await ChallengesAdminService.approveChallenge(
+      challengeId
+    );
 
-  res.status(200).json({ challenge: updateChallenge });
-  return;
+    await createNotification({
+      userId: challenge.userId,
+      category: 'challenge',
+      type: 'approved',
+      message: `🎉 '${challenge.title}' 챌린지가 승인되었어요.`,
+      challengeId: challenge.id,
+    });
+
+    res.status(200).json({ challenge: updateChallenge });
+  } catch (err) {
+    console.error('알림 생성 실패:', err);
+    next(err);
+  }
 };
 
 /**
@@ -329,7 +346,15 @@ const patchChallengeReject: PatchController<
     challengeId,
     rejectedReason
   );
-
+  // 알림 생성
+  await createNotification({
+    userId: updateChallenge.userId,
+    category: 'challenge',
+    type: 'rejected',
+    message: `'${updateChallenge.title}' 챌린지가 거절되었어요.`,
+    reason: rejectedReason,
+    challengeId: updateChallenge.id,
+  });
   res.status(200).json({ challenge: updateChallenge });
   return;
 };
