@@ -10,7 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to Render
-        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          # 배포 요청을 보내고 배포가 끝날 때까지 기다림
+          RESPONSE=$(curl -s -w "%{http_code}" -o /dev/null -X POST ${{ secrets.RENDER_DEPLOY_HOOK }})
+          if [ "$RESPONSE" != "200" ]; then
+            echo "배포 실패! 응답 코드: $RESPONSE"
+            exit 1
+          fi
+          echo "배포 성공!"
 
       - name: Notify Discord on success
         if: success()
@@ -23,6 +30,7 @@ jobs:
       - name: Notify Discord on failure
         if: failure()
         run: |
+          echo "배포 실패 시 디스코드 알림 발송"
           curl -X POST \
                -H "Content-Type: application/json" \
                -d "{\"content\":\"❌ Render 배포 실패... (브랜치: develop)\"}" \
