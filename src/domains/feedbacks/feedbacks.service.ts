@@ -21,6 +21,9 @@ const fetchFeedbackList = async (translationId: string) => {
     where: {
       translationId,
     },
+    orderBy: {
+      createdAt: 'desc',
+    },
   });
   return feedbacks;
 };
