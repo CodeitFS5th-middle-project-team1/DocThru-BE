@@ -82,6 +82,22 @@ const updateChallengeForce = async ({
 
   return challenge;
 };
+export const getTranslatorUserIdsByChallengeId = async (
+  challengeId: string
+): Promise<string[]> => {
+  const translators = await prisma.translation.findMany({
+    where: {
+      challengeId,
+      deletedAt: null,
+    },
+    select: {
+      userId: true,
+    },
+    distinct: ['userId'],
+  });
+
+  return translators.map((t) => t.userId);
+};
 
 export default {
   checkChallenge,
@@ -89,4 +105,5 @@ export default {
   rejectChallenge,
   deleteChallengeForce,
   updateChallengeForce,
+  getTranslatorUserIdsByChallengeId,
 };

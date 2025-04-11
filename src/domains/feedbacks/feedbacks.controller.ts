@@ -9,7 +9,7 @@ import {
   ModifyFeedBackParams,
   PostFeedBackBodyParams,
 } from './feedbacks.validation';
-import FeedbackService from './feedbacks.service';
+import FeedbackService, { getTranslationAuthorById } from './feedbacks.service';
 import {
   DeleteFeedBackResponse,
   GetFeedbackListResponse,
@@ -17,6 +17,7 @@ import {
   PostFeedBackResponse,
 } from './feedbacks.type';
 import AuthService from '../auth/auth.service';
+import { notifyUser } from '../notifications/notifications.utils';
 
 /**
  * @swagger
@@ -120,16 +121,16 @@ const getFeedBackList: GetController<
 > = async (req, res, next) => {
   const translationId = req.params.translationId;
 
-  const existedTranslaition = await FeedbackService.checkTranslations(
+  const existedTranslation = await FeedbackService.checkTranslations(
     translationId
   );
 
-  if (!existedTranslaition) {
+  if (!existedTranslation) {
     return next({ statusCode: 400, message: '존재하지 않는 translationId' });
   }
 
   const feedbacks = await FeedbackService.fetchFeedbackList(
-    existedTranslaition.id
+    existedTranslation.id
   );
 
   res.status(200).json({
@@ -235,16 +236,14 @@ const postFeedback: PostController<
   const { content } = req.body;
   const userId = req.user?.id ?? '';
 
-  const existedTranslaition = await FeedbackService.checkTranslations(
+  const existedTranslation = await FeedbackService.checkTranslations(
     translationId
   );
-
-  if (!existedTranslaition) {
+  if (!existedTranslation) {
     return next({ statusCode: 400, message: '존재하지 않는 translationId' });
   }
 
   const existedUser = await AuthService.checkId(userId);
-
   if (!existedUser) {
     return next({ statusCode: 400, message: '존재하지 않는 유저' });
   }
@@ -256,12 +255,22 @@ const postFeedback: PostController<
     content,
   });
 
+  // 피드백 알림
+  const translationAuthor = await getTranslationAuthorById(translationId);
+  if (translationAuthor && translationAuthor.userId !== userId) {
+    await notifyUser({
+      userId: translationAuthor.userId,
+      category: 'feedback',
+      type: 'created',
+      message: `💬 내 번역물에 댓글이 달렸어요.`,
+      translationId,
+    });
+  }
+
   res.status(201).json({
     feedback,
   });
-  return;
 };
-
 /**
  * @swagger
  * /api/translations/{translationId}/feedbacks/{feedbackId}:
