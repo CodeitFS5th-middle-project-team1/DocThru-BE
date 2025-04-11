@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import AuthService from './auth.service';
 import jwtUtils from '../../utils/jwt';
 import { LoginBodyDTO, SignUpBodyDTO } from './auth.types';
+import CustomError from '../../types/error';
 
 /**
  * @swagger
@@ -64,7 +65,7 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
   const { email, nickName, password }: SignUpBodyDTO = req.body;
 
   try {
-    const existedUser = await AuthService.checkEmail(email);
+    const existedUser = await AuthService.findUserByEmail(email);
 
     if (existedUser) {
       next({
@@ -155,47 +156,47 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
  *                   example: 비밀번호가 일치하지 않습니다.
  */
 const login = async (req: Request, res: Response, next: NextFunction) => {
-  const { email, password }: LoginBodyDTO = req.body;
-  const existedUser = await AuthService.checkEmail(email);
+  try {
+    const { email, password }: LoginBodyDTO = req.body;
 
-  if (!existedUser) {
-    next({ statusCode: 404, message: '없는 유저입니다.' });
-    return;
+    const existedUser = await AuthService.findUserByEmail(email);
+
+    const isValid = await AuthService.checkPassword(
+      password,
+      existedUser.password
+    );
+
+    if (!isValid) {
+      throw new CustomError(401, '아이디 또는 비밀번호가 일치하지 않습니다.');
+    }
+
+    const accessToken = jwtUtils.createToken(existedUser, 'access');
+    const refreshToken = jwtUtils.createToken(existedUser, 'refresh');
+
+    await AuthService.saveRefreshToken(existedUser.email, refreshToken);
+
+    res.set('Authorization', `Bearer ${accessToken}`);
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: false,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+    });
+
+    const { password: p, refreshToken: r, ...restUser } = existedUser;
+
+    res.status(200).json({
+      user: restUser,
+      accessToken,
+    });
+  } catch (err) {
+    next(err);
   }
-
-  const isCorrect = await AuthService.checkPassword(
-    password,
-    existedUser.password
-  );
-
-  if (!isCorrect) {
-    next({ statusCode: 401, message: '비밀번호가 일치하지 않습니다.' });
-    return;
-  }
-
-  const accessToken = jwtUtils.createToken(existedUser, 'access');
-  const refreshToken = jwtUtils.createToken(existedUser, 'refresh');
-  await AuthService.saveRefreshToken(existedUser.email, refreshToken); //  refreshToken DB에 저장 -> 로그아웃 시 삭제 필요
-
-  res.set('Authorization', `Bearer ${accessToken}`);
-
-  res.cookie('accessToken', accessToken, {
-    httpOnly: false, // 프론트에서 document.cookie로 접근할 수 있게 false
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-  });
-  res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    sameSite: 'none',
-    secure: true,
-  });
-
-  const { password: p, refreshToken: r, ...restUser } = existedUser;
-
-  res.status(200).json({
-    user: restUser,
-    accessToken,
-  });
 };
 /**
  * @swagger

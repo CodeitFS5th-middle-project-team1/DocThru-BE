@@ -243,7 +243,7 @@ const postFeedback: PostController<
     return next({ statusCode: 400, message: '존재하지 않는 translationId' });
   }
 
-  const existedUser = await AuthService.checkId(userId);
+  const existedUser = await AuthService.findUserById(userId);
   if (!existedUser) {
     return next({ statusCode: 400, message: '존재하지 않는 유저' });
   }

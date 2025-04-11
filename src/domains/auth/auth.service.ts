@@ -1,10 +1,10 @@
 import prisma from '../../prismaClient';
-import bcrpyt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import CustomError from '../../types/error';
 import { SignUpBodyDTO } from './auth.types';
 
 const createUser = async (data: SignUpBodyDTO) => {
-  const hashedPassword = await bcrpyt.hash(data.password, 10);
+  const hashedPassword = await bcrypt.hash(data.password, 10);
 
   try {
     const user = await prisma.user.create({
@@ -21,17 +21,20 @@ const createUser = async (data: SignUpBodyDTO) => {
   }
 };
 
-const checkEmail = async (email: string) => {
+const findUserByEmail = async (email: string) => {
   const user = await prisma.user.findUnique({
     where: {
       email,
     },
   });
-
+  if (!user) {
+    console.warn(`[AuthService] 존재하지 않는 이메일 접근 시도: ${email}`); //서버로그 확인용
+    throw new CustomError(401, '아이디 또는 비밀번호가 일치하지 않습니다.'); // 클라이언트 전달용
+  }
   return user;
 };
 
-const checkId = async (id: string) => {
+const findUserById = async (id: string) => {
   const user = await prisma.user.findUnique({
     where: {
       id,
@@ -45,7 +48,7 @@ const checkPassword = async (
   userInputPassword: string,
   hashedPassword: string
 ) => {
-  const isCorrect = await bcrpyt.compare(userInputPassword, hashedPassword);
+  const isCorrect = await bcrypt.compare(userInputPassword, hashedPassword);
   return isCorrect;
 };
 
@@ -83,8 +86,8 @@ const updateRefreshToken = async (id: string, newRefreshToken: string) => {
 
 const AuthService = {
   createUser,
-  checkEmail,
-  checkId,
+  findUserByEmail,
+  findUserById,
   checkPassword,
   saveRefreshToken,
   getRefreshToken,
