@@ -32,11 +32,7 @@ const getChallenge = async (
 
   const prevChallengeId = await prisma.challenge.findFirst({
     where: {
-
-   
-
-      idx: { lt: challenge?.idx},
-
+      idx: { lt: challenge?.idx },
     },
     orderBy: { idx: 'desc' },
     select: {
@@ -49,8 +45,7 @@ const getChallenge = async (
       idx: { gt: challenge?.idx },
     },
 
-
-    orderBy: { idx: 'asc'},
+    orderBy: { idx: 'asc' },
 
     select: {
       id: true,
@@ -449,6 +444,7 @@ const deleteChallenge = async (id: string): Promise<GetChallengeResponse> => {
     data: {
       deletedAt: new Date(),
       approvalStatus: 'DELETED',
+      deletedReason: '작성자에 의해 삭제되었습니다.',
     },
   });
   return { challenge };
