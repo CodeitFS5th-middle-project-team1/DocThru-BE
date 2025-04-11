@@ -71,6 +71,14 @@ const deleteFeedback = async (feedbackId: string) => {
   });
   return feedback;
 };
+export const getTranslationAuthorById = async (
+  translationId: string
+): Promise<{ userId: string } | null> => {
+  return prisma.translation.findUnique({
+    where: { id: translationId },
+    select: { userId: true },
+  });
+};
 
 export default {
   fetchFeedbackList,
@@ -79,4 +87,5 @@ export default {
   checkFeedbackByID,
   updateFeedback,
   deleteFeedback,
+  getTranslationAuthorById,
 };

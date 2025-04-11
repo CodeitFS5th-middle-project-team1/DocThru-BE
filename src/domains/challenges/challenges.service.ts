@@ -5,6 +5,7 @@ import {
   GetChallengeListByUserArgs,
   GetChallengeListParticipating,
   GetChallengeResponse,
+  GetChallengeResponseWithNextAndPrev,
   Order,
   UpdateChallengeArgs,
 } from './challenges.type';
@@ -13,7 +14,9 @@ import {
   ChallengeRequestQueries,
 } from './challenges.validation';
 
-const getChallenge = async (id: string): Promise<GetChallengeResponse> => {
+const getChallenge = async (
+  id: string
+): Promise<GetChallengeResponseWithNextAndPrev> => {
   const challenge = await prisma.challenge.findUnique({
     where: {
       id,
@@ -26,7 +29,30 @@ const getChallenge = async (id: string): Promise<GetChallengeResponse> => {
       },
     },
   });
-  return { challenge };
+
+  const prevChallengeId = await prisma.challenge.findFirst({
+    where: {
+      idx: { lt: challenge?.idx },
+    },
+    orderBy: { idx: 'desc' },
+    select: {
+      id: true,
+    },
+  });
+
+  const nextChallengeId = await prisma.challenge.findFirst({
+    where: {
+      idx: { gt: challenge?.idx },
+    },
+
+    orderBy: { idx: 'asc' },
+
+    select: {
+      id: true,
+    },
+  });
+
+  return { challenge, nextChallengeId, prevChallengeId };
 };
 
 const getChallengeList = async ({
@@ -59,10 +85,7 @@ const getChallengeList = async ({
           isDeadlineFull: false,
         }),
         ...(status === 'end' && {
-          OR: [
-            { isParticipantsFull: true },
-            { isDeadlineFull: true },
-          ],
+          OR: [{ isParticipantsFull: true }, { isDeadlineFull: true }],
         }),
         ...(keyword && {
           AND: [
@@ -100,10 +123,7 @@ const getChallengeList = async ({
           isDeadlineFull: false,
         }),
         ...(status === 'end' && {
-          OR: [
-            { isParticipantsFull: true },
-            { isDeadlineFull: true },
-          ],
+          OR: [{ isParticipantsFull: true }, { isDeadlineFull: true }],
         }),
         ...(keyword && {
           AND: [
@@ -170,8 +190,8 @@ const getChallengeListParticipating = async ({
           },
           select: {
             id: true,
-          }
-        }
+          },
+        },
       },
     }),
     prisma.challenge.count({
@@ -416,23 +436,6 @@ const updateChallenge = async ({
   return challenge;
 };
 
-const deleteChallengeForce = async (
-  id: string,
-  deletedReason: string
-): Promise<GetChallengeResponse> => {
-  const challenge = await prisma.challenge.update({
-    where: {
-      id,
-    },
-    data: {
-      deletedAt: new Date(),
-      deletedReason,
-      approvalStatus: 'DELETED',
-    },
-  });
-  return { challenge };
-};
-
 const deleteChallenge = async (id: string): Promise<GetChallengeResponse> => {
   const challenge = await prisma.challenge.update({
     where: {
@@ -441,6 +444,7 @@ const deleteChallenge = async (id: string): Promise<GetChallengeResponse> => {
     data: {
       deletedAt: new Date(),
       approvalStatus: 'DELETED',
+      deletedReason: '작성자에 의해 삭제되었습니다.',
     },
   });
   return { challenge };
@@ -454,7 +458,6 @@ const ChallengesService = {
   getChallenge,
   createChallenge,
   updateChallenge,
-  deleteChallengeForce,
   deleteChallenge,
 };
 

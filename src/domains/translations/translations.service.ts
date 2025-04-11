@@ -166,6 +166,8 @@ const createTranslation = async ({
       },
       select: {
         id: true,
+        title: true,
+        userId: true,
         isParticipantsFull: true,
         isDeadlineFull: true,
         maxParticipants: true,

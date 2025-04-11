@@ -11,11 +11,20 @@ dotenv.config();
 
 const app = express();
 app.use(morgan('dev'));
+const allowedOrigins = process.env.CLIENT_URL?.split(',') || [];
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    //origin: process.env.CLIENT_URL,
+
     exposedHeaders: ['Authorization'],
+    credentials: true,
   })
 );
 app.use(express.json());

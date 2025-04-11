@@ -156,7 +156,6 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
  */
 const login = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password }: LoginBodyDTO = req.body;
-
   const existedUser = await AuthService.checkEmail(email);
 
   if (!existedUser) {
@@ -176,9 +175,15 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
   const accessToken = jwtUtils.createToken(existedUser, 'access');
   const refreshToken = jwtUtils.createToken(existedUser, 'refresh');
-  await AuthService.saveRefreshToken(existedUser.email, refreshToken);
+  await AuthService.saveRefreshToken(existedUser.email, refreshToken); //  refreshToken DB에 저장 -> 로그아웃 시 삭제 필요
 
   res.set('Authorization', `Bearer ${accessToken}`);
+
+  res.cookie('accessToken', accessToken, {
+    httpOnly: false, // 프론트에서 document.cookie로 접근할 수 있게 false
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  });
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     sameSite: 'none',
@@ -189,10 +194,80 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
   res.status(200).json({
     user: restUser,
+    accessToken,
   });
+};
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: 로그아웃
+ *     description: 사용자의 액세스 토큰과 리프레시 토큰을 제거하여 로그아웃합니다.
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []  # JWT 인증 필요 명시
+ *     responses:
+ *       200:
+ *         description: 로그아웃 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 로그아웃 완료
+ *       401:
+ *         description: 인증 실패
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 401
+ *                 message:
+ *                   type: string
+ *                   example: 인증이 필요합니다.
+ *       500:
+ *         description: 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 500
+ *                 message:
+ *                   type: string
+ *                   example: 로그아웃 처리 중 오류 발생
+ */
+
+// 쿠키에서 refreshToken 제거 위해 로그아웃 API 추가
+const logout = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+    });
+
+    // accessToken도 제거
+    res.clearCookie('accessToken', {
+      httpOnly: false,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
+    res.status(200).json({ message: '로그아웃 완료' });
+  } catch (err) {
+    next({ statusCode: 500, message: '로그아웃 처리 중 오류 발생' });
+  }
 };
 
 export default {
   signup,
   login,
+  logout,
 };

@@ -1,0 +1,15 @@
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  category  String
+  type      String
+  message   String
+  reason    String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  challengeId   String? // 관계 안걸고 그냥 문자열로만 저장
+  translationId String?
+  feedbackId    String?
+  User          User    @relation(fields: [userId], references: [id])
+}

@@ -19,6 +19,8 @@ import {
 import { TranslationsService } from './translations.service';
 import CustomError from '../../types/error';
 import { UserRole } from '@prisma/client';
+import { notifyUser } from '../notifications/notifications.utils';
+import ChallengesService from '../challenges/challenges.service';
 
 /**
  * @swagger
@@ -259,7 +261,6 @@ const postTranslation: PostController<
     const { challengeId } = req.params;
     const { title, content } = req.body;
 
-    // 인증된 사용자 ID 확인
     const userId = req.user?.id;
 
     if (!userId) {
@@ -270,10 +271,21 @@ const postTranslation: PostController<
     const result = await TranslationsService.createTranslation({
       title,
       content,
-      userId, // 미들웨어에서 가져온 사용자 ID 사용
+      userId,
       challengeId,
     });
+    const challenge = await ChallengesService.getChallenge(challengeId);
 
+    if (challenge?.challenge?.userId) {
+      await notifyUser({
+        userId: challenge.challenge.userId,
+        category: 'translation',
+        type: 'created',
+        message: `✍️ '${challenge.challenge.title}' 챌린지에 새로운 번역물이 등록되었어요.`,
+        challengeId,
+        translationId: result.id,
+      });
+    }
     res.status(201).send(result);
   } catch (err) {
     next(err);
