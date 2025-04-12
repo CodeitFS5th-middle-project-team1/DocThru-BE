@@ -1,5 +1,6 @@
 import prisma from '../../prismaClient';
 import { PrismaClient } from '@prisma/client';
+import { evaluateUserRank } from '../../utils/evaluateUserRank';
 
 type TransactionClient = Omit<
   PrismaClient,
@@ -68,13 +69,35 @@ const setTranslationLikeCount = async (
 
 const createLikeAndPlusTranslationLikeCount = async (
   translationId: string,
-  userId: string
+  likerUserId: string
 ) => {
+  const translation = await prisma.translation.findUnique({
+    where: { id: translationId },
+    select: { userId: true },
+  });
+
+  if (!translation) throw new Error('번역물이 존재하지 않습니다.');
+
+  const authorUserId = translation.userId;
+
   const result = await prisma.$transaction(async (tx) => {
-    const like = await createLike(translationId, userId, tx);
+    const like = await createLike(translationId, likerUserId, tx);
+
     await setTranslationLikeCount(translationId, true, tx);
+    // 번역물 좋아요 수에 따른 user의 추천 수 증가
+    await tx.user.update({
+      where: { id: authorUserId },
+      data: {
+        recommendedCount: {
+          increment: 1,
+        },
+      },
+    });
+
     return like;
   });
+
+  await evaluateUserRank(authorUserId); // 유저 랭크 평가 함수 호출
 
   return result;
 };
