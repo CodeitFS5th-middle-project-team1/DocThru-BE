@@ -21,17 +21,10 @@ const createUser = async (data: SignUpBodyDTO) => {
   }
 };
 
-const findUserByEmail = async (email: string) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      email,
-    },
+export const findUserByEmail = async (email: string) => {
+  return await prisma.user.findUnique({
+    where: { email },
   });
-  if (!user) {
-    console.warn(`[AuthService] 존재하지 않는 이메일 접근 시도: ${email}`); //서버로그 확인용
-    throw new CustomError(401, '아이디 또는 비밀번호가 일치하지 않습니다.'); // 클라이언트 전달용
-  }
-  return user;
 };
 
 const findUserById = async (id: string) => {

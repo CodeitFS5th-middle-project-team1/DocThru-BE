@@ -68,11 +68,10 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
     const existedUser = await AuthService.findUserByEmail(email);
 
     if (existedUser) {
-      next({
+      return next({
         statusCode: 400,
         message: '이미 존재하고 있는 email 입니다.',
       });
-      return;
     }
 
     const user = await AuthService.createUser({ email, nickName, password });
@@ -161,6 +160,10 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
     const existedUser = await AuthService.findUserByEmail(email);
 
+    if (!existedUser) {
+      throw new CustomError(401, '아이디 또는 비밀번호가 일치하지 않습니다.');
+    }
+
     const isValid = await AuthService.checkPassword(
       password,
       existedUser.password
@@ -182,6 +185,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
     });
+
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       sameSite: 'none',
@@ -198,6 +202,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     next(err);
   }
 };
+
 /**
  * @swagger
  * /api/auth/logout:
