@@ -390,13 +390,13 @@ const postTranslation: PostController<
  */
 const getTranslationById: GetController<
   TranslationRequestParams & { translationId: string },
-  { userId?: string },
+  {},
   TranslationResponse & { isLiked?: boolean }
 > = async (req, res, next) => {
   try {
     const { challengeId, translationId } = req.params;
-    const { userId } = req.query;
-
+    //const { userId } = req.query;
+    const userId = req.user?.id;
     const translation = await TranslationsService.getTranslationById({
       translationId,
       challengeId,
