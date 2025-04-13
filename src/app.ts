@@ -21,6 +21,8 @@ app.use(
         callback(new Error('Not allowed by CORS'));
       }
     },
+    //origin: process.env.CLIENT_URL,
+
     exposedHeaders: ['Authorization'],
     credentials: true,
   })

@@ -8,6 +8,7 @@ import {
   TranslationRequestListQuery,
   TranslationRequestBody,
 } from './translations.types';
+import { evaluateUserRank } from '../../utils/evaluateUserRank';
 
 // 번역물 목록 조회
 const getTranslationList = async ({
@@ -250,7 +251,13 @@ const createTranslation = async ({
           isParticipantsFull: isFullNow,
         },
       });
-
+      // 유저 participationCount +1
+      await prismaClient.user.update({
+        where: { id: userId },
+        data: {
+          participationCount: { increment: 1 },
+        },
+      });
       // 관련된 임시 저장 데이터 삭제
       await prismaClient.draftTranslation.deleteMany({
         where: {
@@ -261,7 +268,7 @@ const createTranslation = async ({
 
       return translation;
     });
-
+    await evaluateUserRank(userId); // 유저 랭크 평가 함수 호출 - 참여 횟수에 따라 레벨업
     return {
       id: result.id,
       title: result.title,

@@ -27,17 +27,4 @@ router.post(
 
 router.post('/logout', authController.logout); //로그아웃
 
-// TODO: 테스트 용 api, 삭제 예정
-router.post(
-  '/test',
-  verifyJWTToken,
-  async (req: Request, res: Response, next: NextFunction) => {
-    console.log('Hello!!!!!!!!!!!!!!!!!!!!!!!');
-    console.log(req.params);
-    console.log(req.query);
-    const { email, password } = req.body;
-    res.send('hello');
-  }
-);
-
 export default router;

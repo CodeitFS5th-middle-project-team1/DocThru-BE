@@ -32,8 +32,7 @@ const errorHandler: ErrorRequestHandler = (
   if (statusCode === 403) {
     res.status(statusCode).json({
       code: statusCode,
-      message:
-        message || '요청이 서버에 의해 거부되었습니다.\n접근 권한이 없습니다.',
+      message: message || '요청이 거부되었습니다.\n접근 권한이 없습니다.',
     });
     return;
   }
@@ -44,6 +43,13 @@ const errorHandler: ErrorRequestHandler = (
       message: message || '요청한 리소스를\n찾을 수 없습니다.',
     });
     return;
+  }
+  //액세스 + 리프레시 토큰 관련 커스텀
+  if (statusCode === 419) {
+    return res.status(statusCode).json({
+      code: statusCode,
+      message: message || '세션이 만료되었습니다. 다시 로그인해주세요.',
+    });
   }
 
   res.status(statusCode).json({

@@ -36,6 +36,7 @@ router.post(
 
 router.get(
   '/:translationId',
+  verifyJWTToken,
   validateRequestData({
     params: TranslationParamsWithIdSchema,
   }),
@@ -64,6 +65,6 @@ router.delete(
 
 router.post('/draftedTranslations'); // 작업물 임시 저장
 router.get('/draftedTranslations'); // 작업물 임시 저장 가져오기
-router.use('/:translationId/feedbacks', FeedbackRouter);
+// router.use('/:translationId/feedbacks', FeedbackRouter);
 
 export default router;
