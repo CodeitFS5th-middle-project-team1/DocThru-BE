@@ -43,9 +43,23 @@ export const TranslationRequestBody = z.object({
   content: z
     .string()
     .trim()
-    .refine((val) => val.length >= 1 && val.length <= 1000, {
-      message: '내용은 최소 1자 이상 최대 1000자 이하로 입력해주세요.',
-    }),
+    .refine(
+      (val) => {
+        // HTML 태그 제거
+        const strippedContent = val.replace(/<[^>]*>/g, '');
+        const cleanContent = strippedContent.replace(/\s+/g, ' ').trim();
+
+        // console.log('원본 길이:', val.length);
+        // console.log('HTML 제거 후 길이:', cleanContent.length);
+        // console.log('콘텐츠 내용:', cleanContent);
+
+        // 정제된 콘텐츠 길이 검증
+        return cleanContent.length >= 1 && cleanContent.length <= 1000;
+      },
+      {
+        message: '내용은 최소 1자 이상 최대 1000자 이하로 입력해주세요.',
+      }
+    ),
 });
 
 export type TranslationRequestBody = z.infer<typeof TranslationRequestBody>;
@@ -61,9 +75,23 @@ export const TranslationUpdateBodySchema = z.object({
   content: z
     .string()
     .trim()
-    .refine((val) => val.length >= 1 && val.length <= 1000, {
-      message: '내용은 최소 1자 이상 최대 1000자 이하로 입력해주세요.',
-    }),
+    .refine(
+      (val) => {
+        // HTML 태그 제거
+        const strippedContent = val.replace(/<[^>]*>/g, '');
+        const cleanContent = strippedContent.replace(/\s+/g, ' ').trim();
+
+        // console.log('수정 요청 - 원본 길이:', val.length);
+        // console.log('수정 요청 - HTML 제거 후 길이:', cleanContent.length);
+        // console.log('수정 요청 - 콘텐츠 내용:', cleanContent);
+
+        // 정제된 콘텐츠 길이 검증
+        return cleanContent.length >= 1 && cleanContent.length <= 1000;
+      },
+      {
+        message: '내용은 최소 1자 이상 최대 1000자 이하로 입력해주세요.',
+      }
+    ),
 });
 
 // 번역물 수정 요청 바디 타입

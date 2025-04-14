@@ -63,8 +63,8 @@ router.delete(
   TranslationsController.deleteTranslation as unknown as RequestHandler
 );
 
-router.post('/draftedTranslations'); // 작업물 임시 저장
-router.get('/draftedTranslations'); // 작업물 임시 저장 가져오기
+// router.post('/draftedTranslations'); // 작업물 임시 저장
+// router.get('/draftedTranslations'); // 작업물 임시 저장 가져오기
 // router.use('/:translationId/feedbacks', FeedbackRouter);
 
 export default router;
