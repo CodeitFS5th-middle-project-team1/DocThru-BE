@@ -182,7 +182,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
     res.cookie('accessToken', accessToken, {
       httpOnly: false,
-      sameSite: 'lax',
+      sameSite: 'none',
       secure: process.env.NODE_ENV === 'production',
     });
 
@@ -263,7 +263,7 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
     // accessToken도 제거
     res.clearCookie('accessToken', {
       httpOnly: false,
-      sameSite: 'lax',
+      sameSite: 'none',
       secure: process.env.NODE_ENV === 'production',
     });
     res.status(200).json({ message: '로그아웃 완료' });

@@ -87,7 +87,7 @@ export const verifyJWTToken = async (
     // 쿠키 설정
     res.cookie('accessToken', newAccessToken, {
       httpOnly: false, // 프론트엔드에서 접근 가능하게 false
-      sameSite: 'lax',
+      sameSite: 'none',
       secure: process.env.NODE_ENV === 'production',
     });
 
