@@ -30,7 +30,7 @@ export const ChallengeQueriesSchema = z.object({
 });
 
 export const ChallengeBodySchema = z.object({
-  title: z.string().min(2, "제목은 최소 2자 이상이어야 합니다.").max(15, "제목은 최대 15자까지 입력할 수 있습니다."),
+  title: z.string().min(2, "제목은 최소 2자 이상이어야 합니다.").max(30, "제목은 최대 30자까지 입력할 수 있습니다."),
   description: z.string().min(10, "설명은 최소 10자 이상이어야 합니다.").max(100, "설명은 최대 100자 이상이어야 합니다."),
   documentType: z.nativeEnum(DocumentType, { errorMap: () => ({ message: "잘못된 문서 유형입니다."})}),
   field: z.nativeEnum(FieldType, { errorMap: () => ({ message: "잘못된 카테고리 유형입니다."})}),

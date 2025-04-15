@@ -219,7 +219,7 @@ const createTranslation = async ({
 
     if (existingTranslation) {
       throw new Error(
-        '이미 이 챌린지에 번역물을 제출하셨습니다. 한 챌린지당 하나의 번역물만 제출할 수 있습니다.'
+        '이미 이 챌린지에 번역물을 제출하셨습니다.\n한 챌린지당 하나의 번역물만 제출할 수 있습니다.'
       );
     }
 
