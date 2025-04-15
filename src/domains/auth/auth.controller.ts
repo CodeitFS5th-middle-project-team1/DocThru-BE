@@ -184,14 +184,12 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       httpOnly: false,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
-      domain: 'doc-thru-fe.vercel.app'
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       sameSite: 'none',
       secure: true,
-      domain: 'doc-thru-fe.vercel.app'
     });
 
     const { password: p, refreshToken: r, ...restUser } = existedUser;
@@ -260,7 +258,6 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
       httpOnly: true,
       sameSite: 'none',
       secure: true,
-      domain: 'doc-thru-fe.vercel.app'
     });
 
     // accessToken도 제거
@@ -268,7 +265,6 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
       httpOnly: false,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
-      domain: 'doc-thru-fe.vercel.app'
     });
     res.status(200).json({ message: '로그아웃 완료' });
   } catch (err) {
