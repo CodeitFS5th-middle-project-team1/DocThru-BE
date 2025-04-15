@@ -9,7 +9,10 @@ import {
   ModifyFeedBackParams,
   PostFeedBackBodyParams,
 } from './feedbacks.validation';
-import FeedbackService, { getTranslationAuthorById } from './feedbacks.service';
+import FeedbackService, {
+  getTranslationAuthorById,
+  getTranslationChallengeInfo,
+} from './feedbacks.service';
 import {
   DeleteFeedBackResponse,
   GetFeedbackListResponse,
@@ -258,15 +261,27 @@ const postFeedback: PostController<
   // 피드백 알림
   const translationAuthor = await getTranslationAuthorById(translationId);
   if (translationAuthor && translationAuthor.userId !== userId) {
-    await notifyUser({
-      userId: translationAuthor.userId,
-      category: 'feedback',
-      type: 'created',
-      message: `💬 내 번역물에 댓글이 달렸어요.`,
-      translationId,
-    });
-  }
+    const challengeInfo = await getTranslationChallengeInfo(translationId);
 
+    // 챌린지 정보가 있는 경우에만 알림 생성
+    if (challengeInfo) {
+      const shortTitle =
+        challengeInfo.title.length > 15
+          ? `${challengeInfo.title.substring(0, 15)}...`
+          : challengeInfo.title;
+
+      const notificationMessage = `💬 '${shortTitle}' 챌린지에 제출한 나의 번역물에 피드백이 추가되었어요.`;
+
+      await notifyUser({
+        userId: translationAuthor.userId,
+        category: 'feedback',
+        type: 'created',
+        message: notificationMessage,
+        translationId,
+        challengeId: challengeInfo.id,
+      });
+    }
+  }
   res.status(201).json({
     feedback,
   });

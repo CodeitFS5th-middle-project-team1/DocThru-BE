@@ -6,7 +6,45 @@ interface CreateFeedbackParams {
   userNickName: string;
   content: string;
 }
+interface ChallengeInfo {
+  id: string;
+  title: string;
+}
 
+export const getTranslationAuthorById = async (
+  translationId: string
+): Promise<{ userId: string } | null> => {
+  return prisma.translation.findUnique({
+    where: { id: translationId },
+    select: { userId: true },
+  });
+};
+
+export const getTranslationChallengeInfo = async (
+  translationId: string
+): Promise<ChallengeInfo | null> => {
+  try {
+    const translationWithChallenge = await prisma.translation.findUnique({
+      where: { id: translationId },
+      select: {
+        challenge: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+    });
+
+    return translationWithChallenge?.challenge || null;
+  } catch (error) {
+    console.error(
+      `번역물(${translationId})의 챌린지 정보 조회 중 오류:`,
+      error
+    );
+    return null;
+  }
+};
 const checkTranslations = async (translationId: string) => {
   const translation = await prisma.translation.findUnique({
     where: {
@@ -73,14 +111,6 @@ const deleteFeedback = async (feedbackId: string) => {
     },
   });
   return feedback;
-};
-export const getTranslationAuthorById = async (
-  translationId: string
-): Promise<{ userId: string } | null> => {
-  return prisma.translation.findUnique({
-    where: { id: translationId },
-    select: { userId: true },
-  });
 };
 
 export default {
