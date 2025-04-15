@@ -4,7 +4,6 @@ import prisma from '../../prismaClient';
  * @swagger
  * tags:
  *   name: Notifications
- *   description: 알림 API
  */
 
 /**
