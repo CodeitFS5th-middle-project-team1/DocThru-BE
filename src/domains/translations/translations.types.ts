@@ -52,12 +52,16 @@ export const TranslationRequestBody = z.object({
         // console.log('원본 길이:', val.length);
         // console.log('HTML 제거 후 길이:', cleanContent.length);
         // console.log('콘텐츠 내용:', cleanContent);
-
+        // if (cleanContent.length > 2000) {
+        //   console.warn(
+        //     ` 내용 길이 제한 초과: ${cleanContent.length}자 (최대 2000자)`
+        //   );
+        // }
         // 정제된 콘텐츠 길이 검증
-        return cleanContent.length >= 1 && cleanContent.length <= 1000;
+        return cleanContent.length >= 1 && cleanContent.length <= 2000;
       },
       {
-        message: '내용은 최소 1자 이상 최대 1000자 이하로 입력해주세요.',
+        message: '내용은 최소 1자 이상 최대 2000자 이하로 입력해주세요.',
       }
     ),
 });
@@ -86,10 +90,10 @@ export const TranslationUpdateBodySchema = z.object({
         // console.log('수정 요청 - 콘텐츠 내용:', cleanContent);
 
         // 정제된 콘텐츠 길이 검증
-        return cleanContent.length >= 1 && cleanContent.length <= 1000;
+        return cleanContent.length >= 1 && cleanContent.length <= 2000;
       },
       {
-        message: '내용은 최소 1자 이상 최대 1000자 이하로 입력해주세요.',
+        message: '내용은 최소 1자 이상 최대 2000자 이하로 입력해주세요.',
       }
     ),
 });
