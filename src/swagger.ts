@@ -8,7 +8,7 @@ const options: swaggerJSDoc.Options = {
     info: {
       title: 'DocThru API 문서',
       version: '1.0.0',
-      description: 'Express + TypeScript + Prisma ',
+      description: 'Express + TypeScript + Prisma',
     },
     components: {
       securitySchemes: {
