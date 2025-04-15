@@ -1,5 +1,5 @@
 import z from 'zod';
-import { DocumentType, FieldType, UserRole } from '@prisma/client';
+import { DocumentType, FieldType, UserRank, UserRole } from '@prisma/client';
 // export const TranslationParamsSchema = z.object({
 //   challengeId: z.string().uuid({ message: 'id는 uuid 형식이여야 합니다.' }),
 // });
@@ -102,9 +102,17 @@ export const TranslationUpdateBodySchema = z.object({
 export type TranslationUpdateBody = z.infer<typeof TranslationUpdateBodySchema>;
 
 // 유저 정보 스키마
-export const UserInfoSchema = z.object({
+export const FullUserSchema = z.object({
   id: z.string(),
-  nickname: z.string().nullable(),
+  email: z.string().email().optional(),
+  nickname: z.string(),
+  profileImg: z.string().nullable().optional(),
+  role: z.nativeEnum(UserRole).optional(),
+  rank: z.nativeEnum(UserRank).optional(),
+  participationCount: z.number().optional(),
+  recommendedCount: z.number().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
 });
 // enum 타입을 zod 스키마로 변환
 const DocumentTypeSchema = z.nativeEnum(DocumentType);
@@ -114,7 +122,7 @@ export const TranslationResponseSchema = z.object({
   id: z.string(),
   title: z.string(),
   content: z.string(),
-  user: UserInfoSchema,
+  user: FullUserSchema,
   challengeId: z.string(),
   likeCount: z.number().int(),
   createdAt: z.date(),
@@ -124,7 +132,7 @@ export const TranslationResponseSchema = z.object({
   field: FieldTypeSchema.optional(), // 챌린지의 분야
 });
 
-export type UserInfo = z.infer<typeof UserInfoSchema>;
+export type UserInfo = z.infer<typeof FullUserSchema>;
 export type TranslationResponse = z.infer<typeof TranslationResponseSchema>;
 
 // 번역물 상세 조회 응답 타입

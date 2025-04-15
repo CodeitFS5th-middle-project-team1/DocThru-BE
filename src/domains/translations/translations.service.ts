@@ -47,10 +47,7 @@ const getTranslationList = async ({
       id: translation.id,
       title: translation.title,
       content: translation.content,
-      user: {
-        id: translation.userId,
-        nickname: translation.user?.nickname || null,
-      },
+      user: translation.user,
       challengeId: translation.challengeId,
       likeCount: translation.likeCount,
       createdAt: translation.createdAt,
@@ -130,10 +127,7 @@ const getTranslationById = async ({
     id: translation.id,
     title: translation.title,
     content: translation.content,
-    user: {
-      id: translation.userId,
-      nickname: translation.user?.nickname || null,
-    },
+    user: translation.user,
     challengeId: translation.challengeId,
     likeCount: translation.likeCount,
     isLiked,
@@ -235,7 +229,7 @@ const createTranslation = async ({
         },
         include: {
           user: {
-            select: { nickname: true },
+            select: { id: true, nickname: true },
           },
         },
       });
@@ -276,10 +270,7 @@ const createTranslation = async ({
       id: result.id,
       title: result.title,
       content: result.content,
-      user: {
-        id: userId,
-        nickname: result.user?.nickname || null,
-      },
+      user: result.user, // 수정된 부분
       challengeId: result.challengeId,
       likeCount: result.likeCount,
       createdAt: result.createdAt,
@@ -397,7 +388,7 @@ const updateTranslation = async ({
       content: updatedTranslation.content,
       user: {
         id: translation.user.id,
-        nickname: updatedTranslation.user?.nickname || null,
+        nickname: updatedTranslation.user?.nickname,
       },
       challengeId: updatedTranslation.challengeId,
       likeCount: updatedTranslation.likeCount,
