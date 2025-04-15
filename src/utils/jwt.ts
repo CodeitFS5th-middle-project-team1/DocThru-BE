@@ -17,7 +17,7 @@ const createToken = (
     tokenType,
   };
 
-  const expiresIn = tokenType === 'access' ? '10m' : '1d';
+  const expiresIn = tokenType === 'access' ? '1m' : '1d';
   const secret =
     tokenType === 'access'
       ? process.env.JWT_ACCESS_SECRET || 'access-secret'
@@ -44,7 +44,7 @@ const verifyToken = (
       tokenType === 'access'
         ? process.env.JWT_ACCESS_SECRET || 'access-secret'
         : process.env.JWT_REFRESH_SECRET || 'refresh-secret';
-    // console.log('🔍 token:', token);
+    console.log('🔍 token:', token);
     // console.log('🔍 tokenType:', tokenType);
     // console.log('🔍 secret:', secret);
 
