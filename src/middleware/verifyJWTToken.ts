@@ -89,14 +89,12 @@ export const verifyJWTToken = async (
       httpOnly: false, // 프론트엔드에서 접근 가능하게 false
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
-      domain: 'doc-thru-fe.vercel.app'
     });
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true, // JS에서 접근 불가
       sameSite: 'none',
       secure: true,
-      domain: 'doc-thru-fe.vercel.app'
     });
 
     req.user = newUserInfo;
