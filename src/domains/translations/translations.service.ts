@@ -9,7 +9,13 @@ import {
   TranslationRequestBody,
 } from './translations.types';
 import { evaluateUserRank } from '../../utils/evaluateUserRank';
-
+const userSelectFields = {
+  id: true,
+  email: true,
+  nickname: true,
+  rank: true,
+  role: true,
+};
 // 번역물 목록 조회
 const getTranslationList = async ({
   challengeId,
@@ -28,7 +34,7 @@ const getTranslationList = async ({
       orderBy: { likeCount: 'desc' },
       skip: skipNum,
       take: limitNum,
-      include: { user: { select: { nickname: true } } },
+      include: { user: { select: userSelectFields } },
     }),
     prisma.translation.count({
       where: { challengeId, deletedAt: null },
@@ -92,10 +98,7 @@ const getTranslationById = async ({
     },
     include: {
       user: {
-        select: {
-          id: true,
-          nickname: true,
-        },
+        select: userSelectFields,
       },
     },
   });
