@@ -9,7 +9,13 @@ import {
   TranslationRequestBody,
 } from './translations.types';
 import { evaluateUserRank } from '../../utils/evaluateUserRank';
-
+const userSelectFields = {
+  id: true,
+  email: true,
+  nickname: true,
+  rank: true,
+  role: true,
+};
 // 번역물 목록 조회
 const getTranslationList = async ({
   challengeId,
@@ -28,7 +34,7 @@ const getTranslationList = async ({
       orderBy: { likeCount: 'desc' },
       skip: skipNum,
       take: limitNum,
-      include: { user: { select: { nickname: true } } },
+      include: { user: { select: userSelectFields } },
     }),
     prisma.translation.count({
       where: { challengeId, deletedAt: null },
@@ -41,10 +47,7 @@ const getTranslationList = async ({
       id: translation.id,
       title: translation.title,
       content: translation.content,
-      user: {
-        id: translation.userId,
-        nickname: translation.user?.nickname || null,
-      },
+      user: translation.user,
       challengeId: translation.challengeId,
       likeCount: translation.likeCount,
       createdAt: translation.createdAt,
@@ -92,10 +95,7 @@ const getTranslationById = async ({
     },
     include: {
       user: {
-        select: {
-          id: true,
-          nickname: true,
-        },
+        select: userSelectFields,
       },
     },
   });
@@ -127,10 +127,7 @@ const getTranslationById = async ({
     id: translation.id,
     title: translation.title,
     content: translation.content,
-    user: {
-      id: translation.userId,
-      nickname: translation.user?.nickname || null,
-    },
+    user: translation.user,
     challengeId: translation.challengeId,
     likeCount: translation.likeCount,
     isLiked,
@@ -232,7 +229,7 @@ const createTranslation = async ({
         },
         include: {
           user: {
-            select: { nickname: true },
+            select: { id: true, nickname: true },
           },
         },
       });
@@ -273,10 +270,7 @@ const createTranslation = async ({
       id: result.id,
       title: result.title,
       content: result.content,
-      user: {
-        id: userId,
-        nickname: result.user?.nickname || null,
-      },
+      user: result.user, // 수정된 부분
       challengeId: result.challengeId,
       likeCount: result.likeCount,
       createdAt: result.createdAt,
@@ -394,7 +388,7 @@ const updateTranslation = async ({
       content: updatedTranslation.content,
       user: {
         id: translation.user.id,
-        nickname: updatedTranslation.user?.nickname || null,
+        nickname: updatedTranslation.user?.nickname,
       },
       challengeId: updatedTranslation.challengeId,
       likeCount: updatedTranslation.likeCount,
