@@ -20,7 +20,7 @@
 ## 👨‍👩‍👧‍👦 팀원 정보
 
 | 이름 | 백엔드 주요 담당 역할 |
-|------|----------------------|S
+|------|----------------------|
 | [이동혁](https://github.com/hyuk-dev) | DB 모델링, 챌린지, 관리자 API |
 | [최은비](https://github.com/silverraining) | DB 모델링, 작업물, 임시저장, 알림 API |
 | [김승우](https://github.com/stevenkim18) | DB 모델링, 인증/인가, 관리자, 피드백, 좋아요 API |
